@@ -17,27 +17,45 @@ use Symfony\Component\HttpFoundation\Response;
 class PasswordResetController extends Controller
 {
     /**
-     * Masa berlaku token reset kata sandi dalam menit.
+     * Masa berlaku token reset kata sandi dalam menit (60 menit sesuai UI Card).
      */
     protected int $tokenExpiresMinutes = 60;
 
     /**
+     * Kontak bantuan sekretariat seminar sesuai petunjuk di UI.
+     */
+    protected string $supportContact = 'asic@agr.unand.ac.id';
+
+    /**
      * Mengirimkan link reset kata sandi (KF-08).
      *
-     * Membuat token unik, menyimpannya di tabel `password_reset_tokens`,
-     * dan mengembalikan respons/mengirimkan email reset kata sandi.
+     * Membuat token unik 64 karakter, menyimpannya di tabel `password_reset_tokens`,
+     * dan mengembalikan status dispatch instan sesuai antarmuka UI.
      */
     public function sendResetLinkEmail(ForgotPasswordRequest $request): JsonResponse|RedirectResponse
     {
         $email = strtolower(trim($request->validated('email')));
 
-        // Pastikan akun terdaftar
+        // Pastikan akun terdaftar di tabel user_account
         $user = UserAccount::where('email', $email)->first();
         if (!$user) {
-            return $this->responseError($request, 'Alamat email tidak ditemukan dalam sistem.', Response::HTTP_NOT_FOUND);
+            return $this->responseError(
+                $request,
+                'Alamat email tidak ditemukan dalam sistem akun delegasi ASIC 2026.',
+                Response::HTTP_NOT_FOUND
+            );
         }
 
-        // Buat token unik
+        // Cek status keaktifan akun
+        if ($user->status_akun !== 'Aktif') {
+            return $this->responseError(
+                $request,
+                "Akun Anda berstatus Nonaktif. Silakan hubungi Sekretariat Konferensi melalui {$this->supportContact}.",
+                Response::HTTP_FORBIDDEN
+            );
+        }
+
+        // Buat token unik aman
         $rawToken = Str::random(64);
 
         // Simpan token yang di-hash ke tabel password_reset_tokens
@@ -49,7 +67,7 @@ class PasswordResetController extends Controller
             ]
         );
 
-        // URL reset kata sandi
+        // URL tujuan reset kata sandi
         $resetUrl = url(route('password.reset', [
             'token' => $rawToken,
             'email' => $email,
@@ -58,17 +76,21 @@ class PasswordResetController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Link instruksi reset kata sandi telah berhasil dibuat.',
+                'message' => 'Tautan instruksi pemulihan kata sandi telah berhasil dikirimkan ke email Anda.',
+                'dispatch_status' => 'sent',
                 'data' => [
                     'email' => $email,
-                    'reset_token' => $rawToken,
-                    'reset_url' => $resetUrl,
                     'expires_in_minutes' => $this->tokenExpiresMinutes,
+                    'support_contact' => $this->supportContact,
+                    'reset_url' => $resetUrl,
                 ],
             ], Response::HTTP_OK);
         }
 
-        return back()->with('status', 'Link instruksi reset kata sandi telah dikirimkan ke email Anda.');
+        return back()->with(
+            'status',
+            'Tautan instruksi pemulihan kata sandi telah dikirimkan ke email terdaftar Anda.'
+        );
     }
 
     /**
@@ -87,14 +109,20 @@ class PasswordResetController extends Controller
         $record = DB::table('password_reset_tokens')->where('email', $email)->first();
 
         if (!$record) {
-            return $this->responseError($request, 'Permintaan reset kata sandi tidak valid atau telah kadaluwarsa.');
+            return $this->responseError(
+                $request,
+                'Permintaan reset kata sandi tidak valid atau telah kedaluwarsa.'
+            );
         }
 
         // Cek kedaluwarsa token (60 menit)
         $tokenCreatedAt = Carbon::parse($record->created_at);
         if ($tokenCreatedAt->addMinutes($this->tokenExpiresMinutes)->isPast()) {
             DB::table('password_reset_tokens')->where('email', $email)->delete();
-            return $this->responseError($request, 'Token reset kata sandi telah kedaluwarsa. Silakan ajukan permohonan baru.');
+            return $this->responseError(
+                $request,
+                'Tautan reset kata sandi telah kedaluwarsa (lebih dari 60 menit). Silakan ajukan permohonan baru.'
+            );
         }
 
         // Cek kecocokan token
@@ -119,7 +147,7 @@ class PasswordResetController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Kata sandi berhasil diperbarui. Silakan login menggunakan kata sandi baru Anda.',
+                'message' => 'Kata sandi berhasil diperbarui. Silakan masuk menggunakan kata sandi baru Anda.',
             ], Response::HTTP_OK);
         }
 
@@ -129,16 +157,19 @@ class PasswordResetController extends Controller
     /**
      * Helper untuk mengembalikan respons error baik JSON maupun Web Redirect.
      */
-    protected function responseError(Request $request, string $message, int $status = Response::HTTP_UNPROCESSABLE_ENTITY): JsonResponse|RedirectResponse
-    {
+    protected function responseError(
+        Request $request,
+        string $message,
+        int $status = Response::HTTP_UNPROCESSABLE_ENTITY
+    ): JsonResponse|RedirectResponse {
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => false,
                 'message' => $message,
+                'support_contact' => $this->supportContact,
             ], $status);
         }
 
         return back()->withErrors(['email' => $message]);
     }
 }
-

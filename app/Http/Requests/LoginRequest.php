@@ -16,16 +16,45 @@ class LoginRequest extends FormRequest
 
     /**
      * Aturan validasi untuk login akun.
+     * Mendukung variasi input UI: 'email_or_username', 'email', 'username', atau 'login'
+     * serta mode persona quick login demo.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
+        // Jika request berasal dari tombol persona quick login demo pada UI
+        if ($this->filled('demo_role')) {
+            return [
+                'demo_role' => [
+                    'required',
+                    'string',
+                    'in:participant,secretariat,treasurer,admin,abstract_team,Peserta,Sekretariat,Bendahara,Admin,Tim Abstrak',
+                ],
+                'remember' => ['nullable', 'boolean'],
+            ];
+        }
+
         return [
-            'email' => ['required', 'string', 'email'],
+            'email_or_username' => ['sometimes', 'required_without_all:email,username,login', 'string'],
+            'email' => ['sometimes', 'required_without_all:email_or_username,username,login', 'string'],
+            'username' => ['sometimes', 'required_without_all:email_or_username,email,login', 'string'],
+            'login' => ['sometimes', 'required_without_all:email_or_username,email,username', 'string'],
             'password' => ['required', 'string'],
             'remember' => ['nullable', 'boolean'],
         ];
+    }
+
+    /**
+     * Dapatkan nilai identitas login (Email atau Username/Reg.ID) yang dikirim oleh form UI.
+     */
+    public function getLoginIdentifier(): string
+    {
+        return trim((string) ($this->input('email_or_username')
+            ?? $this->input('email')
+            ?? $this->input('username')
+            ?? $this->input('login')
+            ?? ''));
     }
 
     /**
@@ -36,10 +65,12 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'Alamat email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
+            'email_or_username.required_without_all' => 'Alamat email atau username / nomor registrasi wajib diisi.',
+            'email.required_without_all' => 'Alamat email atau username / nomor registrasi wajib diisi.',
+            'username.required_without_all' => 'Alamat email atau username / nomor registrasi wajib diisi.',
+            'login.required_without_all' => 'Alamat email atau username / nomor registrasi wajib diisi.',
             'password.required' => 'Kata sandi wajib diisi.',
+            'demo_role.in' => 'Pilihan peran demo tidak valid.',
         ];
     }
 }
-

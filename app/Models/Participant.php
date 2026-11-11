@@ -66,6 +66,15 @@ class Participant extends Model
     ];
 
     /**
+     * Atribut tambahan yang otomatis disertakan dalam serialisasi JSON/Array.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'full_name',
+    ];
+
+    /**
      * Relasi belongsTo ke UserAccount (1 Participant dimiliki oleh 1 UserAccount).
      *
      * @return BelongsTo<UserAccount, $this>
@@ -73,6 +82,16 @@ class Participant extends Model
     public function userAccount(): BelongsTo
     {
         return $this->belongsTo(UserAccount::class, 'id_user', 'id_user');
+    }
+
+    /**
+     * Relasi hasMany ke Registration (1 Participant dapat memiliki riwayat pendaftaran).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Registration, $this>
+     */
+    public function registrations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Registration::class, 'id_participant', 'id_participant');
     }
 
     /**
