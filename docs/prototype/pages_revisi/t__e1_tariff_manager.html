@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=Outfit:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}<§/style><script src="https://cdn.tailwindcss.com"><§/script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-error":"#ffffff","tertiary":"#745b00","on-secondary":"#ffffff","surface-container-low":"#f3f4ef","primary-fixed":"#a7f4b6","on-primary-container":"#9ce9ab","tertiary-fixed":"#ffe08b","on-tertiary-container":"#4f3d00","on-surface":"#1a1c19","on-background":"#1a1c19","on-tertiary-fixed":"#241a00","background":"#f9faf5","surface":"#f9faf5","secondary-fixed":"#bdeeca","surface-container-lowest":"#ffffff","secondary-fixed-dim":"#a2d2af","surface-container-high":"#e7e9e4","surface-tint":"#206c3b","error":"#ba1a1a","primary-fixed-dim":"#8cd79b","surface-container-highest":"#e2e3de","outline-variant":"#bfc9bd","secondary":"#3b684b","primary-container":"#1f6b3a","secondary-container":"#baebc7","on-secondary-fixed":"#00210f","on-secondary-container":"#406c4f","on-tertiary":"#ffffff","on-primary-fixed-variant":"#005226","on-secondary-fixed-variant":"#234f35","surface-container":"#edeee9","on-tertiary-fixed-variant":"#584400","inverse-surface":"#2e312e","surface-variant":"#e2e3de","primary":"#005226","surface-bright":"#f9faf5","error-container":"#ffdad6","on-surface-variant":"#404940","on-error-container":"#93000a","on-primary-fixed":"#00210c","inverse-primary":"#8cd79b","inverse-on-surface":"#f0f1ec","tertiary-container":"#d0a600","surface-dim":"#d9dad6","outline":"#707a6f","on-primary":"#ffffff","tertiary-fixed-dim":"#f0c110"},borderRadius:{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},spacing:{"space-xl":"2rem","gutter":"1.5rem","margin":"2rem","space-md":"1rem","space-lg":"1.5rem","space-xs":"0.5rem","space-sm":"0.75rem"},fontFamily:{"body-sm":["Inter"],"display-md":["Outfit"],"label-md":["Inter"],"display-lg":["Outfit"],"label-lg":["Inter"],"headline-lg":["Outfit"],"body-md":["Inter"],"body-lg":["Inter"],"label-sm":["Inter"],"headline-sm":["Outfit"],"headline-md":["Outfit"]},fontSize:{"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"display-md":["30px",{"lineHeight":"38px","letterSpacing":"-0.01em","fontWeight":"600"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],"display-lg":["36px",{"lineHeight":"44px","letterSpacing":"-0.02em","fontWeight":"700"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"headline-lg":["24px",{"lineHeight":"32px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"700"}],"headline-sm":["16px",{"lineHeight":"24px","fontWeight":"600"}],"headline-md":["20px",{"lineHeight":"28px","fontWeight":"600"}]}}}};<§/script><§/head><body class="bg-surface font-body-md text-on-surface antialiased"><div class="min-h-screen w-[1440px] mx-auto relative bg-background"><aside class="fixed top-0 left-[calc(50%-720px)] h-full w-[240px] bg-primary z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col"><div class="h-[72px] px-space-lg flex items-center gap-space-sm bg-primary-container"><img alt="ASIC 2027 Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UiFFmVfSAS9Ovw0jzekSa2kOR_B1gKkeYy4FsdCQVRyIvYdhknGHaS2LvtP3Ftb4jjO8tPpo9GBxVLWr_sO6H6x6PjEpsyn_nFPXHvic6MWPCu4wCLlm0U6zpu-qy4MHalNKQESnvrS21beAvZq9GywRLCo-GMdnf778cYEd7MNGmKl7x4xxiU4-ZchlF_Ip_GU4PIYKTBiYnuIaoqQy0aXnOH0BBdBQxzM_lyNzg0Rw"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-primary tracking-tight">ASIC 2027<§/span><span class="font-label-sm text-label-sm text-on-primary-container leading-none uppercase">Treasurer Portal<§/span><§/div><§/div><div class="px-space-md pt-space-lg pb-space-xs"><span class="font-label-sm text-label-sm text-outline-variant uppercase tracking-wider px-space-xs">Finance Operations<§/span><§/div><nav class="flex flex-col gap-1 px-space-xs mt-1" data-active-classes="bg-primary-container text-on-primary font-bold"><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-xs rounded-lg transition-colors bg-primary-container text-on-primary font-bold" data-path="tariffs" href="#"><span class="material-symbols-outlined text-[20px]">price_change<§/span><span class="font-label-lg text-label-lg">Tariffs<§/span><§/a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-lg text-outline-variant hover:bg-primary-container hover:text-on-primary transition-colors" data-path="payment-queue" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long<§/span><span class="font-label-lg text-label-lg">Payment Queue<§/span><§/a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-lg text-outline-variant hover:bg-primary-container hover:text-on-primary transition-colors" data-path="refund-requests" href="#"><span class="material-symbols-outlined text-[20px]">currency_exchange<§/span><span class="font-label-lg text-label-lg">Refund Requests<§/span><§/a><§/nav><§/div><div class="p-space-md m-space-xs rounded-xl bg-surface-container-highest/10"><div class="font-label-sm text-label-sm text-outline-variant uppercase">Organizer Desk<§/div><div class="font-body-sm text-body-sm text-on-primary font-semibold truncate mt-0.5">Universitas Andalas<§/div><div class="font-label-sm text-label-sm text-outline-variant truncate">Faculty of Agriculture<§/div><§/div><§/aside><div class="pl-[240px] w-full min-h-screen"><header class="fixed top-0 left-[calc(50%-720px+240px)] w-[1200px] h-[72px] bg-surface-container-lowest/90 backdrop-blur-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 px-space-xl flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider leading-none">Academic Committee<§/span><span class="font-headline-sm text-headline-sm text-on-surface leading-tight">Universitas Andalas, Padang<§/span><§/div><§/div><div class="flex items-center gap-space-lg"><div class="flex items-center p-0.5 rounded-lg bg-surface-container"><button class="px-space-xs py-0.5 rounded font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface" type="button">ID<§/button><button class="px-space-xs py-0.5 rounded font-label-sm text-label-sm bg-surface-container-lowest text-primary shadow-[0_1px_4px_rgba(0,0,0,0.04)] font-bold" type="button">EN<§/button><§/div><div class="h-6 w-px bg-surface-container-high"><§/div><span class="px-space-sm py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm uppercase tracking-wide">Treasurer<§/span><div class="flex items-center gap-space-sm pl-space-xs"><div class="relative"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDdJkmiMERmMpuhSVC5XTmV39ZzZdX52lsu_k3_18vk9jSYGFo88PAvGVECeYQ1OtWtzb_97SbT7bxAPJNkK5jtZ4ztiRLjdX9L2fCLYwai6-uNjHoQwH9tiRe-dtia1HpTydTFG801JYvBXkQpt-kUFPZYIbXYBghUQUMC3Hcm0AOurGR0Cx1v-QcayGaqh71z9XHUWUzpl5xb7CQz-LAHZ2yJpwNelpJEHiFvBaU"/><span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-primary ring-2 ring-surface-container-lowest"><§/span><§/div><div class="flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface leading-tight">Finance Secretariat<§/span><span class="font-label-sm text-label-sm text-on-surface-variant leading-none">treasurer@asic2027.unand.ac.id<§/span><§/div><§/div><§/div><§/header><main class="w-full pt-[72px] px-space-xl pb-space-xl bg-background"><div class="flex flex-col w-full">
+<§!-- Status & Session Banner -->
+<div class="flex items-center justify-between bg-surface-container px-space-lg py-space-sm rounded-xl mb-space-lg shadow-sm">
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary-container text-on-primary font-bold">
+<span class="material-symbols-outlined text-[16px]">tune<§/span>
+<§/span>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Active Financial Cycle:<§/span>
+<span class="font-label-md text-label-md text-primary font-semibold">ASIC 2027 Universitas Andalas • Draft Revision 2.4<§/span>
+<§/div>
+<§/div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[15px]">schedule<§/span>
+<span>Awaiting Senate Validation<§/span>
+<§/div>
+<span class="text-outline-variant text-[12px]">•<§/span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Last autosaved: Today, 14:32 WIB<§/span>
+<§/div>
+<§/div>
+<§!-- Operational Header Block -->
+<div class="flex flex-row items-end justify-between mb-space-xl">
+<div class="flex flex-col gap-1 max-w-[700px]">
+<div class="flex items-center gap-space-xs mb-0.5">
+<span class="font-label-sm text-label-sm tracking-widest uppercase text-secondary">Treasury • Schedule of Tariffs<§/span>
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"><§/span>
+<span class="font-label-sm text-label-sm text-outline">Ref: ASIC-FIN-TAR-2027<§/span>
+<§/div>
+<h1 class="font-display-lg text-display-lg text-on-surface tracking-tight">Tariff Manager<§/h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Configure conference seminar fees, publication rates, and add-on components for ASIC 2027. Values pending final senate sign-off are preserved as strictly designated treasury placeholders.
+      <§/p>
+<§/div>
+<§!-- Header Action CTAs -->
+<div class="flex items-center gap-space-sm">
+<button class="px-space-md py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface font-label-lg text-label-lg transition-all flex items-center gap-space-xs shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">history<§/span>
+<span>Reset Changes<§/span>
+<§/button>
+<button class="px-space-lg py-2.5 rounded-xl bg-tertiary-fixed-dim hover:bg-tertiary-container text-on-tertiary-fixed font-label-lg text-label-lg font-bold transition-all shadow-md flex items-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[18px]">verified<§/span>
+<span>Save Changes<§/span>
+<§/button>
+<§/div>
+<§/div>
+<§!-- Highlights / Quick Metric Banners -->
+<div class="grid grid-cols-12 gap-space-lg mb-space-xl">
+<§!-- Card 1: Matrix Coverage -->
+<div class="col-span-4 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="absolute -right-3 -bottom-3 text-surface-container-high/40 pointer-events-none select-none">
+<span class="material-symbols-outlined text-[96px]">table_chart_view<§/span>
+<§/div>
+<div class="flex items-center justify-between mb-space-md">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Tier Coverage<§/span>
+<span class="px-2 py-0.5 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">18 Combinations<§/span>
+<§/div>
+<div>
+<div class="font-headline-lg text-headline-lg text-on-surface mb-0.5">3 Tracks • 2 Modes<§/div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Oral, Poster, Listener across Student, Regular, and Invited categories.<§/div>
+<§/div>
+<§/div>
+<§!-- Card 2: Publication Outlets -->
+<div class="col-span-4 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="absolute -right-3 -bottom-3 text-surface-container-high/40 pointer-events-none select-none">
+<span class="material-symbols-outlined text-[96px]">auto_stories<§/span>
+<§/div>
+<div class="flex items-center justify-between mb-space-md">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Proceedings Outlets<§/span>
+<span class="px-2 py-0.5 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">3 Tiers<§/span>
+<§/div>
+<div>
+<div class="font-headline-lg text-headline-lg text-on-surface mb-0.5">Scopus • SINTA • Q1/Q2<§/div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">All processing rates linked directly to institutional invoicing logic.<§/div>
+<§/div>
+<§/div>
+<§!-- Card 3: Invoicing Policy -->
+<div class="col-span-4 bg-primary text-on-primary p-space-lg rounded-xl shadow-md flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between mb-space-md">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary-fixed-dim">Automated Invoicing Gate<§/span>
+<span class="material-symbols-outlined text-primary-fixed-dim text-[20px]">timer<§/span>
+<§/div>
+<div>
+<div class="font-headline-lg text-headline-lg text-on-primary mb-0.5">7 Calendar Days<§/div>
+<div class="font-body-sm text-body-sm text-primary-fixed-dim">Grace threshold for automatic slot revoking post-acceptance.<§/div>
+<§/div>
+<§/div>
+<§/div>
+<§!-- SECTION 1: Seminar Fee Table -->
+<section class="flex flex-col mb-space-xl">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-6 rounded-full bg-primary inline-block"><§/span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">1. Seminar Registration Fee Matrix<§/h2>
+<span class="text-outline-variant">•<§/span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-normal">Base fees for author presentation rights and general symposium entry<§/span>
+<§/div>
+<div class="flex items-center gap-space-xs">
+<div class="flex items-center px-space-sm py-1 rounded-lg bg-surface-container text-on-surface-variant text-[12px] gap-1">
+<span class="material-symbols-outlined text-[16px]">info<§/span>
+<span>Currency lock applied: IDR (Bank Mandiri / BSI), USD (SWIFT wire)<§/span>
+<§/div>
+<§/div>
+<§/div>
+<§!-- Matrix Table Container -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant">
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider">Participant Type<§/th>
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider">Category<§/th>
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider">Registration Period<§/th>
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider">Attendance Mode<§/th>
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider">Fee (IDR)<§/th>
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider">Fee (USD)<§/th>
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider text-right">Matrix Status<§/th>
+<§/tr>
+<§/thead>
+<tbody class="divide-y-0 text-on-surface font-body-md text-body-md">
+<§!-- Row 1: Oral Presenter / Student / Early Bird / Online -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"><§/span>
+<span class="font-semibold text-on-surface">Oral Presenter<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<span class="px-2 py-0.5 rounded-md bg-surface-container font-label-sm text-label-sm text-on-surface">Student (ID/Intl)<§/span>
+<§/td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface">Early Bird<§/td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary">
+<span class="material-symbols-outlined text-[15px]">videocam<§/span> Online
+                <§/span>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">IDR<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">USD<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md text-right">
+<span class="inline-block px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">TBA Policy<§/span>
+<§/td>
+<§/tr>
+<§!-- Row 2: Oral Presenter / Student / Early Bird / Onsite -->
+<tr class="bg-surface-container-low/40 hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"><§/span>
+<span class="font-semibold text-on-surface">Oral Presenter<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<span class="px-2 py-0.5 rounded-md bg-surface-container font-label-sm text-label-sm text-on-surface">Student (ID/Intl)<§/span>
+<§/td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface">Early Bird<§/td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary">
+<span class="material-symbols-outlined text-[15px]">location_on<§/span> Onsite (Padang)
+                <§/span>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">IDR<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">USD<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md text-right">
+<span class="inline-block px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">TBA Policy<§/span>
+<§/td>
+<§/tr>
+<§!-- Row 3: Oral Presenter / Regular / Regular Period / Onsite -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"><§/span>
+<span class="font-semibold text-on-surface">Oral Presenter<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<span class="px-2 py-0.5 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Regular Academician<§/span>
+<§/td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface">Regular Registration<§/td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary">
+<span class="material-symbols-outlined text-[15px]">location_on<§/span> Onsite (Padang)
+                <§/span>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">IDR<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">USD<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md text-right">
+<span class="inline-block px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">TBA Policy<§/span>
+<§/td>
+<§/tr>
+<§!-- Row 4: Oral Presenter / Regular / Late / Online -->
+<tr class="bg-surface-container-low/40 hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary"><§/span>
+<span class="font-semibold text-on-surface">Oral Presenter<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<span class="px-2 py-0.5 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">Regular Academician<§/span>
+<§/td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-error font-medium">Late Registration<§/td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary">
+<span class="material-symbols-outlined text-[15px]">videocam<§/span> Online
+                <§/span>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">IDR<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">USD<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md text-right">
+<span class="inline-block px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">TBA Policy<§/span>
+<§/td>
+<§/tr>
+<§!-- Row 5: Poster Presenter / Regular / Regular Period / Onsite -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"><§/span>
+<span class="font-semibold text-on-surface">Poster Presenter<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<span class="px-2 py-0.5 rounded-md bg-surface-container font-label-sm text-label-sm text-on-surface">Regular / Student<§/span>
+<§/td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface">Regular Registration<§/td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary">
+<span class="material-symbols-outlined text-[15px]">location_on<§/span> Onsite (Padang)
+                <§/span>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">IDR<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">USD<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md text-right">
+<span class="inline-block px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">TBA Policy<§/span>
+<§/td>
+<§/tr>
+<§!-- Row 6: Listener / Attendee / Student / Early Bird / Online -->
+<tr class="bg-surface-container-low/40 hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline"><§/span>
+<span class="font-semibold text-on-surface">Listener / Attendee<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<span class="px-2 py-0.5 rounded-md bg-surface-container font-label-sm text-label-sm text-on-surface">Student<§/span>
+<§/td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface">Early Bird<§/td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary">
+<span class="material-symbols-outlined text-[15px]">videocam<§/span> Online
+                <§/span>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">IDR<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">USD<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md text-right">
+<span class="inline-block px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">TBA Policy<§/span>
+<§/td>
+<§/tr>
+<§!-- Row 7: Listener / Committee or Invited / All Periods / Onsite -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-outline"><§/span>
+<span class="font-semibold text-on-surface">Listener / Attendee<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<span class="px-2 py-0.5 rounded-md bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">Committee / Invited<§/span>
+<§/td>
+<td class="py-space-sm px-space-md font-body-sm text-body-sm text-on-surface">All Periods (Exempt)<§/td>
+<td class="py-space-sm px-space-md">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-primary">
+<span class="material-symbols-outlined text-[15px]">domain<§/span> Onsite • VIP
+                <§/span>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">IDR<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-normal">USD<§/span>
+<span class="font-bold tracking-wide">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline ml-1">edit<§/span>
+<§/div>
+<§/td>
+<td class="py-space-sm px-space-md text-right">
+<span class="inline-block px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">Complimentary<§/span>
+<§/td>
+<§/tr>
+<§/tbody>
+<§/table>
+<§/div>
+<div class="px-space-md py-space-sm bg-surface-container-low flex items-center justify-between">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Displaying 7 of 18 configured seminar tariff branches<§/span>
+<button class="font-label-sm text-label-sm text-primary font-bold hover:underline flex items-center gap-1" type="button">
+<span>Expand full 18-tier tariff tree<§/span>
+<span class="material-symbols-outlined text-[16px]">expand_more<§/span>
+<§/button>
+<§/div>
+<§/div>
+<§/section>
+<§!-- SECTION 2: Publication Fee Table -->
+<section class="flex flex-col mb-space-xl">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-6 rounded-full bg-tertiary-container inline-block"><§/span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">2. Publication &amp; Indexed Proceedings Charges<§/h2>
+<span class="text-outline-variant">•<§/span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-normal">Applicable exclusively upon acceptance letter (LoA) verification<§/span>
+<§/div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">APC Surcharge Logic<§/span>
+<§/div>
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant">
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider">Publication Track<§/th>
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider">Publisher / Indexer<§/th>
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider">IDR Column<§/th>
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider">USD Column<§/th>
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider">Processing Notes<§/th>
+<th class="py-space-sm px-space-md font-label-sm text-label-sm uppercase tracking-wider text-right">Action<§/th>
+<§/tr>
+<§/thead>
+<tbody class="divide-y-0 text-on-surface font-body-md text-body-md">
+<§!-- Row 1: Scopus Proceedings -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">Scopus Indexed Proceedings<§/span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">ASIC 2027 Official Conference Volume<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">verified_user<§/span>
+<span class="font-semibold text-on-surface">IOP / AIP Publishing Partner<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md">
+<div class="inline-flex items-center gap-2 px-space-sm py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-semibold">IDR<§/span>
+<input class="w-12 bg-transparent text-center font-bold focus:outline-none focus:ring-1 focus:ring-primary rounded" type="text" value="TBA"/>
+<span class="material-symbols-outlined text-[16px] text-outline">tune<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md">
+<div class="inline-flex items-center gap-2 px-space-sm py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-semibold">USD<§/span>
+<input class="w-12 bg-transparent text-center font-bold focus:outline-none focus:ring-1 focus:ring-primary rounded" type="text" value="TBA"/>
+<span class="material-symbols-outlined text-[16px] text-outline">tune<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md font-body-sm text-body-sm text-on-surface-variant">
+              Includes indexing layout proof, peer-review management fee, and DOI issuance fee.
+            <§/td>
+<td class="py-space-md px-space-md text-right">
+<button class="p-1 rounded-md text-on-surface-variant hover:text-primary hover:bg-surface-container" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert<§/span>
+<§/button>
+<§/td>
+<§/tr>
+<§!-- Row 2: SINTA National Journal -->
+<tr class="bg-surface-container-low/40 hover:bg-surface-container-low transition-colors">
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">SINTA Accredited National Journal<§/span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">SINTA 2 &amp; SINTA 3 Agro-Ecological Journals<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-secondary">menu_book<§/span>
+<span class="font-semibold text-on-surface">Unand LPPM Journal Consortium<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md">
+<div class="inline-flex items-center gap-2 px-space-sm py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-semibold">IDR<§/span>
+<input class="w-12 bg-transparent text-center font-bold focus:outline-none focus:ring-1 focus:ring-primary rounded" type="text" value="TBA"/>
+<span class="material-symbols-outlined text-[16px] text-outline">tune<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md">
+<div class="inline-flex items-center gap-2 px-space-sm py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-semibold">USD<§/span>
+<input class="w-12 bg-transparent text-center font-bold focus:outline-none focus:ring-1 focus:ring-primary rounded" type="text" value="TBA"/>
+<span class="material-symbols-outlined text-[16px] text-outline">tune<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md font-body-sm text-body-sm text-on-surface-variant">
+              Fast-track editorial review. Indonesian authors must provide NPWP for institutional invoicing.
+            <§/td>
+<td class="py-space-md px-space-md text-right">
+<button class="p-1 rounded-md text-on-surface-variant hover:text-primary hover:bg-surface-container" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert<§/span>
+<§/button>
+<§/td>
+<§/tr>
+<§!-- Row 3: Q1/Q2 Journal Partner -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface">International Q1/Q2 Journal Partner<§/span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Selected high-impact agricultural biotechnology tracks<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-tertiary">public<§/span>
+<span class="font-semibold text-on-surface">Elsevier / Springer Special Issue<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md">
+<div class="inline-flex items-center gap-2 px-space-sm py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-semibold">IDR<§/span>
+<input class="w-12 bg-transparent text-center font-bold focus:outline-none focus:ring-1 focus:ring-primary rounded" type="text" value="TBA"/>
+<span class="material-symbols-outlined text-[16px] text-outline">tune<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md">
+<div class="inline-flex items-center gap-2 px-space-sm py-1.5 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-semibold">USD<§/span>
+<input class="w-12 bg-transparent text-center font-bold focus:outline-none focus:ring-1 focus:ring-primary rounded" type="text" value="TBA"/>
+<span class="material-symbols-outlined text-[16px] text-outline">tune<§/span>
+<§/div>
+<§/td>
+<td class="py-space-md px-space-md font-body-sm text-body-sm text-on-surface-variant">
+              Full open access surcharge subsidized in part by ASIC steering budget. Final APC confirmed upon acceptance.
+            <§/td>
+<td class="py-space-md px-space-md text-right">
+<button class="p-1 rounded-md text-on-surface-variant hover:text-primary hover:bg-surface-container" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert<§/span>
+<§/button>
+<§/td>
+<§/tr>
+<§/tbody>
+<§/table>
+<§/div>
+<§/section>
+<§!-- SECTION 3: Add-on Components & Policy Rules -->
+<section class="flex flex-col mb-space-xl">
+<div class="flex items-center justify-between mb-space-md">
+<div class="flex items-center gap-space-sm">
+<span class="w-2.5 h-6 rounded-full bg-secondary inline-block"><§/span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">3. Add-on Components &amp; Policy Rules<§/h2>
+<span class="text-outline-variant">•<§/span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-normal">Ancillary packages and institutional deadline regulations<§/span>
+<§/div>
+<§/div>
+<div class="grid grid-cols-12 gap-space-lg">
+<§!-- Add-on Components Sub-cards -->
+<div class="col-span-7 flex flex-col gap-space-md">
+<§!-- Component A: West Sumatra Agro-Tour -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">forest<§/span>
+<§/div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Field Trip / Cultural Tour<§/h3>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold">Excursion<§/span>
+<§/div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                West Sumatra Agro-Tour: Harau Valley, Highland Coffee Plantations, &amp; Rumah Gadang Cultural Heritage Center.
+              <§/p>
+<div class="flex items-center gap-space-md mt-space-sm">
+<span class="font-label-sm text-label-sm text-outline">Inclusive of: Transit coaches, field meals, licensed local botanist guide<§/span>
+<§/div>
+<§/div>
+<§/div>
+<div class="flex flex-col items-end gap-1.5 shrink-0 pl-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-semibold">IDR<§/span>
+<span class="font-bold">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline">edit<§/span>
+<§/div>
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-semibold">USD<§/span>
+<span class="font-bold">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline">edit<§/span>
+<§/div>
+<§/div>
+<§/div>
+<§!-- Component B: Accompanying Person Gala Dinner -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[24px]">restaurant<§/span>
+<§/div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Accompanying Person Gala Dinner<§/h3>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold">Social Program<§/span>
+<§/div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                Access pass for spouse or guest at the ASIC 2027 Grand Welcome Banquet &amp; Cultural Performance (Padang Convention Center).
+              <§/p>
+<div class="flex items-center gap-space-md mt-space-sm">
+<span class="font-label-sm text-label-sm text-outline">Inclusive of: Minangkabau banquet service, ceremonial performance entry<§/span>
+<§/div>
+<§/div>
+<§/div>
+<div class="flex flex-col items-end gap-1.5 shrink-0 pl-space-md">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-semibold">IDR<§/span>
+<span class="font-bold">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline">edit<§/span>
+<§/div>
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-lg bg-surface-container font-label-md text-label-md text-on-surface">
+<span class="text-outline font-semibold">USD<§/span>
+<span class="font-bold">TBA<§/span>
+<span class="material-symbols-outlined text-[14px] text-outline">edit<§/span>
+<§/div>
+<§/div>
+<§/div>
+<§/div>
+<§!-- Invoicing Policy Configuration Card -->
+<div class="col-span-5 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-space-sm mb-space-sm">
+<span class="w-8 h-8 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">schedule<§/span>
+<§/span>
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Settlement Policy<§/span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Invoice Expiration Logic<§/h3>
+<§/div>
+<§/div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+            Regulates the automatic reservation revocation pipeline across payment gateway virtual accounts and manual bank draft checks.
+          <§/p>
+<§!-- Highlighted Editable Form Field -->
+<div class="bg-surface-container p-space-md rounded-xl mb-space-sm">
+<label class="block font-label-sm text-label-sm uppercase tracking-wider text-on-surface font-semibold mb-1.5">
+              Invoice Grace Period (Days)
+            <§/label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-[20px] text-primary">timelapse<§/span>
+<input class="w-full h-11 pl-10 pr-24 rounded-lg bg-surface-container-lowest text-on-surface font-headline-sm text-headline-sm focus:outline-none focus:ring-2 focus:ring-primary shadow-sm" type="number" value="7"/>
+<span class="absolute right-3 font-label-sm text-label-sm text-on-surface-variant font-medium">Days Limit<§/span>
+<§/div>
+<div class="flex items-center gap-1 mt-2 text-primary font-body-sm text-body-sm font-medium">
+<span class="material-symbols-outlined text-[16px]">verified<§/span>
+<span>"Payment deadline: 7 days after invoice issued"<§/span>
+<§/div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 text-[11px] leading-tight">
+              Invoices exceeding this duration will be cancelled; allocated presentation slots return to the unassigned queue.
+            <§/p>
+<§/div>
+<§/div>
+<div class="flex items-center justify-between pt-space-sm border-t border-transparent">
+<div class="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px]">lock_reset<§/span>
+<span>Applies globally across IDR &amp; USD checkouts<§/span>
+<§/div>
+<button class="text-primary hover:underline font-label-sm text-label-sm font-bold" type="button">
+            Policy Override Rules →
+          <§/button>
+<§/div>
+<§/div>
+<§/div>
+<§/section>
+<§!-- Sticky Bottom Persistence & Action Bar -->
+<div class="sticky bottom-6 left-0 right-0 w-full z-30">
+<div class="bg-surface-container-lowest/95 backdrop-blur-md px-space-xl py-space-md rounded-xl shadow-xl flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<div class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">fact_check<§/span>
+<§/div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">Unsaved Configuration Changes Pending<§/span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm font-semibold">Draft Mode<§/span>
+<§/div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+            All edited rates will apply immediately to newly generated registration proformas and author acceptance packages.
+          <§/span>
+<§/div>
+<§/div>
+<div class="flex items-center gap-space-sm">
+<button class="px-space-md py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-lg text-label-lg transition-all flex items-center gap-1.5" type="button">
+<span class="material-symbols-outlined text-[18px]">replay<§/span>
+<span>Reset Changes<§/span>
+<§/button>
+<button class="px-space-xl py-2.5 rounded-xl bg-tertiary-fixed-dim hover:bg-tertiary-container text-on-tertiary-fixed font-label-lg text-label-lg font-bold shadow-lg transition-all flex items-center gap-2" type="button">
+<span class="material-symbols-outlined text-[20px]">save<§/span>
+<span>Save Changes<§/span>
+<§/button>
+<§/div>
+<§/div>
+<§/div>
+<§/div><§/main><§/div><§/div><§/body><§/html>
