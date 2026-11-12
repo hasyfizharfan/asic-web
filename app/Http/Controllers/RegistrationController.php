@@ -15,14 +15,43 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
 class RegistrationController extends Controller
 {
     /**
-     * Menampilkan daftar registrasi milik peserta yang sedang login,
-     * atau seluruh registrasi jika diakses oleh panitia (Admin / Sekretariat).
+     * Menampilkan daftar registrasi milik peserta atau seluruh registrasi jika diakses panitia.
      */
+    #[OA\Get(
+        path: '/api/registrations',
+        summary: 'Daftar Pendaftaran Seminar',
+        description: 'Mengambil daftar pendaftaran milik pengguna yang sedang login atau seluruh data jika memiliki peran Admin / Sekretariat.',
+        tags: ['Pendaftaran'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id_event',
+                in: 'query',
+                required: false,
+                description: 'Filter berdasarkan ID Event seminar',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Daftar pendaftaran berhasil diambil',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Belum terautentikasi')
+        ]
+    )]
     public function index(Request $request): JsonResponse
     {
         /** @var \App\Models\UserAccount $user */
@@ -37,7 +66,6 @@ class RegistrationController extends Controller
             'participantFiles',
         ]);
 
-        // Jika bukan Admin / Sekretariat, hanya tampilkan registrasi milik sendiri
         if (!$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT])) {
             $participant = $user->participant;
             if (!$participant) {
@@ -49,7 +77,6 @@ class RegistrationController extends Controller
             $query->where('id_participant', $participant->id_participant);
         }
 
-        // Filter opsional berdasarkan id_event
         if ($request->filled('id_event')) {
             $query->where('id_event', $request->integer('id_event'));
         }
@@ -65,6 +92,36 @@ class RegistrationController extends Controller
     /**
      * Menampilkan detail pendaftaran tertentu (KF-10).
      */
+    #[OA\Get(
+        path: '/api/registrations/{id_registration}',
+        summary: 'Detail Pendaftaran Seminar',
+        description: 'Mengambil informasi lengkap pendaftaran beserta relasi invoice, abstrak, sesi, dan berkas.',
+        tags: ['Pendaftaran'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id_registration',
+                in: 'path',
+                required: true,
+                description: 'ID Pendaftaran',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Detail pendaftaran berhasil dimuat',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: 'Akses ditolak (bukan pemilik atau panitia)'),
+            new OA\Response(response: 404, description: 'Data pendaftaran tidak ditemukan')
+        ]
+    )]
     public function show(int $id_registration): JsonResponse
     {
         $registration = Registration::with([
@@ -80,7 +137,6 @@ class RegistrationController extends Controller
         /** @var \App\Models\UserAccount $user */
         $user = Auth::user();
 
-        // Otorisasi: Peserta hanya dapat melihat pendaftaran miliknya sendiri
         if (
             !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT]) &&
             $registration->participant?->id_user !== $user->id_user
@@ -100,12 +156,57 @@ class RegistrationController extends Controller
     /**
      * Menyimpan data pendaftaran event seminar (KF-10).
      */
+    #[OA\Post(
+        path: '/api/registrations',
+        summary: 'Pendaftaran Kegiatan Seminar Baru',
+        description: 'Membuat pendaftaran baru untuk event seminar beserta pilihan add-on (paket wisata/akomodasi).',
+        tags: ['Pendaftaran'],
+        security: [['sanctumAuth' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['id_event', 'id_period', 'registration_type', 'attendance_mode', 'participation_type'],
+                properties: [
+                    new OA\Property(property: 'id_event', type: 'integer', example: 1),
+                    new OA\Property(property: 'id_period', type: 'integer', example: 1),
+                    new OA\Property(property: 'registration_type', type: 'string', enum: ['Early Bird', 'Regular', 'Late'], example: 'Early Bird'),
+                    new OA\Property(property: 'attendance_mode', type: 'string', enum: ['Luring', 'Daring'], example: 'Luring'),
+                    new OA\Property(property: 'participation_type', type: 'string', enum: ['Presenter Oral', 'Presenter Poster', 'Listener'], example: 'Presenter Oral'),
+                    new OA\Property(property: 'publication_option', type: 'string', enum: ['Ya', 'Tidak'], example: 'Ya'),
+                    new OA\Property(
+                        property: 'add_ons',
+                        type: 'array',
+                        items: new OA\Items(
+                            properties: [
+                                new OA\Property(property: 'id_add_on', type: 'integer', example: 1),
+                                new OA\Property(property: 'jumlah', type: 'integer', example: 1)
+                            ]
+                        )
+                    )
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Pendaftaran kegiatan seminar berhasil disimpan',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 409, description: 'Peserta sudah terdaftar pada kegiatan ini'),
+            new OA\Response(response: 422, description: 'Periode pendaftaran ditutup atau input tidak valid')
+        ]
+    )]
     public function store(StoreRegistrationRequest $request): JsonResponse|RedirectResponse
     {
         /** @var \App\Models\UserAccount $user */
         $user = Auth::user();
 
-        // 1. Dapatkan profil participant terkait akun pengguna
         $participant = $user->participant;
         if (!$participant) {
             $participant = Participant::create([
@@ -116,7 +217,6 @@ class RegistrationController extends Controller
 
         $validated = $request->validated();
 
-        // 2. Validasi periode pendaftaran masih aktif dan dalam rentang tanggal (KF-11)
         $period = RegistrationPeriod::findOrFail($validated['id_period']);
         $today = Carbon::today();
 
@@ -131,7 +231,6 @@ class RegistrationController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        // 3. Cek apakah peserta sudah pernah mendaftar pada event yang sama (dengan status aktif)
         $existing = Registration::where('id_participant', $participant->id_participant)
             ->where('id_event', $validated['id_event'])
             ->where('registration_status', 'Terdaftar')
@@ -145,7 +244,6 @@ class RegistrationController extends Controller
             ], Response::HTTP_CONFLICT);
         }
 
-        // 4. Buat record pendaftaran dan add-on dalam transaksi database
         $registration = DB::transaction(function () use ($validated, $participant) {
             $newRegistration = Registration::create([
                 'id_participant' => $participant->id_participant,
@@ -159,7 +257,6 @@ class RegistrationController extends Controller
                 'registration_status' => 'Terdaftar',
             ]);
 
-            // Simpan layanan tambahan (add-on) bila dipilih peserta
             if (!empty($validated['add_ons'])) {
                 foreach ($validated['add_ons'] as $item) {
                     $addOn = AddOn::find($item['id_add_on']);
@@ -190,8 +287,7 @@ class RegistrationController extends Controller
             ], Response::HTTP_CREATED);
         }
 
-        return redirect()->route('registrations.show', $registration->id_registration)
+        return redirect()->route('api.registrations.show', $registration->id_registration)
             ->with('success', 'Pendaftaran kegiatan seminar berhasil disimpan.');
     }
 }
-

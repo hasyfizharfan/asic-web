@@ -41,5 +41,15 @@ class Event extends Model
     {
         return $this->hasMany(Registration::class, 'id_event', 'id_event');
     }
+
+    public function sessions(): HasMany
+    {
+        return $this->hasMany(EventSession::class, 'id_event', 'id_event');
+    }
+
+    public function documentTemplates(): HasMany
+    {
+        return $this->hasMany(DocumentTemplate::class, 'id_event', 'id_event');
+    }
 }
 

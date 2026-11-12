@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -18,6 +19,37 @@ class AbstractController extends Controller
     /**
      * Menampilkan data abstrak dari suatu pendaftaran (KF-15, KF-17).
      */
+    #[OA\Get(
+        path: '/api/registrations/{id_registration}/abstract',
+        summary: 'Detail Naskah Abstrak Peserta',
+        description: 'Mendapatkan data naskah abstrak yang telah diajukan pada pendaftaran tertentu.',
+        tags: ['Abstrak'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id_registration',
+                in: 'path',
+                required: true,
+                description: 'ID Pendaftaran',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Data naskah abstrak ditemukan',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'data', type: 'object'),
+                        new OA\Property(property: 'file_url', type: 'string', nullable: true)
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: 'Akses ditolak'),
+            new OA\Response(response: 404, description: 'Naskah abstrak belum diajukan')
+        ]
+    )]
     public function show(int $id_registration): JsonResponse
     {
         $registration = Registration::with(['participant.userAccount', 'abstractSubmission'])
@@ -26,7 +58,6 @@ class AbstractController extends Controller
         /** @var \App\Models\UserAccount $user */
         $user = Auth::user();
 
-        // Otorisasi: Pemilik atau Tim Panitia (Admin, Tim Abstrak, Sekretariat)
         if (
             !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_TIM_ABSTRAK, Role::ROLE_SEKRETARIAT]) &&
             $registration->participant?->id_user !== $user->id_user
@@ -59,9 +90,55 @@ class AbstractController extends Controller
 
     /**
      * Mengunggah naskah abstrak untuk Presenter Oral/Poster (KF-15).
-     *
-     * Berkas disimpan ke `storage/app/public/abstracts` dan dicatat di database.
      */
+    #[OA\Post(
+        path: '/api/registrations/{id_registration}/abstract',
+        summary: 'Unggah Naskah Abstrak Baru',
+        description: 'Mengunggah dokumen abstrak format PDF/DOCX untuk pendaftaran peserta kategori Presenter.',
+        tags: ['Abstrak'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id_registration',
+                in: 'path',
+                required: true,
+                description: 'ID Pendaftaran',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            description: 'Berkas naskah abstrak dan metadata presentasi',
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    required: ['judul_abstrak', 'metode_presentasi', 'file_abstrak'],
+                    properties: [
+                        new OA\Property(property: 'judul_abstrak', type: 'string', example: 'Smart Agriculture IoT Implementation in West Sumatra'),
+                        new OA\Property(property: 'scope', type: 'string', example: 'Precision Agriculture'),
+                        new OA\Property(property: 'metode_presentasi', type: 'string', enum: ['Oral', 'Poster'], example: 'Oral'),
+                        new OA\Property(property: 'file_abstrak', type: 'string', format: 'binary')
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Naskah abstrak berhasil diunggah',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'data', type: 'object'),
+                        new OA\Property(property: 'file_url', type: 'string')
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: 'Akses ditolak'),
+            new OA\Response(response: 422, description: 'Kategori Listener tidak boleh upload abstrak atau file tidak valid')
+        ]
+    )]
     public function store(StoreAbstractRequest $request, int $id_registration): JsonResponse|RedirectResponse
     {
         $registration = Registration::with(['participant.userAccount', 'abstractSubmission'])
@@ -70,7 +147,6 @@ class AbstractController extends Controller
         /** @var \App\Models\UserAccount $user */
         $user = Auth::user();
 
-        // 1. Otorisasi kepemilikan registrasi
         if (
             !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT, Role::ROLE_TIM_ABSTRAK]) &&
             $registration->participant?->id_user !== $user->id_user
@@ -81,7 +157,6 @@ class AbstractController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        // 2. Validasi peran peserta: Khusus Presenter (Oral/Poster), Listener dilarang kirim abstrak (KF-15)
         if ($registration->participation_type === 'Listener') {
             return response()->json([
                 'success' => false,
@@ -92,20 +167,18 @@ class AbstractController extends Controller
         $validated = $request->validated();
         $file = $request->file('file_abstrak');
 
-        // 3. Simpan file ke Storage::disk('public') pada folder 'abstracts'
         $filePath = $file->store('abstracts', 'public');
 
-        // 4. Jika sebelumnya sudah ada naskah abstrak, hapus berkas lama dari storage
         $existingAbstract = $registration->abstractSubmission;
         if ($existingAbstract && $existingAbstract->file_abstrak) {
             Storage::disk('public')->delete($existingAbstract->file_abstrak);
         }
 
-        // 5. Update atau Insert data ke tabel abstract_submission
         $abstract = AbstractSubmission::updateOrCreate(
             ['id_registration' => $registration->id_registration],
             [
                 'judul_abstrak' => $validated['judul_abstrak'],
+                'scope' => $validated['scope'] ?? null,
                 'metode_presentasi' => $validated['metode_presentasi'],
                 'file_abstrak' => $filePath,
                 'tanggal_submit' => now(),
@@ -122,13 +195,38 @@ class AbstractController extends Controller
             ], Response::HTTP_CREATED);
         }
 
-        return redirect()->route('registrations.show', $id_registration)
+        return redirect()->route('api.registrations.show', $id_registration)
             ->with('success', 'Naskah abstrak berhasil diunggah.');
     }
 
     /**
      * Mengunduh berkas naskah abstrak.
      */
+    #[OA\Get(
+        path: '/api/registrations/{id_registration}/abstract/download',
+        summary: 'Unduh Berkas Naskah Abstrak',
+        description: 'Mengunduh file fisik naskah abstrak peserta.',
+        tags: ['Abstrak'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id_registration',
+                in: 'path',
+                required: true,
+                description: 'ID Pendaftaran',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'File naskah abstrak berhasil diunduh',
+                content: new OA\MediaType(mediaType: 'application/octet-stream')
+            ),
+            new OA\Response(response: 403, description: 'Akses ditolak'),
+            new OA\Response(response: 404, description: 'Berkas tidak ditemukan')
+        ]
+    )]
     public function download(int $id_registration): BinaryFileResponse|JsonResponse
     {
         $registration = Registration::with(['participant.userAccount', 'abstractSubmission'])
@@ -137,7 +235,6 @@ class AbstractController extends Controller
         /** @var \App\Models\UserAccount $user */
         $user = Auth::user();
 
-        // Otorisasi
         if (
             !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_TIM_ABSTRAK, Role::ROLE_SEKRETARIAT]) &&
             $registration->participant?->id_user !== $user->id_user
@@ -159,4 +256,3 @@ class AbstractController extends Controller
         return Storage::disk('public')->download($abstract->file_abstrak);
     }
 }
-

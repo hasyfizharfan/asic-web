@@ -22,6 +22,7 @@ class RegistrationFee extends Model
         'id_period',
         'registration_type',
         'attendance_mode',
+        'tujuan_publikasi',
         'amount',
         'discount',
     ];
@@ -49,4 +50,3 @@ class RegistrationFee extends Model
         return $this->hasMany(Invoice::class, 'id_fee', 'id_fee');
     }
 }
-

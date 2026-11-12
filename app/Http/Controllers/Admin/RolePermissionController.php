@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
 class RolePermissionController extends Controller
@@ -20,17 +21,34 @@ class RolePermissionController extends Controller
 
     /**
      * Menampilkan data lengkap Roles & Permissions Matrix untuk rendering UI.
-     *
-     * Menyediakan data summary cards, daftar peran, 10 node kapabilitas,
-     * serta matriks hak akses interaktif (Full Access, View Only, Restricted).
      */
+    #[OA\Get(
+        path: '/api/admin/roles-permissions',
+        summary: 'Matriks Peran dan Hak Akses (RBAC Matrix)',
+        description: 'Mendapatkan data matriks hak akses 5 peran terhadap 10 node kapabilitas sistem konferensi (Admin).',
+        tags: ['Admin - Hak Akses'],
+        security: [['sanctumAuth' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Data matriks hak akses berhasil dimuat',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: 'Akses ditolak (khusus Admin)')
+        ]
+    )]
     public function index(Request $request): JsonResponse
     {
         $rolesFromDb = Role::all();
         $capabilities = $this->getCapabilitiesDefinition();
         $matrix = $this->getActiveMatrix();
 
-        // Data statistik summary untuk 4 kartu di atas tabel
         $summary = [
             'core_roles_count' => $rolesFromDb->count(),
             'core_roles' => $rolesFromDb->pluck('nama_role'),
@@ -72,15 +90,44 @@ class RolePermissionController extends Controller
     /**
      * Menyimpan perubahan konfigurasi matriks hak akses (Tombol "Save Changes").
      */
+    #[OA\Post(
+        path: '/api/admin/roles-permissions',
+        summary: 'Simpan Perubahan Matriks Hak Akses',
+        description: 'Memperbarui konfigurasi hak akses matriks peran pada cache persisten dan mencatat jejak audit.',
+        tags: ['Admin - Hak Akses'],
+        security: [['sanctumAuth' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['matrix'],
+                properties: [
+                    new OA\Property(property: 'matrix', type: 'object'),
+                    new OA\Property(property: 'audit_note', type: 'string', example: 'Updated treasury permissions')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Konfigurasi matriks berhasil disimpan',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 422, description: 'Format matriks tidak valid')
+        ]
+    )]
     public function save(UpdateRolePermissionMatrixRequest $request): JsonResponse
     {
         $validated = $request->validated();
         $matrix = $validated['matrix'];
 
-        // Simpan matriks ke persistent cache/storage
         Cache::forever(self::CACHE_KEY, $matrix);
 
-        // Catat jejak audit trail
         $this->appendAuditTrail([
             'action' => 'UPDATE_MATRIX',
             'user' => auth()->user()?->email ?? 'admin',
@@ -101,6 +148,26 @@ class RolePermissionController extends Controller
     /**
      * Mereset matriks hak akses ke nilai bawaan (Tombol "Reset to Defaults").
      */
+    #[OA\Post(
+        path: '/api/admin/roles-permissions/reset',
+        summary: 'Reset Matriks Hak Akses ke Bawaan Sistem',
+        description: 'Mengembalikan seluruh konfigurasi matriks peran ke pengaturan default awal.',
+        tags: ['Admin - Hak Akses'],
+        security: [['sanctumAuth' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Matriks berhasil direset ke nilai default',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            )
+        ]
+    )]
     public function reset(): JsonResponse
     {
         Cache::forget(self::CACHE_KEY);
@@ -126,6 +193,20 @@ class RolePermissionController extends Controller
     /**
      * Mengekspor matriks hak akses aktif dalam format JSON ("Export ACL Matrix (JSON)").
      */
+    #[OA\Get(
+        path: '/api/admin/roles-permissions/export',
+        summary: 'Ekspor Matriks Hak Akses (JSON)',
+        description: 'Mengunduh skema dan nilai aktif matriks hak akses dalam file JSON.',
+        tags: ['Admin - Hak Akses'],
+        security: [['sanctumAuth' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'File JSON matriks berhasil diunduh',
+                content: new OA\MediaType(mediaType: 'application/json')
+            )
+        ]
+    )]
     public function export(): JsonResponse
     {
         $exportData = [
@@ -146,6 +227,25 @@ class RolePermissionController extends Controller
     /**
      * Mengunduh riwayat audit trail log hak akses ("Download Audit Trail Log").
      */
+    #[OA\Get(
+        path: '/api/admin/roles-permissions/audit-log',
+        summary: 'Unduh Log Audit Trail Perubahan Hak Akses',
+        description: 'Mengunduh rekaman jejak audit trail seluruh modifikasi peran dan hak akses sistem.',
+        tags: ['Admin - Hak Akses'],
+        security: [['sanctumAuth' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Riwayat audit trail berhasil dimuat',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object'))
+                    ]
+                )
+            )
+        ]
+    )]
     public function auditLog(): JsonResponse
     {
         $auditLogs = Cache::get('asic_acl_audit_trail', [
@@ -166,9 +266,7 @@ class RolePermissionController extends Controller
     }
 
     /**
-     * Dapatkan matriks hak akses yang aktif (dari cache atau default).
-     *
-     * @return array<string, array<string, string>>
+     * Dapatkan matriks hak akses yang aktif.
      */
     protected function getActiveMatrix(): array
     {
@@ -176,9 +274,7 @@ class RolePermissionController extends Controller
     }
 
     /**
-     * Definisi 10 node kapabilitas persis sesuai tabel pada gambar UI.
-     *
-     * @return array<int, array<string, string>>
+     * Definisi 10 node kapabilitas.
      */
     protected function getCapabilitiesDefinition(): array
     {
@@ -247,9 +343,7 @@ class RolePermissionController extends Controller
     }
 
     /**
-     * Definisi peran yang didukung (Mencakup 4 peran pada UI dan peran Tim Abstrak dari PRD).
-     *
-     * @return array<int, array<string, string>>
+     * Definisi peran yang didukung.
      */
     protected function getRolesDefinition(): array
     {
@@ -293,9 +387,7 @@ class RolePermissionController extends Controller
     }
 
     /**
-     * Nilai default matriks persis sesuai tabel visual pada gambar UI.
-     *
-     * @return array<string, array<string, string>>
+     * Nilai default matriks.
      */
     protected function getDefaultMatrix(): array
     {
@@ -375,15 +467,11 @@ class RolePermissionController extends Controller
 
     /**
      * Tambahkan catatan ke audit trail cache.
-     *
-     * @param array<string, mixed> $entry
      */
     protected function appendAuditTrail(array $entry): void
     {
         $logs = Cache::get('asic_acl_audit_trail', []);
         array_unshift($logs, $entry);
-        // Simpan maksimal 100 riwayat audit trail terakhir
         Cache::forever('asic_acl_audit_trail', array_slice($logs, 0, 100));
     }
 }
-

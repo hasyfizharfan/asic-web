@@ -1,0 +1,3246 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "API Dokumentasi ASIC",
+        "description": "Dokumentasi lengkap RESTful API untuk Sistem Informasi Annual Scientific International Conference (ASIC) 2026, Fakultas Pertanian, Universitas Andalas.",
+        "contact": {
+            "name": "Sekretariat ASIC 2026",
+            "email": "asic@agr.unand.ac.id"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000",
+            "description": "Local Development Server"
+        }
+    ],
+    "paths": {
+        "/api/registrations/{id_registration}/abstract": {
+            "get": {
+                "tags": [
+                    "Abstrak"
+                ],
+                "summary": "Detail Naskah Abstrak Peserta",
+                "description": "Mendapatkan data naskah abstrak yang telah diajukan pada pendaftaran tertentu.",
+                "operationId": "18b79c3abb9bd6d1a617a92b033238f6",
+                "parameters": [
+                    {
+                        "name": "id_registration",
+                        "in": "path",
+                        "description": "ID Pendaftaran",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data naskah abstrak ditemukan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "file_url": {
+                                            "type": "string",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    },
+                    "404": {
+                        "description": "Naskah abstrak belum diajukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Abstrak"
+                ],
+                "summary": "Unggah Naskah Abstrak Baru",
+                "description": "Mengunggah dokumen abstrak format PDF/DOCX untuk pendaftaran peserta kategori Presenter.",
+                "operationId": "4fbe6aaba623a04ddbe5158c9ff898be",
+                "parameters": [
+                    {
+                        "name": "id_registration",
+                        "in": "path",
+                        "description": "ID Pendaftaran",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Berkas naskah abstrak dan metadata presentasi",
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "judul_abstrak",
+                                    "metode_presentasi",
+                                    "file_abstrak"
+                                ],
+                                "properties": {
+                                    "judul_abstrak": {
+                                        "type": "string",
+                                        "example": "Smart Agriculture IoT Implementation in West Sumatra"
+                                    },
+                                    "scope": {
+                                        "type": "string",
+                                        "example": "Precision Agriculture"
+                                    },
+                                    "metode_presentasi": {
+                                        "type": "string",
+                                        "example": "Oral",
+                                        "enum": [
+                                            "Oral",
+                                            "Poster"
+                                        ]
+                                    },
+                                    "file_abstrak": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Naskah abstrak berhasil diunggah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "file_url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    },
+                    "422": {
+                        "description": "Kategori Listener tidak boleh upload abstrak atau file tidak valid"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/registrations/{id_registration}/abstract/download": {
+            "get": {
+                "tags": [
+                    "Abstrak"
+                ],
+                "summary": "Unduh Berkas Naskah Abstrak",
+                "description": "Mengunduh file fisik naskah abstrak peserta.",
+                "operationId": "3f368802187dbaf0d2b0deba7ace1e57",
+                "parameters": [
+                    {
+                        "name": "id_registration",
+                        "in": "path",
+                        "description": "ID Pendaftaran",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File naskah abstrak berhasil diunduh",
+                        "content": {
+                            "application/octet-stream": {}
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    },
+                    "404": {
+                        "description": "Berkas tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tim-abstrak/submissions": {
+            "get": {
+                "tags": [
+                    "Review Abstrak"
+                ],
+                "summary": "Antrean Naskah Abstrak Masuk",
+                "description": "Menampilkan daftar seluruh naskah abstrak peserta yang diajukan untuk dinilai oleh Tim Abstrak.",
+                "operationId": "37bd0636be12be413ab1f18d3b437557",
+                "parameters": [
+                    {
+                        "name": "status_abstrak",
+                        "in": "query",
+                        "description": "Filter berdasarkan status abstrak (Diajukan, Diterima, Ditolak, Revisi)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Diajukan"
+                        }
+                    },
+                    {
+                        "name": "scope",
+                        "in": "query",
+                        "description": "Filter berdasarkan scope / bidang topik",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Agronomy"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar naskah abstrak berhasil dimuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak (khusus Tim Abstrak)"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tim-abstrak/submissions/{id_abstract}": {
+            "get": {
+                "tags": [
+                    "Review Abstrak"
+                ],
+                "summary": "Detail Naskah Abstrak dan Riwayat Review",
+                "description": "Mendapatkan informasi detail naskah abstrak, data peserta author, dan seluruh riwayat review yang pernah dilakukan.",
+                "operationId": "ae5142e970f84ed3d00c40dc34893e81",
+                "parameters": [
+                    {
+                        "name": "id_abstract",
+                        "in": "path",
+                        "description": "ID Pengajuan Abstrak",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail naskah abstrak berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "file_url": {
+                                            "type": "string",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    },
+                    "404": {
+                        "description": "Naskah abstrak tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tim-abstrak/submissions/{id_abstract}/review": {
+            "post": {
+                "tags": [
+                    "Review Abstrak"
+                ],
+                "summary": "Kirim Keputusan Review Abstrak",
+                "description": "Menyimpan penilaian seleksi abstrak (Diterima, Ditolak, Revisi) beserta catatan evaluasi reviewer.",
+                "operationId": "f234e7467e59220d078140c47bcc8f7e",
+                "parameters": [
+                    {
+                        "name": "id_abstract",
+                        "in": "path",
+                        "description": "ID Pengajuan Abstrak",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "hasil_review"
+                                ],
+                                "properties": {
+                                    "hasil_review": {
+                                        "type": "string",
+                                        "example": "Diterima",
+                                        "enum": [
+                                            "Diterima",
+                                            "Ditolak",
+                                            "Revisi"
+                                        ]
+                                    },
+                                    "catatan_review": {
+                                        "type": "string",
+                                        "example": "Abstrak memenuhi kriteria konferensi. Silakan persiapkan slide presentasi."
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Keputusan review berhasil disimpan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Status hasil review tidak valid"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/roles-permissions": {
+            "get": {
+                "tags": [
+                    "Admin - Hak Akses"
+                ],
+                "summary": "Matriks Peran dan Hak Akses (RBAC Matrix)",
+                "description": "Mendapatkan data matriks hak akses 5 peran terhadap 10 node kapabilitas sistem konferensi (Admin).",
+                "operationId": "3d1481aa3c3bc8da87ba6518cd837859",
+                "responses": {
+                    "200": {
+                        "description": "Data matriks hak akses berhasil dimuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak (khusus Admin)"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Hak Akses"
+                ],
+                "summary": "Simpan Perubahan Matriks Hak Akses",
+                "description": "Memperbarui konfigurasi hak akses matriks peran pada cache persisten dan mencatat jejak audit.",
+                "operationId": "795ee31b1815b422715f7fd7a384fe15",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "matrix"
+                                ],
+                                "properties": {
+                                    "matrix": {
+                                        "type": "object"
+                                    },
+                                    "audit_note": {
+                                        "type": "string",
+                                        "example": "Updated treasury permissions"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Konfigurasi matriks berhasil disimpan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Format matriks tidak valid"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/roles-permissions/reset": {
+            "post": {
+                "tags": [
+                    "Admin - Hak Akses"
+                ],
+                "summary": "Reset Matriks Hak Akses ke Bawaan Sistem",
+                "description": "Mengembalikan seluruh konfigurasi matriks peran ke pengaturan default awal.",
+                "operationId": "6a44a2052e8d045236206fed7366774a",
+                "responses": {
+                    "200": {
+                        "description": "Matriks berhasil direset ke nilai default",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/roles-permissions/export": {
+            "get": {
+                "tags": [
+                    "Admin - Hak Akses"
+                ],
+                "summary": "Ekspor Matriks Hak Akses (JSON)",
+                "description": "Mengunduh skema dan nilai aktif matriks hak akses dalam file JSON.",
+                "operationId": "7de20ab05648bac2bfeddc066d017b27",
+                "responses": {
+                    "200": {
+                        "description": "File JSON matriks berhasil diunduh",
+                        "content": {
+                            "application/json": {}
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/roles-permissions/audit-log": {
+            "get": {
+                "tags": [
+                    "Admin - Hak Akses"
+                ],
+                "summary": "Unduh Log Audit Trail Perubahan Hak Akses",
+                "description": "Mengunduh rekaman jejak audit trail seluruh modifikasi peran dan hak akses sistem.",
+                "operationId": "a52ff5fad7b7280cba3b15f37e8c9845",
+                "responses": {
+                    "200": {
+                        "description": "Riwayat audit trail berhasil dimuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users": {
+            "get": {
+                "tags": [
+                    "Admin - Manajemen Pengguna"
+                ],
+                "summary": "Daftar Pengguna dan Metrik Tata Kelola Akun",
+                "description": "Menampilkan data pengguna terpaginasi, metrik ringkasan peran, dan matriks tata kelola (Khusus Admin).",
+                "operationId": "99890f4afb5c680c872a88c890115865",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "description": "Filter nama peran",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Peserta"
+                        }
+                    },
+                    {
+                        "name": "id_role",
+                        "in": "query",
+                        "description": "Filter ID peran",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter status akun (active / inactive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "active"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Pencarian multifield (nama, email, instansi, dll)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Andalas"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Jumlah data per halaman (default: 15)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data pengguna dan tata kelola akun berhasil dimuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "summary": {
+                                            "type": "object"
+                                        },
+                                        "governance_matrix": {
+                                            "type": "object"
+                                        },
+                                        "available_roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "users": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        },
+                                        "pagination": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak (khusus Admin)"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Admin - Manajemen Pengguna"
+                ],
+                "summary": "Buat Akun Pengguna / Staf Baru",
+                "description": "Membuat akun kepanitiaan atau peserta baru oleh Administrator.",
+                "operationId": "efaafad54ffaaa111ff5735a91c416d6",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_role",
+                                    "email"
+                                ],
+                                "properties": {
+                                    "id_role": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "staff.sec@asic.unand.ac.id"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Secret123#",
+                                        "nullable": true
+                                    },
+                                    "status_akun": {
+                                        "type": "string",
+                                        "example": "Aktif",
+                                        "enum": [
+                                            "Aktif",
+                                            "Nonaktif"
+                                        ]
+                                    },
+                                    "full_name": {
+                                        "type": "string",
+                                        "example": "Dr. Jane Doe"
+                                    },
+                                    "nip": {
+                                        "type": "string",
+                                        "example": "198501012010121001",
+                                        "nullable": true
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+62811223344"
+                                    },
+                                    "affiliation": {
+                                        "type": "string",
+                                        "example": "Fakultas Pertanian UNAND"
+                                    },
+                                    "job_title": {
+                                        "type": "string",
+                                        "example": "Dosen / Peneliti"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Akun berhasil dibuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal (email sudah terdaftar dll)"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/create": {
+            "get": {
+                "tags": [
+                    "Admin - Manajemen Pengguna"
+                ],
+                "summary": "Opsi Peran untuk Tambah Pengguna Baru",
+                "description": "Mendapatkan daftar seluruh peran (roles) yang tersedia untuk membuat akun baru.",
+                "operationId": "f5bd2edf92cb7ee75db8e3d0943146f4",
+                "responses": {
+                    "200": {
+                        "description": "Daftar peran tersedia",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "available_roles": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/{id_user}": {
+            "get": {
+                "tags": [
+                    "Admin - Manajemen Pengguna"
+                ],
+                "summary": "Detail Akun Pengguna",
+                "description": "Mendapatkan informasi detail akun dan profil pengguna berdasarkan ID.",
+                "operationId": "df0ab8af2c763662ec1087b7c81b8239",
+                "parameters": [
+                    {
+                        "name": "id_user",
+                        "in": "path",
+                        "description": "ID User Account",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail pengguna berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pengguna tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Admin - Manajemen Pengguna"
+                ],
+                "summary": "Perbarui Data Akun Pengguna",
+                "description": "Mengubah peran, email, status akun, kata sandi, dan profil pengguna.",
+                "operationId": "edd7539517ecf8624fdfafb2fb8dd511",
+                "parameters": [
+                    {
+                        "name": "id_user",
+                        "in": "path",
+                        "description": "ID User Account",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_role",
+                                    "email",
+                                    "status_akun"
+                                ],
+                                "properties": {
+                                    "id_role": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "staff@asic.unand.ac.id"
+                                    },
+                                    "status_akun": {
+                                        "type": "string",
+                                        "example": "Aktif",
+                                        "enum": [
+                                            "Aktif",
+                                            "Nonaktif"
+                                        ]
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "NewSecret123#",
+                                        "nullable": true
+                                    },
+                                    "full_name": {
+                                        "type": "string",
+                                        "example": "Dr. Jane Doe"
+                                    },
+                                    "nip": {
+                                        "type": "string",
+                                        "example": "198501012010121001",
+                                        "nullable": true
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+62811223344"
+                                    },
+                                    "affiliation": {
+                                        "type": "string",
+                                        "example": "Fakultas Pertanian UNAND"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Data akun berhasil diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi input gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Admin - Manajemen Pengguna"
+                ],
+                "summary": "Hapus Akun Pengguna",
+                "description": "Menghapus permanen akun pengguna dan profil terkait (Dilarang menghapus akun sendiri).",
+                "operationId": "2afaa899bbbe0f34bc640c20d1a1dadd",
+                "parameters": [
+                    {
+                        "name": "id_user",
+                        "in": "path",
+                        "description": "ID User Account",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Akun berhasil dihapus",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Akun pengguna berhasil dihapus."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Dilarang menghapus akun sendiri"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/{id_user}/edit": {
+            "get": {
+                "tags": [
+                    "Admin - Manajemen Pengguna"
+                ],
+                "summary": "Data Formulir Edit Pengguna",
+                "description": "Mendapatkan data awal dan daftar peran untuk memodifikasi akun pengguna.",
+                "operationId": "c49282cd8d3e7ae239652f164d4f75b5",
+                "parameters": [
+                    {
+                        "name": "id_user",
+                        "in": "path",
+                        "description": "ID User Account",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data edit pengguna berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/{id_user}/toggle-status": {
+            "patch": {
+                "tags": [
+                    "Admin - Manajemen Pengguna"
+                ],
+                "summary": "Toggle Status Aktif / Nonaktif Akun",
+                "description": "Mengubah status akun pengguna antara Aktif dan Nonaktif secara instan.",
+                "operationId": "a4258244c14a6a0f29a7b017add3895d",
+                "parameters": [
+                    {
+                        "name": "id_user",
+                        "in": "path",
+                        "description": "ID User Account",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status akun berhasil diubah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Dilarang menonaktifkan akun sendiri"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/batch-action": {
+            "post": {
+                "tags": [
+                    "Admin - Manajemen Pengguna"
+                ],
+                "summary": "Aksi Massal Akun Pengguna (Batch Actions)",
+                "description": "Mengeksekusi aktivasi massal, penonaktifan massal, ubah role massal, atau hapus massal untuk banyak ID pengguna.",
+                "operationId": "4397dbd2222f2f0e4563320f3f8a5ccf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "action",
+                                    "user_ids"
+                                ],
+                                "properties": {
+                                    "action": {
+                                        "type": "string",
+                                        "example": "activate",
+                                        "enum": [
+                                            "activate",
+                                            "deactivate",
+                                            "delete",
+                                            "change_role"
+                                        ]
+                                    },
+                                    "user_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            2,
+                                            3,
+                                            4
+                                        ]
+                                    },
+                                    "id_role": {
+                                        "type": "integer",
+                                        "example": 3,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Aksi massal berhasil dijalankan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "affected_count": {
+                                            "type": "integer",
+                                            "example": 3
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Parameter aksi massal tidak valid"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/admin/users/export-csv": {
+            "get": {
+                "tags": [
+                    "Admin - Manajemen Pengguna"
+                ],
+                "summary": "Ekspor Data Pengguna ke CSV",
+                "description": "Mengunduh rekapitulasi audit akun pengguna dan hak akses dalam format CSV terstruktur.",
+                "operationId": "2d1cfee68fbf867bc94d5795fff43b88",
+                "responses": {
+                    "200": {
+                        "description": "File CSV berhasil diunduh",
+                        "content": {
+                            "text/csv": {}
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sessions/{id_session}/attendance": {
+            "post": {
+                "tags": [
+                    "Kehadiran"
+                ],
+                "summary": "Catat Kehadiran Peserta pada Sesi",
+                "description": "Mencatat presensi kehadiran peserta ke sesi kegiatan tertentu melalui pemindaian QR code sesi.",
+                "operationId": "e5c1699dfec3cb1bdfa41e761befe869",
+                "parameters": [
+                    {
+                        "name": "id_session",
+                        "in": "path",
+                        "description": "ID Sesi Acara",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_registration"
+                                ],
+                                "properties": {
+                                    "id_registration": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "status_presentasi": {
+                                        "type": "string",
+                                        "example": "Sudah",
+                                        "nullable": true,
+                                        "enum": [
+                                            "Belum",
+                                            "Sudah"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Kehadiran berhasil dicatat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    },
+                    "422": {
+                        "description": "Invoice belum terverifikasi atau input tidak valid"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/attendance/{id_attendance}/presentation": {
+            "patch": {
+                "tags": [
+                    "Kehadiran"
+                ],
+                "summary": "Perbarui Status Presentasi Peserta",
+                "description": "Memperbarui status apakah peserta sudah atau belum melakukan presentasi pada sesi paralel (Sekretariat / Admin).",
+                "operationId": "3eaa850ed5471c02c34e8f3dcad9bb6b",
+                "parameters": [
+                    {
+                        "name": "id_attendance",
+                        "in": "path",
+                        "description": "ID Data Kehadiran",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "status_presentasi"
+                                ],
+                                "properties": {
+                                    "status_presentasi": {
+                                        "type": "string",
+                                        "example": "Sudah",
+                                        "enum": [
+                                            "Belum",
+                                            "Sudah"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Status presentasi berhasil diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Input tidak valid"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/registrations/{id_registration}/sessions": {
+            "get": {
+                "tags": [
+                    "Kehadiran"
+                ],
+                "summary": "Riwayat Kehadiran Sesi Peserta",
+                "description": "Menampilkan daftar seluruh sesi yang telah dihadiri oleh peserta pada pendaftaran tertentu.",
+                "operationId": "a0e1bd7f78c8cc69c4c931b687b6ef8b",
+                "parameters": [
+                    {
+                        "name": "id_registration",
+                        "in": "path",
+                        "description": "ID Pendaftaran Peserta",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Riwayat kehadiran berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "id_registration": {
+                                            "type": "integer"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/register": {
+            "post": {
+                "tags": [
+                    "Autentikasi"
+                ],
+                "summary": "Registrasi Akun Awal Peserta / Delegasi",
+                "description": "Mendaftarkan akun baru ke tabel user_account dengan role Peserta serta membuat data profil participant.",
+                "operationId": "8a56853624e025573120a09a4c75d468",
+                "requestBody": {
+                    "description": "Data formulir registrasi delegasi",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "author@univ.ac.id"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Secret123#"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Secret123#"
+                                    },
+                                    "full_name": {
+                                        "type": "string",
+                                        "example": "Dr. John Doe, M.Sc."
+                                    },
+                                    "prefix": {
+                                        "type": "string",
+                                        "example": "Dr."
+                                    },
+                                    "first_name": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "last_name": {
+                                        "type": "string",
+                                        "example": "Doe"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "+628123456789"
+                                    },
+                                    "affiliation": {
+                                        "type": "string",
+                                        "example": "Universitas Andalas"
+                                    },
+                                    "country": {
+                                        "type": "string",
+                                        "example": "Indonesia"
+                                    },
+                                    "delegate_category": {
+                                        "type": "string",
+                                        "example": "Domestic Presenter"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Akun delegasi berhasil dibuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Akun delegasi berhasil dibuat."
+                                        },
+                                        "activation_link_required": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi input gagal"
+                    }
+                }
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Autentikasi"
+                ],
+                "summary": "Autentikasi dan Login Akun Pengguna",
+                "description": "Memverifikasi kredensial email/username dan kata sandi untuk login sistem.",
+                "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "delegate@asic.unand.ac.id"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Password123#"
+                                    },
+                                    "remember": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "demo_role": {
+                                        "type": "string",
+                                        "example": "participant",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login berhasil."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akun berstatus nonaktif"
+                    },
+                    "422": {
+                        "description": "Kredensial tidak valid"
+                    }
+                }
+            }
+        },
+        "/api/demo-login/{role}": {
+            "get": {
+                "tags": [
+                    "Autentikasi"
+                ],
+                "summary": "Quick Demo Persona Login",
+                "description": "Simulasi login instan berdasarkan peran tertentu untuk pengujian demo sistem.",
+                "operationId": "7d9544a12bf63128083f6d4582ff201f",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "description": "Nama peran demo (participant, secretariat, treasurer, abstract_team, admin)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "participant"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil login sebagai akun demo",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Autentikasi"
+                ],
+                "summary": "Quick Demo Persona Login (POST)",
+                "description": "Simulasi login instan via metode POST.",
+                "operationId": "364cdc21f90d0c53ba62243836c31327",
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "path",
+                        "description": "Nama peran demo",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "admin"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil login demo"
+                    }
+                }
+            }
+        },
+        "/api/auth/sso/unand": {
+            "get": {
+                "tags": [
+                    "Autentikasi"
+                ],
+                "summary": "Integrasi Single Sign-On (SSO) UNAND",
+                "description": "Simulasi dan pemrosesan otentikasi akun civitas akademika Universitas Andalas.",
+                "operationId": "4c455a22a861799955e8a6a86d6d107f",
+                "responses": {
+                    "200": {
+                        "description": "Autentikasi SSO berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Autentikasi SSO Universitas Andalas berhasil."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Autentikasi"
+                ],
+                "summary": "Integrasi Single Sign-On (SSO) UNAND (POST)",
+                "description": "Menerima callback atau payload autentikasi SSO UNAND.",
+                "operationId": "6f58cc1bba3a69d32321829ee898b286",
+                "responses": {
+                    "200": {
+                        "description": "Autentikasi SSO berhasil"
+                    }
+                }
+            }
+        },
+        "/api/password/forgot-username": {
+            "post": {
+                "tags": [
+                    "Autentikasi"
+                ],
+                "summary": "Bantuan Pencarian Username / Identitas Akun",
+                "description": "Mencari petunjuk email terdaftar berdasarkan nomor telepon atau nama peserta.",
+                "operationId": "0e95f289d850d3bc5ce327b798cc980d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "query"
+                                ],
+                                "properties": {
+                                    "query": {
+                                        "type": "string",
+                                        "example": "John Doe"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Hasil pencarian diproses",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "count": {
+                                            "type": "integer"
+                                        },
+                                        "hint": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Format kueri tidak valid"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Autentikasi"
+                ],
+                "summary": "Logout Akun Pengguna",
+                "description": "Mengakhiri sesi aktif pengguna dan menginvalidasi token sesi.",
+                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "responses": {
+                    "200": {
+                        "description": "Logout berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logout berhasil."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Belum terautentikasi"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/me": {
+            "get": {
+                "tags": [
+                    "Autentikasi"
+                ],
+                "summary": "Profil Pengguna Saat Ini",
+                "description": "Mengembalikan informasi akun dan profil peserta yang sedang terautentikasi.",
+                "operationId": "9d9bc556f927575aa492a88c28fe5908",
+                "responses": {
+                    "200": {
+                        "description": "Profil berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Belum terautentikasi"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/digital-signatures": {
+            "get": {
+                "tags": [
+                    "Tanda Tangan Digital"
+                ],
+                "summary": "Daftar Tanda Tangan dan Stempel Digital Peran",
+                "description": "Mendapatkan daftar seluruh tanda tangan digital dan stempel kepanitiaan berdasarkan role.",
+                "operationId": "3adfe7da6cc544ee65bcd3949e1e3d4c",
+                "responses": {
+                    "200": {
+                        "description": "Daftar tanda tangan digital berhasil dimuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tanda Tangan Digital"
+                ],
+                "summary": "Unggah / Perbarui Tanda Tangan dan Stempel Digital Peran",
+                "description": "Menyimpan berkas transparan tanda tangan digital dan stempel kepanitiaan (Khusus pemilik peran atau Admin).",
+                "operationId": "8340d70dd543105d3e79d16014713d59",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "id_role",
+                                    "file_ttd"
+                                ],
+                                "properties": {
+                                    "id_role": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "file_ttd": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "file_stempel": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tanda tangan dan stempel digital berhasil disimpan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "ttd_url": {
+                                            "type": "string"
+                                        },
+                                        "stempel_url": {
+                                            "type": "string",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak (bukan pemilik peran atau Admin)"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/digital-signatures/role/{id_role}": {
+            "get": {
+                "tags": [
+                    "Tanda Tangan Digital"
+                ],
+                "summary": "Tanda Tangan dan Stempel Digital Berdasarkan Role",
+                "description": "Mendapatkan berkas tanda tangan dan stempel untuk peran kepanitiaan tertentu.",
+                "operationId": "7e377de9e9a3df4485816471d12f4bff",
+                "parameters": [
+                    {
+                        "name": "id_role",
+                        "in": "path",
+                        "description": "ID Peran (Role)",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 3
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berkas tanda tangan digital peran ditemukan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "ttd_url": {
+                                            "type": "string"
+                                        },
+                                        "stempel_url": {
+                                            "type": "string",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Berkas belum diunggah untuk peran ini"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/events/{id_event}/sessions": {
+            "get": {
+                "tags": [
+                    "Sesi Acara"
+                ],
+                "summary": "Daftar Sesi Kegiatan Event",
+                "description": "Mendapatkan seluruh jadwal sesi presentasi/pleno untuk kegiatan seminar tertentu.",
+                "operationId": "e8436a4fc99941cd84e594bb4697ff7d",
+                "parameters": [
+                    {
+                        "name": "id_event",
+                        "in": "path",
+                        "description": "ID Kegiatan Event",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar sesi berhasil dimuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "event": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Event tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sessions": {
+            "post": {
+                "tags": [
+                    "Sesi Acara"
+                ],
+                "summary": "Buat Sesi Kegiatan Baru dan Generate QR Code",
+                "description": "Menambahkan sesi kegiatan baru dan secara otomatis men-generate file SVG QR Code presensi.",
+                "operationId": "d66c929c5cb05ec34cab1767253c570a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_event",
+                                    "nama_sesi",
+                                    "waktu"
+                                ],
+                                "properties": {
+                                    "id_event": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "nama_sesi": {
+                                        "type": "string",
+                                        "example": "Parallel Session A - Agronomy Track"
+                                    },
+                                    "waktu": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-08-20 09:00:00"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Sesi acara berhasil dibuat dengan QR code",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "qr_image_url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi input gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sessions/{id_session}/qr": {
+            "get": {
+                "tags": [
+                    "Sesi Acara"
+                ],
+                "summary": "Tampilkan QR Code Sesi",
+                "description": "Mendapatkan URL gambar QR Code sesi untuk dipajang di pintu ruangan sesi atau dipindai panitia/peserta.",
+                "operationId": "27e39c4cfa85472c437db1f4ed902344",
+                "parameters": [
+                    {
+                        "name": "id_session",
+                        "in": "path",
+                        "description": "ID Sesi Acara",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data sesi dan URL QR code berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "qr_image_url": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Sesi tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sessions/{id_session}/attendees": {
+            "get": {
+                "tags": [
+                    "Sesi Acara"
+                ],
+                "summary": "Daftar Peserta Hadir pada Sesi",
+                "description": "Menampilkan seluruh peserta yang telah presensi pada sesi acara beserta status presentasinya (Sekretariat/Admin).",
+                "operationId": "f08c34c55bab34a798ed582a1c79c399",
+                "parameters": [
+                    {
+                        "name": "id_session",
+                        "in": "path",
+                        "description": "ID Sesi Acara",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar peserta hadir pada sesi berhasil dimuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Sesi tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/invoices/{id_invoice}": {
+            "get": {
+                "tags": [
+                    "Invoice"
+                ],
+                "summary": "Detail Invoice Tagihan Seminar",
+                "description": "Mendapatkan informasi detail tagihan pendaftaran, rincian item, dan status verifikasi pembayaran.",
+                "operationId": "04ffac84aeea0346f7bb4a4ae6e882a1",
+                "parameters": [
+                    {
+                        "name": "id_invoice",
+                        "in": "path",
+                        "description": "ID Tagihan Invoice",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail invoice berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "is_expired": {
+                                            "type": "boolean",
+                                            "example": false
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    },
+                    "404": {
+                        "description": "Invoice tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/invoices/{id_invoice}/extend": {
+            "post": {
+                "tags": [
+                    "Invoice"
+                ],
+                "summary": "Perpanjang Jatuh Tempo Invoice",
+                "description": "Memperpanjang tanggal jatuh tempo pembayaran invoice tagihan peserta (Khusus Bendahara & Admin).",
+                "operationId": "cbaeb4607cdad47fe5980d1bed80baa7",
+                "parameters": [
+                    {
+                        "name": "id_invoice",
+                        "in": "path",
+                        "description": "ID Invoice",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "tanggal_jatuh_tempo_baru"
+                                ],
+                                "properties": {
+                                    "tanggal_jatuh_tempo_baru": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-08-15"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Jatuh tempo invoice berhasil diperpanjang",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Format tanggal tidak valid"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/invoices/{id_invoice}/expire": {
+            "patch": {
+                "tags": [
+                    "Invoice"
+                ],
+                "summary": "Tandai Invoice Menjadi Kedaluwarsa",
+                "description": "Mengubah status pembayaran invoice menjadi Kedaluwarsa secara manual (Khusus Bendahara & Admin).",
+                "operationId": "edc3b44675b6f092e946f50aed5cebd3",
+                "parameters": [
+                    {
+                        "name": "id_invoice",
+                        "in": "path",
+                        "description": "ID Invoice",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Status invoice berhasil diubah menjadi Kedaluwarsa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Invoice sudah terverifikasi sehingga tidak dapat diubah"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/registrations/{id_registration}/files": {
+            "get": {
+                "tags": [
+                    "Berkas Peserta"
+                ],
+                "summary": "Daftar Berkas Peserta (PPT / Full Paper)",
+                "description": "Mendapatkan daftar seluruh berkas presentasi dan artikel lengkap yang diunggah untuk pendaftaran tertentu.",
+                "operationId": "24104679f32b7f0fa8004c806e3ccd93",
+                "parameters": [
+                    {
+                        "name": "id_registration",
+                        "in": "path",
+                        "description": "ID Pendaftaran",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar berkas peserta berhasil dimuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Berkas Peserta"
+                ],
+                "summary": "Unggah Berkas Presentasi / Artikel Lengkap",
+                "description": "Mengunggah file presentasi (PPT/PPTX) atau naskah artikel lengkap (DOC/DOCX/PDF).",
+                "operationId": "6df9cfc24516e98444b58fb93a5601cc",
+                "parameters": [
+                    {
+                        "name": "id_registration",
+                        "in": "path",
+                        "description": "ID Pendaftaran",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "jenis_file",
+                                    "file"
+                                ],
+                                "properties": {
+                                    "jenis_file": {
+                                        "type": "string",
+                                        "example": "Presentasi",
+                                        "enum": [
+                                            "Presentasi",
+                                            "Artikel"
+                                        ]
+                                    },
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Berkas berhasil diunggah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    },
+                    "422": {
+                        "description": "Format berkas tidak sesuai kriteria"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/participant-files/{id_file}": {
+            "get": {
+                "tags": [
+                    "Berkas Peserta"
+                ],
+                "summary": "Detail Berkas Peserta",
+                "description": "Mendapatkan status dan informasi detail berkas tertentu.",
+                "operationId": "4299c7a799312e8c36249b1be97a926e",
+                "parameters": [
+                    {
+                        "name": "id_file",
+                        "in": "path",
+                        "description": "ID Berkas",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail berkas berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    },
+                    "404": {
+                        "description": "Berkas tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/participant-files/{id_file}/download": {
+            "get": {
+                "tags": [
+                    "Berkas Peserta"
+                ],
+                "summary": "Unduh Berkas Peserta",
+                "description": "Mengunduh file fisik berkas presentasi atau artikel lengkap peserta.",
+                "operationId": "c37c4a652043f16c899dd28c49eee388",
+                "parameters": [
+                    {
+                        "name": "id_file",
+                        "in": "path",
+                        "description": "ID Berkas",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "File berhasil diunduh",
+                        "content": {
+                            "application/octet-stream": {}
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    },
+                    "404": {
+                        "description": "Berkas tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/password/email": {
+            "post": {
+                "tags": [
+                    "Reset Kata Sandi"
+                ],
+                "summary": "Kirim Tautan Pemulihan Kata Sandi",
+                "description": "Menghasilkan token reset kata sandi unik dan mengirimkannya ke alamat email pengguna terdaftar.",
+                "operationId": "cfd7368051d5a02cba7105fcc2b72ddf",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "author@univ.ac.id"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tautan reset kata sandi berhasil dikirim",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "dispatch_status": {
+                                            "type": "string",
+                                            "example": "sent"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akun berstatus nonaktif"
+                    },
+                    "404": {
+                        "description": "Email tidak ditemukan"
+                    },
+                    "422": {
+                        "description": "Format email tidak valid"
+                    }
+                }
+            }
+        },
+        "/api/password/forgot": {
+            "post": {
+                "tags": [
+                    "Reset Kata Sandi"
+                ],
+                "summary": "Kirim Tautan Pemulihan Kata Sandi (Alias)",
+                "description": "Endpoint alternatif pengiriman token reset kata sandi.",
+                "operationId": "1cc39359f69e47f829a8099dac303a8e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "author@univ.ac.id"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tautan reset kata sandi berhasil dikirim"
+                    }
+                }
+            }
+        },
+        "/api/password/reset": {
+            "post": {
+                "tags": [
+                    "Reset Kata Sandi"
+                ],
+                "summary": "Eksekusi Pembaruan Kata Sandi Baru",
+                "description": "Memvalidasi token reset dan memperbarui kata sandi akun pengguna.",
+                "operationId": "3d39b0cf15c974337cfd633ef81e4c17",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "token",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "author@univ.ac.id"
+                                    },
+                                    "token": {
+                                        "type": "string",
+                                        "example": "abcdef123456..."
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "NewSecret123#"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "NewSecret123#"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Kata sandi berhasil diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Kata sandi berhasil diperbarui."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pengguna tidak ditemukan"
+                    },
+                    "422": {
+                        "description": "Token tidak valid atau kedaluwarsa"
+                    }
+                }
+            }
+        },
+        "/api/registrations": {
+            "get": {
+                "tags": [
+                    "Pendaftaran"
+                ],
+                "summary": "Daftar Pendaftaran Seminar",
+                "description": "Mengambil daftar pendaftaran milik pengguna yang sedang login atau seluruh data jika memiliki peran Admin / Sekretariat.",
+                "operationId": "db4ead8b25e0a7347b6f494e6294d73f",
+                "parameters": [
+                    {
+                        "name": "id_event",
+                        "in": "query",
+                        "description": "Filter berdasarkan ID Event seminar",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar pendaftaran berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Belum terautentikasi"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Pendaftaran"
+                ],
+                "summary": "Pendaftaran Kegiatan Seminar Baru",
+                "description": "Membuat pendaftaran baru untuk event seminar beserta pilihan add-on (paket wisata/akomodasi).",
+                "operationId": "3456a8765de35ac860a6122c53e9e85f",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_event",
+                                    "id_period",
+                                    "registration_type",
+                                    "attendance_mode",
+                                    "participation_type"
+                                ],
+                                "properties": {
+                                    "id_event": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_period": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "registration_type": {
+                                        "type": "string",
+                                        "example": "Early Bird",
+                                        "enum": [
+                                            "Early Bird",
+                                            "Regular",
+                                            "Late"
+                                        ]
+                                    },
+                                    "attendance_mode": {
+                                        "type": "string",
+                                        "example": "Luring",
+                                        "enum": [
+                                            "Luring",
+                                            "Daring"
+                                        ]
+                                    },
+                                    "participation_type": {
+                                        "type": "string",
+                                        "example": "Presenter Oral",
+                                        "enum": [
+                                            "Presenter Oral",
+                                            "Presenter Poster",
+                                            "Listener"
+                                        ]
+                                    },
+                                    "publication_option": {
+                                        "type": "string",
+                                        "example": "Ya",
+                                        "enum": [
+                                            "Ya",
+                                            "Tidak"
+                                        ]
+                                    },
+                                    "add_ons": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "id_add_on": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "jumlah": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pendaftaran kegiatan seminar berhasil disimpan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Peserta sudah terdaftar pada kegiatan ini"
+                    },
+                    "422": {
+                        "description": "Periode pendaftaran ditutup atau input tidak valid"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/registrations/{id_registration}": {
+            "get": {
+                "tags": [
+                    "Pendaftaran"
+                ],
+                "summary": "Detail Pendaftaran Seminar",
+                "description": "Mengambil informasi lengkap pendaftaran beserta relasi invoice, abstrak, sesi, dan berkas.",
+                "operationId": "dda2411f3cec23fde531e6b20ba1404f",
+                "parameters": [
+                    {
+                        "name": "id_registration",
+                        "in": "path",
+                        "description": "ID Pendaftaran",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail pendaftaran berhasil dimuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak (bukan pemilik atau panitia)"
+                    },
+                    "404": {
+                        "description": "Data pendaftaran tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "sanctumAuth": {
+                "type": "http",
+                "description": "Gunakan token otentikasi Bearer: Bearer {token}",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Autentikasi",
+            "description": "Endpoint Autentikasi, Login, Register, SSO, dan Profil Pengguna"
+        },
+        {
+            "name": "Reset Kata Sandi",
+            "description": "Endpoint Permintaan Link dan Eksekusi Reset Kata Sandi"
+        },
+        {
+            "name": "Pendaftaran",
+            "description": "Endpoint Pengelolaan Pendaftaran Kegiatan dan Layanan Tambahan (Add-On)"
+        },
+        {
+            "name": "Abstrak",
+            "description": "Endpoint Pengunggahan dan Pengunduhan Naskah Abstrak Peserta"
+        },
+        {
+            "name": "Review Abstrak",
+            "description": "Endpoint Penilaian dan Seleksi Abstrak oleh Tim Abstrak"
+        },
+        {
+            "name": "Berkas Peserta",
+            "description": "Endpoint Berkas Presentasi (PPT) dan Artikel Lengkap"
+        },
+        {
+            "name": "Sesi Acara",
+            "description": "Endpoint Manajemen Sesi Kegiatan dan QR Code Sesi"
+        },
+        {
+            "name": "Kehadiran",
+            "description": "Endpoint Pencatatan Presensi Sesi dan Status Presentasi"
+        },
+        {
+            "name": "Invoice",
+            "description": "Endpoint Detail Invoice, Perpanjangan Jatuh Tempo, dan Kedaluwarsa"
+        },
+        {
+            "name": "Tanda Tangan Digital",
+            "description": "Endpoint Pengelolaan Tanda Tangan dan Stempel Berbasis Peran"
+        },
+        {
+            "name": "Admin - Manajemen Pengguna",
+            "description": "Endpoint Pengelolaan Pengguna, Batch Actions, dan Export Data"
+        },
+        {
+            "name": "Admin - Hak Akses",
+            "description": "Endpoint Pengaturan Matriks Peran dan Izin Akses (RBAC)"
+        }
+    ]
+}

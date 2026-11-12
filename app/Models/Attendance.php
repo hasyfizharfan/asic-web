@@ -46,16 +46,17 @@ class Attendance extends Model
     public $timestamps = false;
 
     /**
-     * Atribut yang dapat diisi.
+     * Atribut yang dapat diisi massal.
      *
      * @var list<string>
      */
     protected $fillable = [
         'id_registration',
-        'qr_code',
+        'id_session',
         'tanggal_generate',
         'tanggal_check_in',
         'status_kehadiran',
+        'status_presentasi',
     ];
 
     /**
@@ -73,6 +74,8 @@ class Attendance extends Model
 
     /**
      * Relasi belongsTo ke Registration.
+     *
+     * @return BelongsTo<Registration, $this>
      */
     public function registration(): BelongsTo
     {
@@ -80,11 +83,28 @@ class Attendance extends Model
     }
 
     /**
-     * Helper untuk memeriksa apakah peserta sudah hadir.
+     * Relasi belongsTo ke EventSession (QR Sesi).
+     *
+     * @return BelongsTo<EventSession, $this>
+     */
+    public function eventSession(): BelongsTo
+    {
+        return $this->belongsTo(EventSession::class, 'id_session', 'id_session');
+    }
+
+    /**
+     * Helper untuk memeriksa apakah peserta sudah hadir pada sesi ini.
      */
     public function isHadir(): bool
     {
         return $this->status_kehadiran === 'Hadir';
     }
-}
 
+    /**
+     * Helper untuk memeriksa apakah peserta sudah melakukan presentasi.
+     */
+    public function isSudahPresentasi(): bool
+    {
+        return $this->status_presentasi === 'Sudah';
+    }
+}

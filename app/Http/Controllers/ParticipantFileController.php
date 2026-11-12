@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -18,6 +19,35 @@ class ParticipantFileController extends Controller
     /**
      * Memantau seluruh daftar berkas peserta (Presentasi & Artikel) beserta status validasinya (KF-16, KF-17).
      */
+    #[OA\Get(
+        path: '/api/registrations/{id_registration}/files',
+        summary: 'Daftar Berkas Peserta (PPT / Full Paper)',
+        description: 'Mendapatkan daftar seluruh berkas presentasi dan artikel lengkap yang diunggah untuk pendaftaran tertentu.',
+        tags: ['Berkas Peserta'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id_registration',
+                in: 'path',
+                required: true,
+                description: 'ID Pendaftaran',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Daftar berkas peserta berhasil dimuat',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object'))
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: 'Akses ditolak')
+        ]
+    )]
     public function index(int $id_registration): JsonResponse
     {
         $registration = Registration::with(['participant.userAccount', 'participantFiles'])
@@ -26,7 +56,6 @@ class ParticipantFileController extends Controller
         /** @var \App\Models\UserAccount $user */
         $user = Auth::user();
 
-        // Otorisasi: Pemilik atau Panitia (Admin / Sekretariat)
         if (
             !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT]) &&
             $registration->participant?->id_user !== $user->id_user
@@ -59,9 +88,51 @@ class ParticipantFileController extends Controller
 
     /**
      * Mengunggah berkas Presentasi (PPT) atau Artikel Lengkap (KF-16).
-     *
-     * Berkas disimpan ke `storage/app/public/participant_files` dengan default status 'Diupload'.
      */
+    #[OA\Post(
+        path: '/api/registrations/{id_registration}/files',
+        summary: 'Unggah Berkas Presentasi / Artikel Lengkap',
+        description: 'Mengunggah file presentasi (PPT/PPTX) atau naskah artikel lengkap (DOC/DOCX/PDF).',
+        tags: ['Berkas Peserta'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id_registration',
+                in: 'path',
+                required: true,
+                description: 'ID Pendaftaran',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\MediaType(
+                mediaType: 'multipart/form-data',
+                schema: new OA\Schema(
+                    required: ['jenis_file', 'file'],
+                    properties: [
+                        new OA\Property(property: 'jenis_file', type: 'string', enum: ['Presentasi', 'Artikel'], example: 'Presentasi'),
+                        new OA\Property(property: 'file', type: 'string', format: 'binary')
+                    ]
+                )
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Berkas berhasil diunggah',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: 'Akses ditolak'),
+            new OA\Response(response: 422, description: 'Format berkas tidak sesuai kriteria')
+        ]
+    )]
     public function store(StoreParticipantFileRequest $request, int $id_registration): JsonResponse|RedirectResponse
     {
         $registration = Registration::with(['participant.userAccount'])->findOrFail($id_registration);
@@ -69,7 +140,6 @@ class ParticipantFileController extends Controller
         /** @var \App\Models\UserAccount $user */
         $user = Auth::user();
 
-        // 1. Otorisasi kepemilikan registrasi
         if (
             !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT]) &&
             $registration->participant?->id_user !== $user->id_user
@@ -84,11 +154,8 @@ class ParticipantFileController extends Controller
         $file = $request->file('file');
 
         $originalName = $file->getClientOriginalName();
-
-        // 2. Simpan file ke Storage disk 'public'
         $filePath = $file->store('participant_files', 'public');
 
-        // 3. Catat entri ke tabel participant_file
         $participantFile = ParticipantFile::create([
             'id_registration' => $registration->id_registration,
             'jenis_file' => $validated['jenis_file'],
@@ -114,13 +181,43 @@ class ParticipantFileController extends Controller
             ], Response::HTTP_CREATED);
         }
 
-        return redirect()->route('registrations.files.index', $id_registration)
+        return redirect()->route('api.registrations.files.index', $id_registration)
             ->with('success', "Berkas {$validated['jenis_file']} berhasil diunggah.");
     }
 
     /**
      * Menampilkan status berkas tertentu (KF-17).
      */
+    #[OA\Get(
+        path: '/api/participant-files/{id_file}',
+        summary: 'Detail Berkas Peserta',
+        description: 'Mendapatkan status dan informasi detail berkas tertentu.',
+        tags: ['Berkas Peserta'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id_file',
+                in: 'path',
+                required: true,
+                description: 'ID Berkas',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Detail berkas berhasil diambil',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: 'Akses ditolak'),
+            new OA\Response(response: 404, description: 'Berkas tidak ditemukan')
+        ]
+    )]
     public function show(int $id_file): JsonResponse
     {
         $participantFile = ParticipantFile::with('registration.participant.userAccount')
@@ -158,6 +255,31 @@ class ParticipantFileController extends Controller
     /**
      * Mengunduh berkas peserta (Presentasi/Artikel).
      */
+    #[OA\Get(
+        path: '/api/participant-files/{id_file}/download',
+        summary: 'Unduh Berkas Peserta',
+        description: 'Mengunduh file fisik berkas presentasi atau artikel lengkap peserta.',
+        tags: ['Berkas Peserta'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id_file',
+                in: 'path',
+                required: true,
+                description: 'ID Berkas',
+                schema: new OA\Schema(type: 'integer', example: 1)
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'File berhasil diunduh',
+                content: new OA\MediaType(mediaType: 'application/octet-stream')
+            ),
+            new OA\Response(response: 403, description: 'Akses ditolak'),
+            new OA\Response(response: 404, description: 'Berkas tidak ditemukan')
+        ]
+    )]
     public function download(int $id_file): BinaryFileResponse|JsonResponse
     {
         $participantFile = ParticipantFile::with('registration.participant.userAccount')
@@ -189,4 +311,3 @@ class ParticipantFileController extends Controller
         );
     }
 }
-

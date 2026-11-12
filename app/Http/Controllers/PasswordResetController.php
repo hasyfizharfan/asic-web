@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
 class PasswordResetController extends Controller
@@ -28,10 +29,57 @@ class PasswordResetController extends Controller
 
     /**
      * Mengirimkan link reset kata sandi (KF-08).
-     *
-     * Membuat token unik 64 karakter, menyimpannya di tabel `password_reset_tokens`,
-     * dan mengembalikan status dispatch instan sesuai antarmuka UI.
      */
+    #[OA\Post(
+        path: '/api/password/email',
+        summary: 'Kirim Tautan Pemulihan Kata Sandi',
+        description: 'Menghasilkan token reset kata sandi unik dan mengirimkannya ke alamat email pengguna terdaftar.',
+        tags: ['Reset Kata Sandi'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'author@univ.ac.id')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Tautan reset kata sandi berhasil dikirim',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'dispatch_status', type: 'string', example: 'sent'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: 'Akun berstatus nonaktif'),
+            new OA\Response(response: 404, description: 'Email tidak ditemukan'),
+            new OA\Response(response: 422, description: 'Format email tidak valid')
+        ]
+    )]
+    #[OA\Post(
+        path: '/api/password/forgot',
+        summary: 'Kirim Tautan Pemulihan Kata Sandi (Alias)',
+        description: 'Endpoint alternatif pengiriman token reset kata sandi.',
+        tags: ['Reset Kata Sandi'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'author@univ.ac.id')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Tautan reset kata sandi berhasil dikirim')
+        ]
+    )]
     public function sendResetLinkEmail(ForgotPasswordRequest $request): JsonResponse|RedirectResponse
     {
         $email = strtolower(trim($request->validated('email')));
@@ -95,10 +143,39 @@ class PasswordResetController extends Controller
 
     /**
      * Memproses reset kata sandi baru pengguna (KF-08).
-     *
-     * Memvalidasi token dari tabel `password_reset_tokens`, memperbarui password
-     * pada `user_account`, dan menghapus token setelah berhasil digunakan.
      */
+    #[OA\Post(
+        path: '/api/password/reset',
+        summary: 'Eksekusi Pembaruan Kata Sandi Baru',
+        description: 'Memvalidasi token reset dan memperbarui kata sandi akun pengguna.',
+        tags: ['Reset Kata Sandi'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email', 'token', 'password', 'password_confirmation'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'author@univ.ac.id'),
+                    new OA\Property(property: 'token', type: 'string', example: 'abcdef123456...'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'NewSecret123#'),
+                    new OA\Property(property: 'password_confirmation', type: 'string', format: 'password', example: 'NewSecret123#')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Kata sandi berhasil diperbarui',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Kata sandi berhasil diperbarui.')
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: 'Pengguna tidak ditemukan'),
+            new OA\Response(response: 422, description: 'Token tidak valid atau kedaluwarsa')
+        ]
+    )]
     public function resetPassword(ResetPasswordRequest $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validated();

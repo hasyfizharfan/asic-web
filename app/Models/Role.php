@@ -73,5 +73,15 @@ class Role extends Model
     {
         return $this->hasMany(UserAccount::class, 'id_role', 'id_role');
     }
+
+    /**
+     * Relasi hasMany ke DigitalSignature (Tanda Tangan & Stempel Peran).
+     *
+     * @return HasMany<DigitalSignature, $this>
+     */
+    public function digitalSignatures(): HasMany
+    {
+        return $this->hasMany(DigitalSignature::class, 'id_role', 'id_role');
+    }
 }
 

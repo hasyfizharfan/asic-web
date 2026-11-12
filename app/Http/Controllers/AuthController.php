@@ -15,17 +15,58 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
 class AuthController extends Controller
 {
     /**
      * Registrasi Akun Awal Peserta / Delegasi (KF-08).
-     *
-     * Menyimpan data kredensial ke tabel `user_account` dengan peran default 'Peserta'
-     * dan secara otomatis menginisialisasi baris data profil pada tabel `participant`
-     * sesuai input formulir UI Create Delegate Account.
      */
+    #[OA\Post(
+        path: '/api/register',
+        summary: 'Registrasi Akun Awal Peserta / Delegasi',
+        description: 'Mendaftarkan akun baru ke tabel user_account dengan role Peserta serta membuat data profil participant.',
+        tags: ['Autentikasi'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            description: 'Data formulir registrasi delegasi',
+            content: new OA\JsonContent(
+                required: ['email', 'password', 'password_confirmation'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'author@univ.ac.id'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'Secret123#'),
+                    new OA\Property(property: 'password_confirmation', type: 'string', format: 'password', example: 'Secret123#'),
+                    new OA\Property(property: 'full_name', type: 'string', example: 'Dr. John Doe, M.Sc.'),
+                    new OA\Property(property: 'prefix', type: 'string', example: 'Dr.'),
+                    new OA\Property(property: 'first_name', type: 'string', example: 'John'),
+                    new OA\Property(property: 'last_name', type: 'string', example: 'Doe'),
+                    new OA\Property(property: 'phone', type: 'string', example: '+628123456789'),
+                    new OA\Property(property: 'affiliation', type: 'string', example: 'Universitas Andalas'),
+                    new OA\Property(property: 'country', type: 'string', example: 'Indonesia'),
+                    new OA\Property(property: 'delegate_category', type: 'string', example: 'Domestic Presenter')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Akun delegasi berhasil dibuat',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Akun delegasi berhasil dibuat.'),
+                        new OA\Property(property: 'activation_link_required', type: 'boolean', example: true),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Validasi input gagal'
+            )
+        ]
+    )]
     public function register(RegisterRequest $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validated();
@@ -113,10 +154,46 @@ class AuthController extends Controller
 
     /**
      * Autentikasi dan Login Akun (KF-08).
-     *
-     * Memeriksa kredensial email/username/reg.id dan password,
-     * mendukung quick persona login demo dan otentikasi sesi.
      */
+    #[OA\Post(
+        path: '/api/login',
+        summary: 'Autentikasi dan Login Akun Pengguna',
+        description: 'Memverifikasi kredensial email/username dan kata sandi untuk login sistem.',
+        tags: ['Autentikasi'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['email', 'password'],
+                properties: [
+                    new OA\Property(property: 'email', type: 'string', example: 'delegate@asic.unand.ac.id'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'Password123#'),
+                    new OA\Property(property: 'remember', type: 'boolean', example: false),
+                    new OA\Property(property: 'demo_role', type: 'string', nullable: true, example: 'participant')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Login berhasil',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Login berhasil.'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(
+                response: 403,
+                description: 'Akun berstatus nonaktif'
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Kredensial tidak valid'
+            )
+        ]
+    )]
     public function login(LoginRequest $request): JsonResponse|RedirectResponse
     {
         // 1. Tangani Quick Login Demo (Prototype Role Demo dari UI)
@@ -194,6 +271,52 @@ class AuthController extends Controller
     /**
      * Endpoint Cepat Quick Login untuk Pengujian Prototipe Peran (Direct Persona Testing).
      */
+    #[OA\Get(
+        path: '/api/demo-login/{role}',
+        summary: 'Quick Demo Persona Login',
+        description: 'Simulasi login instan berdasarkan peran tertentu untuk pengujian demo sistem.',
+        tags: ['Autentikasi'],
+        parameters: [
+            new OA\Parameter(
+                name: 'role',
+                in: 'path',
+                required: true,
+                description: 'Nama peran demo (participant, secretariat, treasurer, abstract_team, admin)',
+                schema: new OA\Schema(type: 'string', example: 'participant')
+            )
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Berhasil login sebagai akun demo',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            )
+        ]
+    )]
+    #[OA\Post(
+        path: '/api/demo-login/{role}',
+        summary: 'Quick Demo Persona Login (POST)',
+        description: 'Simulasi login instan via metode POST.',
+        tags: ['Autentikasi'],
+        parameters: [
+            new OA\Parameter(
+                name: 'role',
+                in: 'path',
+                required: true,
+                description: 'Nama peran demo',
+                schema: new OA\Schema(type: 'string', example: 'admin')
+            )
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Berhasil login demo')
+        ]
+    )]
     public function demoLogin(string $role, Request $request): JsonResponse|RedirectResponse
     {
         return $this->handleDemoRoleLogin($role, $request);
@@ -202,9 +325,36 @@ class AuthController extends Controller
     /**
      * Endpoint Integrasi SSO Universitas Andalas (@unand.ac.id).
      */
+    #[OA\Get(
+        path: '/api/auth/sso/unand',
+        summary: 'Integrasi Single Sign-On (SSO) UNAND',
+        description: 'Simulasi dan pemrosesan otentikasi akun civitas akademika Universitas Andalas.',
+        tags: ['Autentikasi'],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Autentikasi SSO berhasil',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Autentikasi SSO Universitas Andalas berhasil.'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            )
+        ]
+    )]
+    #[OA\Post(
+        path: '/api/auth/sso/unand',
+        summary: 'Integrasi Single Sign-On (SSO) UNAND (POST)',
+        description: 'Menerima callback atau payload autentikasi SSO UNAND.',
+        tags: ['Autentikasi'],
+        responses: [
+            new OA\Response(response: 200, description: 'Autentikasi SSO berhasil')
+        ]
+    )]
     public function ssoUnand(Request $request): JsonResponse|RedirectResponse
     {
-        // Dalam mode pengembangan/staging, simulasikan alur SSO terintegrasi
         $unandEmail = 'delegate.unand@agr.unand.ac.id';
         $user = UserAccount::with(['role', 'participant'])->where('email', $unandEmail)->first();
 
@@ -256,6 +406,36 @@ class AuthController extends Controller
     /**
      * Bantuan Pencarian Identitas Akun (Forgot Username).
      */
+    #[OA\Post(
+        path: '/api/password/forgot-username',
+        summary: 'Bantuan Pencarian Username / Identitas Akun',
+        description: 'Mencari petunjuk email terdaftar berdasarkan nomor telepon atau nama peserta.',
+        tags: ['Autentikasi'],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['query'],
+                properties: [
+                    new OA\Property(property: 'query', type: 'string', example: 'John Doe')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Hasil pencarian diproses',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'count', type: 'integer'),
+                        new OA\Property(property: 'hint', type: 'string')
+                    ]
+                )
+            ),
+            new OA\Response(response: 422, description: 'Format kueri tidak valid')
+        ]
+    )]
     public function forgotUsername(Request $request): JsonResponse
     {
         $request->validate([
@@ -284,6 +464,26 @@ class AuthController extends Controller
     /**
      * Logout Akun Pengguna.
      */
+    #[OA\Post(
+        path: '/api/logout',
+        summary: 'Logout Akun Pengguna',
+        description: 'Mengakhiri sesi aktif pengguna dan menginvalidasi token sesi.',
+        tags: ['Autentikasi'],
+        security: [['sanctumAuth' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Logout berhasil',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Logout berhasil.')
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Belum terautentikasi')
+        ]
+    )]
     public function logout(Request $request): JsonResponse|RedirectResponse
     {
         Auth::logout();
@@ -304,6 +504,26 @@ class AuthController extends Controller
     /**
      * Mendapatkan profil pengguna yang sedang login saat ini.
      */
+    #[OA\Get(
+        path: '/api/me',
+        summary: 'Profil Pengguna Saat Ini',
+        description: 'Mengembalikan informasi akun dan profil peserta yang sedang terautentikasi.',
+        tags: ['Autentikasi'],
+        security: [['sanctumAuth' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Profil berhasil diambil',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 401, description: 'Belum terautentikasi')
+        ]
+    )]
     public function me(Request $request): JsonResponse
     {
         /** @var UserAccount $user */
@@ -384,7 +604,6 @@ class AuthController extends Controller
 
         $targetRoleName = $roleMap[strtolower(trim($rawRole))] ?? Role::ROLE_PESERTA;
 
-        // Cari user yang memiliki role tersebut
         $user = UserAccount::with(['role', 'participant'])
             ->whereHas('role', function ($q) use ($targetRoleName) {
                 $q->where('nama_role', $targetRoleName);
@@ -392,7 +611,6 @@ class AuthController extends Controller
             ->where('status_akun', 'Aktif')
             ->first();
 
-        // Jika user belum ada di database, buat akun demo secara otomatis
         if (!$user) {
             $role = Role::firstOrCreate(
                 ['nama_role' => $targetRoleName],
@@ -453,19 +671,16 @@ class AuthController extends Controller
         $roleName = $user->role?->nama_role;
 
         return match ($roleName) {
-            Role::ROLE_ADMIN => route('admin.roles-permissions.index'),
+            Role::ROLE_ADMIN => route('api.admin.roles-permissions.index'),
             Role::ROLE_SEKRETARIAT => url('/secretariat/dashboard'),
             Role::ROLE_BENDAHARA => url('/treasurer/dashboard'),
             Role::ROLE_TIM_ABSTRAK => url('/abstract-team/dashboard'),
-            default => route('registrations.index'),
+            default => route('api.registrations.index'),
         };
     }
 
     /**
-     * Helper untuk memecah nama lengkap dan gelar akademik ke dalam kolom ERD:
-     * `prefix`, `first_name`, dan `last_name`.
-     *
-     * @return array{prefix: ?string, first_name: string, last_name: ?string}
+     * Helper untuk memecah nama lengkap dan gelar akademik ke dalam kolom ERD.
      */
     protected function parseFullName(
         ?string $rawName,

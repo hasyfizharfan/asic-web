@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -23,15 +24,43 @@ class UserManagementController extends Controller
 {
     /**
      * Menampilkan dashboard User & Role Management lengkap (KF-09).
-     *
-     * Menyediakan data 4 kartu metrik di atas, matriks otorisasi terkelompok di tengah,
-     * serta daftar pengguna terpaginasi dengan pencarian multifield dan filter peran/status.
      */
+    #[OA\Get(
+        path: '/api/admin/users',
+        summary: 'Daftar Pengguna dan Metrik Tata Kelola Akun',
+        description: 'Menampilkan data pengguna terpaginasi, metrik ringkasan peran, dan matriks tata kelola (Khusus Admin).',
+        tags: ['Admin - Manajemen Pengguna'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'role', in: 'query', required: false, description: 'Filter nama peran', schema: new OA\Schema(type: 'string', example: 'Peserta')),
+            new OA\Parameter(name: 'id_role', in: 'query', required: false, description: 'Filter ID peran', schema: new OA\Schema(type: 'integer', example: 1)),
+            new OA\Parameter(name: 'status', in: 'query', required: false, description: 'Filter status akun (active / inactive)', schema: new OA\Schema(type: 'string', example: 'active')),
+            new OA\Parameter(name: 'search', in: 'query', required: false, description: 'Pencarian multifield (nama, email, instansi, dll)', schema: new OA\Schema(type: 'string', example: 'Andalas')),
+            new OA\Parameter(name: 'per_page', in: 'query', required: false, description: 'Jumlah data per halaman (default: 15)', schema: new OA\Schema(type: 'integer', example: 15))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Data pengguna dan tata kelola akun berhasil dimuat',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'summary', type: 'object'),
+                        new OA\Property(property: 'governance_matrix', type: 'object'),
+                        new OA\Property(property: 'available_roles', type: 'array', items: new OA\Items(type: 'object')),
+                        new OA\Property(property: 'users', type: 'array', items: new OA\Items(type: 'object')),
+                        new OA\Property(property: 'pagination', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: 'Akses ditolak (khusus Admin)')
+        ]
+    )]
     public function index(Request $request): JsonResponse|RedirectResponse
     {
         $query = UserAccount::with(['role', 'participant']);
 
-        // 1. Filter berdasarkan peran (id_role atau string role_name)
         if ($request->filled('role')) {
             $roleParam = strtolower(trim($request->string('role')));
             $query->whereHas('role', function ($q) use ($roleParam) {
@@ -44,7 +73,6 @@ class UserManagementController extends Controller
             $query->where('id_role', $request->integer('id_role'));
         }
 
-        // 2. Filter berdasarkan status akun (Active / Inactive / Aktif / Nonaktif)
         if ($request->filled('status')) {
             $statusParam = strtolower(trim($request->string('status')));
             $statusDb = in_array($statusParam, ['active', 'aktif'], true) ? 'Aktif' : 'Nonaktif';
@@ -53,7 +81,6 @@ class UserManagementController extends Controller
             $query->where('status_akun', $request->string('status_akun'));
         }
 
-        // 3. Pencarian multifield: nama, email, NIP, institusi/afiliasi, telepon
         if ($request->filled('search')) {
             $search = '%' . trim($request->string('search')) . '%';
             $query->where(function ($q) use ($search) {
@@ -74,12 +101,8 @@ class UserManagementController extends Controller
         $perPage = $request->integer('per_page', 15);
         $users = $query->orderBy('id_user', 'desc')->paginate($perPage);
 
-        // Agregasi metrik untuk 4 summary cards di atas tabel
         $summary = $this->buildSummaryMetrics();
-
-        // Struktur Governance & Permission Matrix (4 kelompok operasional)
         $governanceMatrix = $this->buildGovernanceMatrix();
-
         $roles = Role::all();
 
         if ($request->expectsJson()) {
@@ -111,6 +134,25 @@ class UserManagementController extends Controller
     /**
      * Menampilkan formulir penambahan / opsi role untuk invite user baru.
      */
+    #[OA\Get(
+        path: '/api/admin/users/create',
+        summary: 'Opsi Peran untuk Tambah Pengguna Baru',
+        description: 'Mendapatkan daftar seluruh peran (roles) yang tersedia untuk membuat akun baru.',
+        tags: ['Admin - Manajemen Pengguna'],
+        security: [['sanctumAuth' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Daftar peran tersedia',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'available_roles', type: 'array', items: new OA\Items(type: 'object'))
+                    ]
+                )
+            )
+        ]
+    )]
     public function create(): JsonResponse
     {
         $roles = Role::all();
@@ -124,6 +166,44 @@ class UserManagementController extends Controller
     /**
      * Menyimpan akun pengguna baru atau memproses modal "+ Invite New User" (KF-09).
      */
+    #[OA\Post(
+        path: '/api/admin/users',
+        summary: 'Buat Akun Pengguna / Staf Baru',
+        description: 'Membuat akun kepanitiaan atau peserta baru oleh Administrator.',
+        tags: ['Admin - Manajemen Pengguna'],
+        security: [['sanctumAuth' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['id_role', 'email'],
+                properties: [
+                    new OA\Property(property: 'id_role', type: 'integer', example: 2),
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'staff.sec@asic.unand.ac.id'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', nullable: true, example: 'Secret123#'),
+                    new OA\Property(property: 'status_akun', type: 'string', enum: ['Aktif', 'Nonaktif'], example: 'Aktif'),
+                    new OA\Property(property: 'full_name', type: 'string', example: 'Dr. Jane Doe'),
+                    new OA\Property(property: 'nip', type: 'string', nullable: true, example: '198501012010121001'),
+                    new OA\Property(property: 'phone', type: 'string', example: '+62811223344'),
+                    new OA\Property(property: 'affiliation', type: 'string', example: 'Fakultas Pertanian UNAND'),
+                    new OA\Property(property: 'job_title', type: 'string', example: 'Dosen / Peneliti')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 201,
+                description: 'Akun berhasil dibuat',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 422, description: 'Validasi gagal (email sudah terdaftar dll)')
+        ]
+    )]
     public function store(StoreUserRequest $request): JsonResponse|RedirectResponse
     {
         $validated = $request->validated();
@@ -140,7 +220,6 @@ class UserManagementController extends Controller
                 'status_akun' => $validated['status_akun'] ?? 'Aktif',
             ]);
 
-            // Ekstraksi nama dari full_name atau first_name / last_name
             $parsedName = $this->parseName(
                 rawName: $validated['full_name'] ?? $validated['name'] ?? null,
                 rawPrefix: $validated['prefix'] ?? null,
@@ -149,7 +228,6 @@ class UserManagementController extends Controller
                 fallback: explode('@', $validated['email'])[0]
             );
 
-            // Simpan profil participant
             Participant::create([
                 'id_user' => $userAccount->id_user,
                 'prefix' => $parsedName['prefix'],
@@ -178,12 +256,35 @@ class UserManagementController extends Controller
             ], Response::HTTP_CREATED);
         }
 
-        return redirect()->route('admin.users.index')->with('success', 'Akun pengguna berhasil ditambahkan.');
+        return redirect()->route('api.admin.users.index')->with('success', 'Akun pengguna berhasil ditambahkan.');
     }
 
     /**
      * Menampilkan detail informasi akun pengguna dan profilnya.
      */
+    #[OA\Get(
+        path: '/api/admin/users/{id_user}',
+        summary: 'Detail Akun Pengguna',
+        description: 'Mendapatkan informasi detail akun dan profil pengguna berdasarkan ID.',
+        tags: ['Admin - Manajemen Pengguna'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Detail pengguna berhasil diambil',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 404, description: 'Pengguna tidak ditemukan')
+        ]
+    )]
     public function show(int $id_user): JsonResponse
     {
         $user = UserAccount::with(['role', 'participant'])->findOrFail($id_user);
@@ -197,6 +298,28 @@ class UserManagementController extends Controller
     /**
      * Menampilkan formulir edit akun pengguna.
      */
+    #[OA\Get(
+        path: '/api/admin/users/{id_user}/edit',
+        summary: 'Data Formulir Edit Pengguna',
+        description: 'Mendapatkan data awal dan daftar peran untuk memodifikasi akun pengguna.',
+        tags: ['Admin - Manajemen Pengguna'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Data edit pengguna berhasil diambil',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            )
+        ]
+    )]
     public function edit(int $id_user): JsonResponse
     {
         $user = UserAccount::with(['role', 'participant'])->findOrFail($id_user);
@@ -214,6 +337,46 @@ class UserManagementController extends Controller
     /**
      * Memperbarui data akun pengguna, peran, dan status akun (KF-09).
      */
+    #[OA\Put(
+        path: '/api/admin/users/{id_user}',
+        summary: 'Perbarui Data Akun Pengguna',
+        description: 'Mengubah peran, email, status akun, kata sandi, dan profil pengguna.',
+        tags: ['Admin - Manajemen Pengguna'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1))
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['id_role', 'email', 'status_akun'],
+                properties: [
+                    new OA\Property(property: 'id_role', type: 'integer', example: 2),
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'staff@asic.unand.ac.id'),
+                    new OA\Property(property: 'status_akun', type: 'string', enum: ['Aktif', 'Nonaktif'], example: 'Aktif'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password', nullable: true, example: 'NewSecret123#'),
+                    new OA\Property(property: 'full_name', type: 'string', example: 'Dr. Jane Doe'),
+                    new OA\Property(property: 'nip', type: 'string', nullable: true, example: '198501012010121001'),
+                    new OA\Property(property: 'phone', type: 'string', example: '+62811223344'),
+                    new OA\Property(property: 'affiliation', type: 'string', example: 'Fakultas Pertanian UNAND')
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Data akun berhasil diperbarui',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 422, description: 'Validasi input gagal')
+        ]
+    )]
     public function update(UpdateUserRequest $request, int $id_user): JsonResponse|RedirectResponse
     {
         $user = UserAccount::findOrFail($id_user);
@@ -272,12 +435,35 @@ class UserManagementController extends Controller
             ], Response::HTTP_OK);
         }
 
-        return redirect()->route('admin.users.index')->with('success', 'Data akun pengguna berhasil diperbarui.');
+        return redirect()->route('api.admin.users.index')->with('success', 'Data akun pengguna berhasil diperbarui.');
     }
 
     /**
      * Menghapus akun pengguna dari sistem.
      */
+    #[OA\Delete(
+        path: '/api/admin/users/{id_user}',
+        summary: 'Hapus Akun Pengguna',
+        description: 'Menghapus permanen akun pengguna dan profil terkait (Dilarang menghapus akun sendiri).',
+        tags: ['Admin - Manajemen Pengguna'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Akun berhasil dihapus',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string', example: 'Akun pengguna berhasil dihapus.')
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: 'Dilarang menghapus akun sendiri')
+        ]
+    )]
     public function destroy(Request $request, int $id_user): JsonResponse|RedirectResponse
     {
         $user = UserAccount::findOrFail($id_user);
@@ -305,12 +491,36 @@ class UserManagementController extends Controller
             ], Response::HTTP_OK);
         }
 
-        return redirect()->route('admin.users.index')->with('success', 'Akun pengguna berhasil dihapus.');
+        return redirect()->route('api.admin.users.index')->with('success', 'Akun pengguna berhasil dihapus.');
     }
 
     /**
      * Mengubah status keaktifan akun (Aktif / Nonaktif) secara cepat.
      */
+    #[OA\Patch(
+        path: '/api/admin/users/{id_user}/toggle-status',
+        summary: 'Toggle Status Aktif / Nonaktif Akun',
+        description: 'Mengubah status akun pengguna antara Aktif dan Nonaktif secara instan.',
+        tags: ['Admin - Manajemen Pengguna'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1))
+        ],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Status akun berhasil diubah',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'data', type: 'object')
+                    ]
+                )
+            ),
+            new OA\Response(response: 403, description: 'Dilarang menonaktifkan akun sendiri')
+        ]
+    )]
     public function toggleStatus(Request $request, int $id_user): JsonResponse|RedirectResponse
     {
         $user = UserAccount::findOrFail($id_user);
@@ -347,6 +557,38 @@ class UserManagementController extends Controller
     /**
      * Eksekusi Aksi Massal (Batch Actions) untuk baris yang dipilih via checkbox.
      */
+    #[OA\Post(
+        path: '/api/admin/users/batch-action',
+        summary: 'Aksi Massal Akun Pengguna (Batch Actions)',
+        description: 'Mengeksekusi aktivasi massal, penonaktifan massal, ubah role massal, atau hapus massal untuk banyak ID pengguna.',
+        tags: ['Admin - Manajemen Pengguna'],
+        security: [['sanctumAuth' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['action', 'user_ids'],
+                properties: [
+                    new OA\Property(property: 'action', type: 'string', enum: ['activate', 'deactivate', 'delete', 'change_role'], example: 'activate'),
+                    new OA\Property(property: 'user_ids', type: 'array', items: new OA\Items(type: 'integer'), example: [2, 3, 4]),
+                    new OA\Property(property: 'id_role', type: 'integer', nullable: true, example: 3)
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Aksi massal berhasil dijalankan',
+                content: new OA\JsonContent(
+                    properties: [
+                        new OA\Property(property: 'success', type: 'boolean', example: true),
+                        new OA\Property(property: 'message', type: 'string'),
+                        new OA\Property(property: 'affected_count', type: 'integer', example: 3)
+                    ]
+                )
+            ),
+            new OA\Response(response: 422, description: 'Parameter aksi massal tidak valid')
+        ]
+    )]
     public function batchAction(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -356,7 +598,7 @@ class UserManagementController extends Controller
             'id_role' => ['required_if:action,change_role', 'nullable', 'integer', 'exists:role,id_role'],
         ]);
 
-        $ids = array_diff($validated['user_ids'], [Auth::id()]); // Kecualikan akun sendiri
+        $ids = array_diff($validated['user_ids'], [Auth::id()]);
         $action = $validated['action'];
         $affectedCount = 0;
 
@@ -392,6 +634,20 @@ class UserManagementController extends Controller
     /**
      * Mengekspor audit log / daftar akun ke format CSV ("Export Audit Log (CSV)").
      */
+    #[OA\Get(
+        path: '/api/admin/users/export-csv',
+        summary: 'Ekspor Data Pengguna ke CSV',
+        description: 'Mengunduh rekapitulasi audit akun pengguna dan hak akses dalam format CSV terstruktur.',
+        tags: ['Admin - Manajemen Pengguna'],
+        security: [['sanctumAuth' => []]],
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'File CSV berhasil diunduh',
+                content: new OA\MediaType(mediaType: 'text/csv')
+            )
+        ]
+    )]
     public function exportCsv(): StreamedResponse
     {
         $headers = [
@@ -428,8 +684,6 @@ class UserManagementController extends Controller
 
     /**
      * Helper untuk menghitung metrik 4 summary cards.
-     *
-     * @return array<string, mixed>
      */
     protected function buildSummaryMetrics(): array
     {
@@ -472,8 +726,6 @@ class UserManagementController extends Controller
 
     /**
      * Helper struktur Governance & Permission Matrix (4 Kelompok Operasional).
-     *
-     * @return array<string, mixed>
      */
     protected function buildGovernanceMatrix(): array
     {
@@ -552,9 +804,7 @@ class UserManagementController extends Controller
     }
 
     /**
-     * Helper memecah nama ke format ERD: prefix, first_name, last_name.
-     *
-     * @return array{prefix: ?string, first_name: string, last_name: ?string}
+     * Helper memecah nama ke format ERD.
      */
     protected function parseName(
         ?string $rawName,
