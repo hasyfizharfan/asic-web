@@ -5,27 +5,23 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateRolePermissionMatrixRequest;
 use App\Models\Role;
-use Carbon\Carbon;
+use App\Support\PermissionMatrix as PermissionMatrixService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
 class RolePermissionController extends Controller
 {
     /**
-     * Cache key untuk menyimpan matriks kustom roles & permissions.
-     */
-    protected const CACHE_KEY = 'asic_acl_matrix_v2';
-
-    /**
      * Menampilkan data lengkap Roles & Permissions Matrix untuk rendering UI.
      */
     #[OA\Get(
         path: '/api/admin/roles-permissions',
         summary: 'Matriks Peran dan Hak Akses (RBAC Matrix)',
-        description: 'Mendapatkan data matriks hak akses 5 peran terhadap 10 node kapabilitas sistem konferensi (Admin).',
+        description: 'Mendapatkan data matriks hak akses berdasarkan ID lima peran untuk seluruh kapabilitas sistem (Admin).',
         tags: ['Admin - Hak Akses'],
         security: [['sanctumAuth' => []]],
         responses: [
@@ -36,11 +32,11 @@ class RolePermissionController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 403, description: 'Akses ditolak (khusus Admin)')
+            new OA\Response(response: 403, description: 'Akses ditolak (khusus Admin)'),
         ]
     )]
     public function index(Request $request): JsonResponse
@@ -93,7 +89,7 @@ class RolePermissionController extends Controller
     #[OA\Post(
         path: '/api/admin/roles-permissions',
         summary: 'Simpan Perubahan Matriks Hak Akses',
-        description: 'Memperbarui konfigurasi hak akses matriks peran pada cache persisten dan mencatat jejak audit.',
+        description: 'Memperbarui konfigurasi hak akses matriks peran di database dan mencatat jejak audit.',
         tags: ['Admin - Hak Akses'],
         security: [['sanctumAuth' => []]],
         requestBody: new OA\RequestBody(
@@ -102,7 +98,7 @@ class RolePermissionController extends Controller
                 required: ['matrix'],
                 properties: [
                     new OA\Property(property: 'matrix', type: 'object'),
-                    new OA\Property(property: 'audit_note', type: 'string', example: 'Updated treasury permissions')
+                    new OA\Property(property: 'audit_note', type: 'string', example: 'Updated treasury permissions'),
                 ]
             )
         ),
@@ -114,19 +110,22 @@ class RolePermissionController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: 'Format matriks tidak valid')
+            new OA\Response(response: 422, description: 'Format matriks tidak valid'),
         ]
     )]
     public function save(UpdateRolePermissionMatrixRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $matrix = $validated['matrix'];
+        $matrix = $this->normalizeMatrix($validated['matrix']);
 
-        Cache::forever(self::CACHE_KEY, $matrix);
+        DB::table('role_permission_matrix')->updateOrInsert(
+            ['id' => 1],
+            ['matrix' => json_encode($matrix, JSON_THROW_ON_ERROR), 'updated_at' => now()]
+        );
 
         $this->appendAuditTrail([
             'action' => 'UPDATE_MATRIX',
@@ -137,7 +136,7 @@ class RolePermissionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Perubahan konfigurasi Roles & Permissions Matrix berhasil disimpan. Perubahan akan berlaku saat delegasi login ulang.',
+            'message' => 'Perubahan konfigurasi Roles & Permissions Matrix berhasil disimpan dan langsung berlaku.',
             'data' => [
                 'matrix' => $matrix,
                 'saved_at' => now()->toIso8601String(),
@@ -162,16 +161,19 @@ class RolePermissionController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
-            )
+            ),
         ]
     )]
     public function reset(): JsonResponse
     {
-        Cache::forget(self::CACHE_KEY);
         $defaultMatrix = $this->getDefaultMatrix();
+        DB::table('role_permission_matrix')->updateOrInsert(
+            ['id' => 1],
+            ['matrix' => json_encode($defaultMatrix, JSON_THROW_ON_ERROR), 'updated_at' => now()]
+        );
 
         $this->appendAuditTrail([
             'action' => 'RESET_TO_DEFAULTS',
@@ -204,14 +206,14 @@ class RolePermissionController extends Controller
                 response: 200,
                 description: 'File JSON matriks berhasil diunduh',
                 content: new OA\MediaType(mediaType: 'application/json')
-            )
+            ),
         ]
     )]
     public function export(): JsonResponse
     {
         $exportData = [
             'schema' => 'ASIC-2026-ACL-Matrix',
-            'version' => '2.4',
+            'version' => '3.0',
             'exported_at' => now()->toIso8601String(),
             'exported_by' => auth()->user()?->email ?? 'admin',
             'roles' => $this->getRolesDefinition(),
@@ -240,10 +242,10 @@ class RolePermissionController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object'))
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object')),
                     ]
                 )
-            )
+            ),
         ]
     )]
     public function auditLog(): JsonResponse
@@ -270,76 +272,15 @@ class RolePermissionController extends Controller
      */
     protected function getActiveMatrix(): array
     {
-        return Cache::get(self::CACHE_KEY, $this->getDefaultMatrix());
+        return app(PermissionMatrixService::class)->activeMatrix();
     }
 
     /**
-     * Definisi 10 node kapabilitas.
+     * Daftar kapabilitas yang didukung oleh middleware izin dinamis.
      */
     protected function getCapabilitiesDefinition(): array
     {
-        return [
-            [
-                'id' => 'submit_abstract',
-                'title' => 'Submit abstract',
-                'tag' => 'Manuscripts',
-                'description' => 'Author manuscript submission, metadata editing, draft updates',
-            ],
-            [
-                'id' => 'review_abstracts',
-                'title' => 'Review abstracts',
-                'tag' => 'Peer Review',
-                'description' => 'Peer review scoring, rubric evaluation, reviewer notes',
-            ],
-            [
-                'id' => 'accept_reject',
-                'title' => 'Accept/Reject',
-                'tag' => 'Decisions',
-                'description' => 'Decision governance, issuing official LOA & rejection letters',
-            ],
-            [
-                'id' => 'pay_registration',
-                'title' => 'Pay registration',
-                'tag' => 'Treasury',
-                'description' => 'Checkout gateways, bank transfer slip upload, PayPal payment',
-            ],
-            [
-                'id' => 'verify_payment',
-                'title' => 'Verify payment',
-                'tag' => 'Treasury',
-                'description' => 'Treasury queue audit, slip validation, webhook reconciliation',
-            ],
-            [
-                'id' => 'manage_tariffs',
-                'title' => 'Manage tariffs',
-                'tag' => 'Treasury',
-                'description' => 'Early bird fee setup, excursion pricing, currency rate locks',
-            ],
-            [
-                'id' => 'scan_attendance_qr',
-                'title' => 'Scan attendance QR',
-                'tag' => 'Onsite Desk',
-                'description' => 'Onsite delegate check-in, badge print trigger, arrival logging',
-            ],
-            [
-                'id' => 'manage_website_content',
-                'title' => 'Manage website content',
-                'tag' => 'CMS / Portal',
-                'description' => 'Public landing page, announcements, keynote speakers CMS',
-            ],
-            [
-                'id' => 'manage_users',
-                'title' => 'Manage users',
-                'tag' => 'Governance',
-                'description' => 'Account creation, committee role assignment, access revocation',
-            ],
-            [
-                'id' => 'manage_document_templates',
-                'title' => 'Manage document templates',
-                'tag' => 'Publishing',
-                'description' => 'Letterhead, Dean signature, LOA & certificate formatting',
-            ],
-        ];
+        return PermissionMatrixService::capabilities();
     }
 
     /**
@@ -347,43 +288,23 @@ class RolePermissionController extends Controller
      */
     protected function getRolesDefinition(): array
     {
-        return [
-            [
-                'key' => 'participant',
-                'name' => 'Participant',
-                'indonesian_name' => 'Peserta',
-                'subtext' => 'Author / Attendee',
-                'badge' => null,
-            ],
-            [
-                'key' => 'secretariat',
-                'name' => 'Secretariat',
-                'indonesian_name' => 'Sekretariat',
-                'subtext' => 'Scientific Desk',
-                'badge' => null,
-            ],
-            [
-                'key' => 'treasurer',
-                'name' => 'Treasurer',
-                'indonesian_name' => 'Bendahara',
-                'subtext' => 'Finance Directorate',
-                'badge' => null,
-            ],
-            [
-                'key' => 'abstract_team',
-                'name' => 'Abstract Team',
-                'indonesian_name' => 'Tim Abstrak',
-                'subtext' => 'Reviewer Panel (PRD)',
-                'badge' => 'PRD KF-18',
-            ],
-            [
-                'key' => 'admin',
-                'name' => 'Admin',
-                'indonesian_name' => 'Admin',
-                'subtext' => 'General Chair & Superuser',
-                'badge' => 'Superuser',
-            ],
+        $englishNames = [
+            Role::ROLE_PESERTA => 'Participant',
+            Role::ROLE_SEKRETARIAT => 'Secretariat',
+            Role::ROLE_BENDAHARA => 'Treasurer',
+            Role::ROLE_TIM_ABSTRAK => 'Abstract Team',
+            Role::ROLE_ADMIN => 'Admin',
         ];
+
+        return Role::query()->orderBy('id_role')->get()->map(function (Role $role) use ($englishNames): array {
+            return [
+                'key' => (string) $role->id_role,
+                'name' => $englishNames[$role->nama_role] ?? $role->nama_role,
+                'indonesian_name' => $role->nama_role,
+                'subtext' => $role->deskripsi,
+                'badge' => null,
+            ];
+        })->all();
     }
 
     /**
@@ -391,78 +312,34 @@ class RolePermissionController extends Controller
      */
     protected function getDefaultMatrix(): array
     {
-        return [
-            'submit_abstract' => [
-                'participant' => 'full_access',
-                'secretariat' => 'view_only',
-                'treasurer' => 'restricted',
-                'abstract_team' => 'view_only',
-                'admin' => 'full_access',
-            ],
-            'review_abstracts' => [
-                'participant' => 'restricted',
-                'secretariat' => 'full_access',
-                'treasurer' => 'restricted',
-                'abstract_team' => 'full_access',
-                'admin' => 'full_access',
-            ],
-            'accept_reject' => [
-                'participant' => 'restricted',
-                'secretariat' => 'full_access',
-                'treasurer' => 'restricted',
-                'abstract_team' => 'full_access',
-                'admin' => 'full_access',
-            ],
-            'pay_registration' => [
-                'participant' => 'full_access',
-                'secretariat' => 'restricted',
-                'treasurer' => 'view_only',
-                'abstract_team' => 'restricted',
-                'admin' => 'full_access',
-            ],
-            'verify_payment' => [
-                'participant' => 'restricted',
-                'secretariat' => 'view_only',
-                'treasurer' => 'full_access',
-                'abstract_team' => 'restricted',
-                'admin' => 'full_access',
-            ],
-            'manage_tariffs' => [
-                'participant' => 'restricted',
-                'secretariat' => 'restricted',
-                'treasurer' => 'full_access',
-                'abstract_team' => 'restricted',
-                'admin' => 'full_access',
-            ],
-            'scan_attendance_qr' => [
-                'participant' => 'restricted',
-                'secretariat' => 'full_access',
-                'treasurer' => 'view_only',
-                'abstract_team' => 'restricted',
-                'admin' => 'full_access',
-            ],
-            'manage_website_content' => [
-                'participant' => 'restricted',
-                'secretariat' => 'full_access',
-                'treasurer' => 'restricted',
-                'abstract_team' => 'restricted',
-                'admin' => 'full_access',
-            ],
-            'manage_users' => [
-                'participant' => 'restricted',
-                'secretariat' => 'restricted',
-                'treasurer' => 'restricted',
-                'abstract_team' => 'restricted',
-                'admin' => 'full_access',
-            ],
-            'manage_document_templates' => [
-                'participant' => 'restricted',
-                'secretariat' => 'view_only',
-                'treasurer' => 'view_only',
-                'abstract_team' => 'restricted',
-                'admin' => 'full_access',
-            ],
+        return PermissionMatrixService::defaultMatrix();
+    }
+
+    /**
+     * @param  array<string, array<string, string>>  $matrix
+     * @return array<string, array<string, string>>
+     */
+    protected function normalizeMatrix(array $matrix): array
+    {
+        $levels = [
+            'full_access' => 'full_access',
+            'view_only' => 'view_only',
+            'restricted' => 'restricted',
+            'Full Access' => 'full_access',
+            'View Only' => 'view_only',
+            'Restricted' => 'restricted',
         ];
+        $normalized = [];
+        $roleIds = Role::query()->pluck('id_role')->map(fn ($roleId): string => (string) $roleId);
+
+        foreach (PermissionMatrixService::capabilities() as $capability) {
+            $permission = $capability['id'];
+            foreach ($roleIds as $roleKey) {
+                $normalized[$permission][$roleKey] = $levels[$matrix[$permission][$roleKey]];
+            }
+        }
+
+        return $normalized;
     }
 
     /**

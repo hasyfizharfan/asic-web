@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Models\UserAccount;
+use App\Mail\ResetPasswordMail;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -57,8 +59,6 @@ class PasswordResetController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 403, description: 'Akun berstatus nonaktif'),
-            new OA\Response(response: 404, description: 'Email tidak ditemukan'),
             new OA\Response(response: 422, description: 'Format email tidak valid')
         ]
     )]
@@ -87,20 +87,18 @@ class PasswordResetController extends Controller
         // Pastikan akun terdaftar di tabel user_account
         $user = UserAccount::where('email', $email)->first();
         if (!$user) {
-            return $this->responseError(
-                $request,
-                'Alamat email tidak ditemukan dalam sistem akun delegasi ASIC 2026.',
-                Response::HTTP_NOT_FOUND
-            );
+            return response()->json([
+                'success' => true,
+                'message' => 'Jika alamat email terdaftar, instruksi reset kata sandi akan dikirimkan.',
+            ], Response::HTTP_OK);
         }
 
         // Cek status keaktifan akun
         if ($user->status_akun !== 'Aktif') {
-            return $this->responseError(
-                $request,
-                "Akun Anda berstatus Nonaktif. Silakan hubungi Sekretariat Konferensi melalui {$this->supportContact}.",
-                Response::HTTP_FORBIDDEN
-            );
+            return response()->json([
+                'success' => true,
+                'message' => 'Jika alamat email terdaftar, instruksi reset kata sandi akan dikirimkan.',
+            ], Response::HTTP_OK);
         }
 
         // Buat token unik aman
@@ -115,29 +113,20 @@ class PasswordResetController extends Controller
             ]
         );
 
-        // URL tujuan reset kata sandi
-        $resetUrl = url(route('password.reset', [
-            'token' => $rawToken,
-            'email' => $email,
-        ], false));
+        $frontendUrl = rtrim((string) config('app.frontend_url', env('FRONTEND_URL', '')), '/');
+        $resetUrl = $frontendUrl . '/password/reset?token=' . urlencode($rawToken) . '&email=' . urlencode($email);
+        Mail::to($user->email)->send(new ResetPasswordMail($resetUrl, $this->tokenExpiresMinutes));
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Tautan instruksi pemulihan kata sandi telah berhasil dikirimkan ke email Anda.',
-                'dispatch_status' => 'sent',
-                'data' => [
-                    'email' => $email,
-                    'expires_in_minutes' => $this->tokenExpiresMinutes,
-                    'support_contact' => $this->supportContact,
-                    'reset_url' => $resetUrl,
-                ],
+                'message' => 'Jika alamat email terdaftar, instruksi reset kata sandi akan dikirimkan.',
             ], Response::HTTP_OK);
         }
 
         return back()->with(
             'status',
-            'Tautan instruksi pemulihan kata sandi telah dikirimkan ke email terdaftar Anda.'
+            'Jika alamat email terdaftar, instruksi reset kata sandi akan dikirimkan.'
         );
     }
 

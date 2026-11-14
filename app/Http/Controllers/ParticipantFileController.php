@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreParticipantFileRequest;
 use App\Models\ParticipantFile;
 use App\Models\Registration;
-use App\Models\Role;
+use App\Models\UserAccount;
+use App\Support\PermissionMatrix;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +33,7 @@ class ParticipantFileController extends Controller
                 required: true,
                 description: 'ID Pendaftaran',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -41,11 +42,11 @@ class ParticipantFileController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object'))
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object')),
                     ]
                 )
             ),
-            new OA\Response(response: 403, description: 'Akses ditolak')
+            new OA\Response(response: 403, description: 'Akses ditolak'),
         ]
     )]
     public function index(int $id_registration): JsonResponse
@@ -53,13 +54,10 @@ class ParticipantFileController extends Controller
         $registration = Registration::with(['participant.userAccount', 'participantFiles'])
             ->findOrFail($id_registration);
 
-        /** @var \App\Models\UserAccount $user */
+        /** @var UserAccount $user */
         $user = Auth::user();
 
-        if (
-            !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT]) &&
-            $registration->participant?->id_user !== $user->id_user
-        ) {
+        if (! $this->canAccessRegistrationFiles($registration, $user)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki hak akses untuk memantau berkas pendaftaran ini.',
@@ -102,7 +100,7 @@ class ParticipantFileController extends Controller
                 required: true,
                 description: 'ID Pendaftaran',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         requestBody: new OA\RequestBody(
             required: true,
@@ -112,7 +110,7 @@ class ParticipantFileController extends Controller
                     required: ['jenis_file', 'file'],
                     properties: [
                         new OA\Property(property: 'jenis_file', type: 'string', enum: ['Presentasi', 'Artikel'], example: 'Presentasi'),
-                        new OA\Property(property: 'file', type: 'string', format: 'binary')
+                        new OA\Property(property: 'file', type: 'string', format: 'binary'),
                     ]
                 )
             )
@@ -125,25 +123,22 @@ class ParticipantFileController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
             new OA\Response(response: 403, description: 'Akses ditolak'),
-            new OA\Response(response: 422, description: 'Format berkas tidak sesuai kriteria')
+            new OA\Response(response: 422, description: 'Format berkas tidak sesuai kriteria'),
         ]
     )]
     public function store(StoreParticipantFileRequest $request, int $id_registration): JsonResponse|RedirectResponse
     {
         $registration = Registration::with(['participant.userAccount'])->findOrFail($id_registration);
 
-        /** @var \App\Models\UserAccount $user */
+        /** @var UserAccount $user */
         $user = Auth::user();
 
-        if (
-            !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT]) &&
-            $registration->participant?->id_user !== $user->id_user
-        ) {
+        if (! $this->canAccessRegistrationFiles($registration, $user)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki hak akses untuk mengunggah berkas pada pendaftaran ini.',
@@ -201,7 +196,7 @@ class ParticipantFileController extends Controller
                 required: true,
                 description: 'ID Berkas',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -210,12 +205,12 @@ class ParticipantFileController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
             new OA\Response(response: 403, description: 'Akses ditolak'),
-            new OA\Response(response: 404, description: 'Berkas tidak ditemukan')
+            new OA\Response(response: 404, description: 'Berkas tidak ditemukan'),
         ]
     )]
     public function show(int $id_file): JsonResponse
@@ -223,13 +218,10 @@ class ParticipantFileController extends Controller
         $participantFile = ParticipantFile::with('registration.participant.userAccount')
             ->findOrFail($id_file);
 
-        /** @var \App\Models\UserAccount $user */
+        /** @var UserAccount $user */
         $user = Auth::user();
 
-        if (
-            !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT]) &&
-            $participantFile->registration?->participant?->id_user !== $user->id_user
-        ) {
+        if (! $participantFile->registration || ! $this->canAccessRegistrationFiles($participantFile->registration, $user)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki hak akses untuk melihat berkas ini.',
@@ -268,7 +260,7 @@ class ParticipantFileController extends Controller
                 required: true,
                 description: 'ID Berkas',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -277,7 +269,7 @@ class ParticipantFileController extends Controller
                 content: new OA\MediaType(mediaType: 'application/octet-stream')
             ),
             new OA\Response(response: 403, description: 'Akses ditolak'),
-            new OA\Response(response: 404, description: 'Berkas tidak ditemukan')
+            new OA\Response(response: 404, description: 'Berkas tidak ditemukan'),
         ]
     )]
     public function download(int $id_file): BinaryFileResponse|JsonResponse
@@ -285,20 +277,17 @@ class ParticipantFileController extends Controller
         $participantFile = ParticipantFile::with('registration.participant.userAccount')
             ->findOrFail($id_file);
 
-        /** @var \App\Models\UserAccount $user */
+        /** @var UserAccount $user */
         $user = Auth::user();
 
-        if (
-            !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT]) &&
-            $participantFile->registration?->participant?->id_user !== $user->id_user
-        ) {
+        if (! $participantFile->registration || ! $this->canAccessRegistrationFiles($participantFile->registration, $user)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki hak akses untuk mengunduh berkas ini.',
             ], Response::HTTP_FORBIDDEN);
         }
 
-        if (!Storage::disk('public')->exists($participantFile->file_path)) {
+        if (! Storage::disk('public')->exists($participantFile->file_path)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Berkas tidak ditemukan pada server.',
@@ -309,5 +298,11 @@ class ParticipantFileController extends Controller
             $participantFile->file_path,
             $participantFile->nama_file
         );
+    }
+
+    private function canAccessRegistrationFiles(Registration $registration, UserAccount $user): bool
+    {
+        return $registration->participant?->id_user === $user->id_user
+            || app(PermissionMatrix::class)->allows($user, 'manage_participant_files');
     }
 }

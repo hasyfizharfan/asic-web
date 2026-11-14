@@ -2,13 +2,17 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Models\Role;
+use App\Support\PermissionMatrix;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class UpdateRolePermissionMatrixRequest extends FormRequest
 {
     /**
      * Tentukan apakah pengguna diizinkan membuat permintaan ini.
-     * Hanya pengguna dengan peran Admin yang dapat mengubah matriks hak akses.
+     * Otorisasi pembaruan dilakukan oleh middleware permission pada rute.
      */
     public function authorize(): bool
     {
@@ -18,7 +22,7 @@ class UpdateRolePermissionMatrixRequest extends FormRequest
     /**
      * Aturan validasi untuk pembaruan matriks Role & Permission.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -28,6 +32,43 @@ class UpdateRolePermissionMatrixRequest extends FormRequest
             'matrix.*.*' => ['required', 'string', 'in:full_access,view_only,restricted,Full Access,View Only,Restricted'],
             'audit_note' => ['nullable', 'string', 'max:255'],
         ];
+    }
+
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            $matrix = $this->input('matrix', []);
+            if (! is_array($matrix)) {
+                return;
+            }
+
+            $expectedPermissions = array_column(PermissionMatrix::capabilities(), 'id');
+            $actualPermissions = array_map('strval', array_keys($matrix));
+            sort($expectedPermissions);
+            sort($actualPermissions);
+
+            if ($actualPermissions !== $expectedPermissions) {
+                $validator->errors()->add('matrix', 'Matriks harus memuat seluruh permission yang terdaftar dan tidak boleh memuat slug lain.');
+
+                return;
+            }
+
+            $expectedRoleIds = Role::query()->pluck('id_role')->map(fn ($id): string => (string) $id)->all();
+            sort($expectedRoleIds);
+
+            foreach ($matrix as $permission => $roleLevels) {
+                if (! is_array($roleLevels)) {
+                    continue;
+                }
+
+                $actualRoleIds = array_map('strval', array_keys($roleLevels));
+                sort($actualRoleIds);
+
+                if ($actualRoleIds !== $expectedRoleIds) {
+                    $validator->errors()->add("matrix.{$permission}", 'Matriks harus memuat seluruh ID peran yang tersedia.');
+                }
+            }
+        });
     }
 
     /**
@@ -44,4 +85,3 @@ class UpdateRolePermissionMatrixRequest extends FormRequest
         ];
     }
 }
-

@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreAbstractRequest;
 use App\Models\AbstractSubmission;
 use App\Models\Registration;
-use App\Models\Role;
+use App\Models\UserAccount;
+use App\Support\PermissionMatrix;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -32,7 +33,7 @@ class AbstractController extends Controller
                 required: true,
                 description: 'ID Pendaftaran',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -42,12 +43,12 @@ class AbstractController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'data', type: 'object'),
-                        new OA\Property(property: 'file_url', type: 'string', nullable: true)
+                        new OA\Property(property: 'file_url', type: 'string', nullable: true),
                     ]
                 )
             ),
             new OA\Response(response: 403, description: 'Akses ditolak'),
-            new OA\Response(response: 404, description: 'Naskah abstrak belum diajukan')
+            new OA\Response(response: 404, description: 'Naskah abstrak belum diajukan'),
         ]
     )]
     public function show(int $id_registration): JsonResponse
@@ -55,13 +56,12 @@ class AbstractController extends Controller
         $registration = Registration::with(['participant.userAccount', 'abstractSubmission'])
             ->findOrFail($id_registration);
 
-        /** @var \App\Models\UserAccount $user */
+        /** @var UserAccount $user */
         $user = Auth::user();
 
-        if (
-            !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_TIM_ABSTRAK, Role::ROLE_SEKRETARIAT]) &&
-            $registration->participant?->id_user !== $user->id_user
-        ) {
+        $isOwner = $registration->participant?->id_user === $user->id_user;
+        $canReviewAny = app(PermissionMatrix::class)->allows($user, 'view_abstracts');
+        if (! $isOwner && ! $canReviewAny) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki hak akses untuk melihat data abstrak ini.',
@@ -70,7 +70,7 @@ class AbstractController extends Controller
 
         $abstract = $registration->abstractSubmission;
 
-        if (!$abstract) {
+        if (! $abstract) {
             return response()->json([
                 'success' => false,
                 'message' => 'Naskah abstrak belum dikirimkan untuk pendaftaran ini.',
@@ -104,7 +104,7 @@ class AbstractController extends Controller
                 required: true,
                 description: 'ID Pendaftaran',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         requestBody: new OA\RequestBody(
             required: true,
@@ -117,7 +117,7 @@ class AbstractController extends Controller
                         new OA\Property(property: 'judul_abstrak', type: 'string', example: 'Smart Agriculture IoT Implementation in West Sumatra'),
                         new OA\Property(property: 'scope', type: 'string', enum: ['CP', 'PB', 'PP', 'SM', 'SE', 'OT'], example: 'CP'),
                         new OA\Property(property: 'metode_presentasi', type: 'string', enum: ['Oral', 'Poster'], example: 'Oral'),
-                        new OA\Property(property: 'file_abstrak', type: 'string', format: 'binary')
+                        new OA\Property(property: 'file_abstrak', type: 'string', format: 'binary'),
                     ]
                 )
             )
@@ -131,12 +131,12 @@ class AbstractController extends Controller
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
                         new OA\Property(property: 'data', type: 'object'),
-                        new OA\Property(property: 'file_url', type: 'string')
+                        new OA\Property(property: 'file_url', type: 'string'),
                     ]
                 )
             ),
             new OA\Response(response: 403, description: 'Akses ditolak'),
-            new OA\Response(response: 422, description: 'Kategori Listener tidak boleh upload abstrak atau file tidak valid')
+            new OA\Response(response: 422, description: 'Kategori Listener tidak boleh upload abstrak atau file tidak valid'),
         ]
     )]
     public function store(StoreAbstractRequest $request, int $id_registration): JsonResponse|RedirectResponse
@@ -144,13 +144,12 @@ class AbstractController extends Controller
         $registration = Registration::with(['participant.userAccount', 'abstractSubmission'])
             ->findOrFail($id_registration);
 
-        /** @var \App\Models\UserAccount $user */
+        /** @var UserAccount $user */
         $user = Auth::user();
 
-        if (
-            !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT, Role::ROLE_TIM_ABSTRAK]) &&
-            $registration->participant?->id_user !== $user->id_user
-        ) {
+        $isOwner = $registration->participant?->id_user === $user->id_user;
+        $canManageAny = app(PermissionMatrix::class)->allows($user, 'manage_registrations');
+        if (! $isOwner && ! $canManageAny) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki hak akses untuk mengunggah abstrak pada pendaftaran ini.',
@@ -215,7 +214,7 @@ class AbstractController extends Controller
                 required: true,
                 description: 'ID Pendaftaran',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -224,7 +223,7 @@ class AbstractController extends Controller
                 content: new OA\MediaType(mediaType: 'application/octet-stream')
             ),
             new OA\Response(response: 403, description: 'Akses ditolak'),
-            new OA\Response(response: 404, description: 'Berkas tidak ditemukan')
+            new OA\Response(response: 404, description: 'Berkas tidak ditemukan'),
         ]
     )]
     public function download(int $id_registration): BinaryFileResponse|JsonResponse
@@ -232,13 +231,12 @@ class AbstractController extends Controller
         $registration = Registration::with(['participant.userAccount', 'abstractSubmission'])
             ->findOrFail($id_registration);
 
-        /** @var \App\Models\UserAccount $user */
+        /** @var UserAccount $user */
         $user = Auth::user();
 
-        if (
-            !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_TIM_ABSTRAK, Role::ROLE_SEKRETARIAT]) &&
-            $registration->participant?->id_user !== $user->id_user
-        ) {
+        $isOwner = $registration->participant?->id_user === $user->id_user;
+        $canReviewAny = app(PermissionMatrix::class)->allows($user, 'view_abstracts');
+        if (! $isOwner && ! $canReviewAny) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki hak akses untuk mengunduh naskah abstrak ini.',
@@ -246,7 +244,7 @@ class AbstractController extends Controller
         }
 
         $abstract = $registration->abstractSubmission;
-        if (!$abstract || !$abstract->file_abstrak || !Storage::disk('public')->exists($abstract->file_abstrak)) {
+        if (! $abstract || ! $abstract->file_abstrak || ! Storage::disk('public')->exists($abstract->file_abstrak)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Berkas naskah abstrak tidak ditemukan di server.',

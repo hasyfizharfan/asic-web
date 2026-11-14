@@ -6,7 +6,6 @@ use App\Http\Requests\StoreDigitalSignatureRequest;
 use App\Models\DigitalSignature;
 use App\Models\Role;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -29,10 +28,10 @@ class DigitalSignatureController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object'))
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object')),
                     ]
                 )
-            )
+            ),
         ]
     )]
     public function index(): JsonResponse
@@ -61,7 +60,7 @@ class DigitalSignatureController extends Controller
                 required: true,
                 description: 'ID Peran (Role)',
                 schema: new OA\Schema(type: 'integer', example: 3)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -72,11 +71,11 @@ class DigitalSignatureController extends Controller
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'data', type: 'object'),
                         new OA\Property(property: 'ttd_url', type: 'string'),
-                        new OA\Property(property: 'stempel_url', type: 'string', nullable: true)
+                        new OA\Property(property: 'stempel_url', type: 'string', nullable: true),
                     ]
                 )
             ),
-            new OA\Response(response: 404, description: 'Berkas belum diunggah untuk peran ini')
+            new OA\Response(response: 404, description: 'Berkas belum diunggah untuk peran ini'),
         ]
     )]
     public function showByRole(int $id_role): JsonResponse
@@ -86,7 +85,7 @@ class DigitalSignatureController extends Controller
             ->latest('tanggal_upload')
             ->first();
 
-        if (!$signature) {
+        if (! $signature) {
             return response()->json([
                 'success' => false,
                 'message' => 'Berkas tanda tangan digital dan stempel untuk peran ini belum diunggah.',
@@ -119,7 +118,7 @@ class DigitalSignatureController extends Controller
                     properties: [
                         new OA\Property(property: 'id_role', type: 'integer', example: 3),
                         new OA\Property(property: 'file_ttd', type: 'string', format: 'binary'),
-                        new OA\Property(property: 'file_stempel', type: 'string', format: 'binary')
+                        new OA\Property(property: 'file_stempel', type: 'string', format: 'binary'),
                     ]
                 )
             )
@@ -134,30 +133,18 @@ class DigitalSignatureController extends Controller
                         new OA\Property(property: 'message', type: 'string'),
                         new OA\Property(property: 'data', type: 'object'),
                         new OA\Property(property: 'ttd_url', type: 'string'),
-                        new OA\Property(property: 'stempel_url', type: 'string', nullable: true)
+                        new OA\Property(property: 'stempel_url', type: 'string', nullable: true),
                     ]
                 )
             ),
-            new OA\Response(response: 403, description: 'Akses ditolak (bukan pemilik peran atau Admin)')
+            new OA\Response(response: 403, description: 'Akses ditolak (bukan pemilik peran atau Admin)'),
         ]
     )]
     public function store(StoreDigitalSignatureRequest $request): JsonResponse
     {
-        /** @var \App\Models\UserAccount $user */
-        $user = Auth::user();
         $targetRoleId = $request->integer('id_role');
 
         $targetRole = Role::findOrFail($targetRoleId);
-
-        $isSameRole = ($user->id_role === $targetRoleId);
-        $isAdmin = $user->hasRole(Role::ROLE_ADMIN);
-
-        if (!$isSameRole && !$isAdmin) {
-            return response()->json([
-                'success' => false,
-                'message' => "Akses ditolak. Anda hanya diizinkan mengelola tanda tangan dan stempel untuk peran Anda sendiri ({$user->role?->nama_role}).",
-            ], Response::HTTP_FORBIDDEN);
-        }
 
         $validated = $request->validated();
 

@@ -8,7 +8,8 @@ use App\Models\Participant;
 use App\Models\Registration;
 use App\Models\RegistrationAddOn;
 use App\Models\RegistrationPeriod;
-use App\Models\Role;
+use App\Models\UserAccount;
+use App\Support\PermissionMatrix;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -36,7 +37,7 @@ class RegistrationController extends Controller
                 required: false,
                 description: 'Filter berdasarkan ID Event seminar',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -45,16 +46,17 @@ class RegistrationController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: 'Belum terautentikasi')
+            new OA\Response(response: 401, description: 'Belum terautentikasi'),
         ]
     )]
     public function index(Request $request): JsonResponse
     {
-        /** @var \App\Models\UserAccount $user */
+        $this->closeExpiredPeriods();
+        /** @var UserAccount $user */
         $user = Auth::user();
         $query = Registration::with([
             'participant.userAccount',
@@ -66,9 +68,9 @@ class RegistrationController extends Controller
             'participantFiles',
         ]);
 
-        if (!$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT])) {
+        if (! app(PermissionMatrix::class)->allows($user, 'manage_registrations')) {
             $participant = $user->participant;
-            if (!$participant) {
+            if (! $participant) {
                 return response()->json([
                     'success' => true,
                     'data' => [],
@@ -105,7 +107,7 @@ class RegistrationController extends Controller
                 required: true,
                 description: 'ID Pendaftaran',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -114,12 +116,12 @@ class RegistrationController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
             new OA\Response(response: 403, description: 'Akses ditolak (bukan pemilik atau panitia)'),
-            new OA\Response(response: 404, description: 'Data pendaftaran tidak ditemukan')
+            new OA\Response(response: 404, description: 'Data pendaftaran tidak ditemukan'),
         ]
     )]
     public function show(int $id_registration): JsonResponse
@@ -134,13 +136,12 @@ class RegistrationController extends Controller
             'participantFiles',
         ])->findOrFail($id_registration);
 
-        /** @var \App\Models\UserAccount $user */
+        /** @var UserAccount $user */
         $user = Auth::user();
 
-        if (
-            !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT]) &&
-            $registration->participant?->id_user !== $user->id_user
-        ) {
+        $isOwner = $registration->participant?->id_user === $user->id_user;
+        $canManageAll = app(PermissionMatrix::class)->allows($user, 'manage_registrations');
+        if (! $isOwner && ! $canManageAll) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki hak akses untuk melihat data pendaftaran ini.',
@@ -179,10 +180,10 @@ class RegistrationController extends Controller
                         items: new OA\Items(
                             properties: [
                                 new OA\Property(property: 'id_add_on', type: 'integer', example: 1),
-                                new OA\Property(property: 'jumlah', type: 'integer', example: 1)
+                                new OA\Property(property: 'jumlah', type: 'integer', example: 1),
                             ]
                         )
-                    )
+                    ),
                 ]
             )
         ),
@@ -194,21 +195,21 @@ class RegistrationController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
             new OA\Response(response: 409, description: 'Peserta sudah terdaftar pada kegiatan ini'),
-            new OA\Response(response: 422, description: 'Periode pendaftaran ditutup atau input tidak valid')
+            new OA\Response(response: 422, description: 'Periode pendaftaran ditutup atau input tidak valid'),
         ]
     )]
     public function store(StoreRegistrationRequest $request): JsonResponse|RedirectResponse
     {
-        /** @var \App\Models\UserAccount $user */
+        /** @var UserAccount $user */
         $user = Auth::user();
 
         $participant = $user->participant;
-        if (!$participant) {
+        if (! $participant) {
             $participant = Participant::create([
                 'id_user' => $user->id_user,
                 'first_name' => explode('@', $user->email)[0],
@@ -217,6 +218,7 @@ class RegistrationController extends Controller
 
         $validated = $request->validated();
 
+        $this->closeExpiredPeriods();
         $period = RegistrationPeriod::findOrFail($validated['id_period']);
         $today = Carbon::today();
 
@@ -257,7 +259,7 @@ class RegistrationController extends Controller
                 'registration_status' => 'Terdaftar',
             ]);
 
-            if (!empty($validated['add_ons'])) {
+            if (! empty($validated['add_ons'])) {
                 foreach ($validated['add_ons'] as $item) {
                     $addOn = AddOn::find($item['id_add_on']);
                     if ($addOn) {
@@ -289,5 +291,13 @@ class RegistrationController extends Controller
 
         return redirect()->route('api.registrations.show', $registration->id_registration)
             ->with('success', 'Pendaftaran kegiatan seminar berhasil disimpan.');
+    }
+
+    private function closeExpiredPeriods(): void
+    {
+        RegistrationPeriod::query()
+            ->where('status_periode', 'Aktif')
+            ->whereDate('tanggal_selesai', '<', Carbon::today())
+            ->update(['status_periode' => 'Ditutup']);
     }
 }

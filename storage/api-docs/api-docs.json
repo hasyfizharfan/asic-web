@@ -1385,6 +1385,57 @@
                 ]
             }
         },
+        "/api/sessions/{id_session}/attendance/scan": {
+            "post": {
+                "tags": [
+                    "Kehadiran"
+                ],
+                "summary": "Pindai QR Kehadiran Peserta Luring",
+                "description": "Check-in Sekretariat untuk peserta Luring dengan pembayaran Terverifikasi.",
+                "operationId": "f39b0683972e871291af6a958b2f7a9b",
+                "parameters": [
+                    {
+                        "name": "id_session",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "qr_token"
+                                ],
+                                "properties": {
+                                    "qr_token": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Check-in berhasil"
+                    },
+                    "403": {
+                        "description": "Akses atau syarat peserta ditolak"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
         "/api/attendance/{id_attendance}/presentation": {
             "patch": {
                 "tags": [
@@ -2720,12 +2771,6 @@
                                 }
                             }
                         }
-                    },
-                    "403": {
-                        "description": "Akun berstatus nonaktif"
-                    },
-                    "404": {
-                        "description": "Email tidak ditemukan"
                     },
                     "422": {
                         "description": "Format email tidak valid"

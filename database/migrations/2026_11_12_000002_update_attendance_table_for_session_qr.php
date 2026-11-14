@@ -14,11 +14,19 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('attendance', function (Blueprint $table) {
-            // Hapus index unique lama pada id_registration dan qr_code
+            // Lepas foreign key sebelum mengubah unique index yang menopangnya.
+            $table->dropForeign(['id_registration']);
             $table->dropUnique('attendance_id_registration_unique');
-            $table->dropUnique('attendance_qr_code_unique');
 
-            // Hapus kolom qr_code lama
+            // Pertahankan relasi registration tanpa unique constraint tunggal.
+            $table->foreign('id_registration')
+                ->references('id_registration')
+                ->on('registration')
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
+
+            // Hapus index dan kolom QR lama.
+            $table->dropUnique('attendance_qr_code_unique');
             $table->dropColumn('qr_code');
 
             // Tambahkan relasi ke event_session
@@ -47,10 +55,19 @@ return new class extends Migration
         Schema::table('attendance', function (Blueprint $table) {
             $table->dropForeign(['id_session']);
             $table->dropUnique('attendance_reg_session_unique');
+
+            // Lepas foreign key sebelum mengembalikan unique index satu registration.
+            $table->dropForeign(['id_registration']);
             $table->dropColumn(['id_session', 'status_presentasi']);
 
             $table->string('qr_code', 255)->unique()->after('id_registration');
             $table->unique('id_registration', 'attendance_id_registration_unique');
+
+            $table->foreign('id_registration')
+                ->references('id_registration')
+                ->on('registration')
+                ->onUpdate('cascade')
+                ->onDelete('restrict');
         });
     }
 };

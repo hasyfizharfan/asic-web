@@ -63,6 +63,7 @@ class Registration extends Model
         'publication_option',
         'registration_date',
         'registration_status',
+        'qr_attendance_token',
     ];
 
     /**

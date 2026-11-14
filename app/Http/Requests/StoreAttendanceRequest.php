@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Role;
+use App\Support\PermissionMatrix;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreAttendanceRequest extends FormRequest
@@ -15,11 +15,12 @@ class StoreAttendanceRequest extends FormRequest
     public function rules(): array
     {
         $user = $this->user();
-        $isSecretariat = $user?->hasRole([Role::ROLE_ADMIN, Role::ROLE_SEKRETARIAT]) ?? false;
+        $canManageAttendance = $user
+            && app(PermissionMatrix::class)->allows($user, 'scan_attendance_qr');
 
         return [
             'id_registration' => ['required', 'integer', 'exists:registration,id_registration'],
-            'qr_token' => $isSecretariat ? ['sometimes', 'string'] : ['required', 'string'],
+            'qr_token' => $canManageAttendance ? ['sometimes', 'string'] : ['required', 'string'],
         ];
     }
 

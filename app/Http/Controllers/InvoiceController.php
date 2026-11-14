@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ExtendInvoiceRequest;
 use App\Models\Invoice;
-use App\Models\Role;
+use App\Models\UserAccount;
+use App\Support\PermissionMatrix;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use OpenApi\Attributes as OA;
@@ -28,7 +29,7 @@ class InvoiceController extends Controller
                 required: true,
                 description: 'ID Tagihan Invoice',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -38,12 +39,12 @@ class InvoiceController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'data', type: 'object'),
-                        new OA\Property(property: 'is_expired', type: 'boolean', example: false)
+                        new OA\Property(property: 'is_expired', type: 'boolean', example: false),
                     ]
                 )
             ),
             new OA\Response(response: 403, description: 'Akses ditolak'),
-            new OA\Response(response: 404, description: 'Invoice tidak ditemukan')
+            new OA\Response(response: 404, description: 'Invoice tidak ditemukan'),
         ]
     )]
     public function show(int $id_invoice): JsonResponse
@@ -55,13 +56,12 @@ class InvoiceController extends Controller
             'paymentProofs',
         ])->findOrFail($id_invoice);
 
-        /** @var \App\Models\UserAccount $user */
+        /** @var UserAccount $user */
         $user = Auth::user();
 
-        if (
-            !$user->hasRole([Role::ROLE_ADMIN, Role::ROLE_BENDAHARA, Role::ROLE_SEKRETARIAT]) &&
-            $invoice->registration?->participant?->id_user !== $user->id_user
-        ) {
+        $isOwner = $invoice->registration?->participant?->id_user === $user->id_user;
+        $canViewAll = app(PermissionMatrix::class)->allows($user, 'verify_payment', 'view_only');
+        if (! $isOwner && ! $canViewAll) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anda tidak memiliki hak akses untuk melihat invoice ini.',
@@ -96,14 +96,14 @@ class InvoiceController extends Controller
                 required: true,
                 description: 'ID Invoice',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
                 required: ['tanggal_jatuh_tempo_baru'],
                 properties: [
-                    new OA\Property(property: 'tanggal_jatuh_tempo_baru', type: 'string', format: 'date', example: '2026-08-15')
+                    new OA\Property(property: 'tanggal_jatuh_tempo_baru', type: 'string', format: 'date', example: '2026-08-15'),
                 ]
             )
         ),
@@ -115,11 +115,11 @@ class InvoiceController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: 'Format tanggal tidak valid')
+            new OA\Response(response: 422, description: 'Format tanggal tidak valid'),
         ]
     )]
     public function extendDueDate(ExtendInvoiceRequest $request, int $id_invoice): JsonResponse
@@ -159,7 +159,7 @@ class InvoiceController extends Controller
                 required: true,
                 description: 'ID Invoice',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -169,11 +169,11 @@ class InvoiceController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: 'Invoice sudah terverifikasi sehingga tidak dapat diubah')
+            new OA\Response(response: 422, description: 'Invoice sudah terverifikasi sehingga tidak dapat diubah'),
         ]
     )]
     public function markAsExpired(int $id_invoice): JsonResponse
