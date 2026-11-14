@@ -171,7 +171,7 @@ class RegistrationController extends Controller
                     new OA\Property(property: 'id_period', type: 'integer', example: 1),
                     new OA\Property(property: 'registration_type', type: 'string', enum: ['Early Bird', 'Regular', 'Late'], example: 'Early Bird'),
                     new OA\Property(property: 'attendance_mode', type: 'string', enum: ['Luring', 'Daring'], example: 'Luring'),
-                    new OA\Property(property: 'participation_type', type: 'string', enum: ['Presenter Oral', 'Presenter Poster', 'Listener'], example: 'Presenter Oral'),
+                    new OA\Property(property: 'participation_type', type: 'string', enum: ['Oral Presenter', 'Poster Presenter', 'Listener'], example: 'Oral Presenter'),
                     new OA\Property(property: 'publication_option', type: 'string', enum: ['Ya', 'Tidak'], example: 'Ya'),
                     new OA\Property(
                         property: 'add_ons',

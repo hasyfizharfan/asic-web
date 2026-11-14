@@ -19,8 +19,6 @@ use Illuminate\Support\Facades\Route;
 // =========================================================================
 Route::post('/register', [AuthController::class, 'register'])->name('api.register');
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
-Route::match(['get', 'post'], '/demo-login/{role}', [AuthController::class, 'demoLogin'])->name('api.demo.login');
-Route::match(['get', 'post'], '/auth/sso/unand', [AuthController::class, 'ssoUnand'])->name('api.auth.sso.unand');
 Route::post('/password/forgot-username', [AuthController::class, 'forgotUsername'])->name('api.password.forgot-username');
 Route::post('/password/email', [PasswordResetController::class, 'sendResetLinkEmail'])->name('api.password.email');
 Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLinkEmail'])->name('api.password.forgot');

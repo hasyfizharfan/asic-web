@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreAttendanceRequest;
 use App\Models\Attendance;
 use App\Models\EventSession;
 use App\Models\Registration;
@@ -35,10 +36,10 @@ class AttendanceController extends Controller
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
-                required: ['id_registration'],
+                required: ['id_registration', 'qr_token'],
                 properties: [
                     new OA\Property(property: 'id_registration', type: 'integer', example: 1),
-                    new OA\Property(property: 'status_presentasi', type: 'string', enum: ['Belum', 'Sudah'], nullable: true, example: 'Sudah')
+                    new OA\Property(property: 'qr_token', type: 'string', example: 'ASIC-SESSION-1-ABCD123456')
                 ]
             )
         ),
@@ -54,21 +55,12 @@ class AttendanceController extends Controller
                     ]
                 )
             ),
-            new OA\Response(response: 403, description: 'Akses ditolak'),
-            new OA\Response(response: 422, description: 'Invoice belum terverifikasi atau input tidak valid')
+            new OA\Response(response: 403, description: 'Akses ditolak, invoice belum terverifikasi, token tidak valid, atau presensi di luar rentang waktu sesi'),
+            new OA\Response(response: 422, description: 'Input tidak valid')
         ]
     )]
-    public function recordAttendance(Request $request, int $id_session): JsonResponse
+    public function recordAttendance(StoreAttendanceRequest $request, int $id_session): JsonResponse
     {
-        $request->validate([
-            'id_registration' => ['required', 'integer', 'exists:registration,id_registration'],
-            'status_presentasi' => ['nullable', 'in:Belum,Sudah'],
-        ], [
-            'id_registration.required' => 'ID Pendaftaran peserta wajib disertakan.',
-            'id_registration.exists' => 'Data pendaftaran peserta tidak ditemukan.',
-            'status_presentasi.in' => 'Status presentasi harus berupa Belum atau Sudah.',
-        ]);
-
         $session = EventSession::with('event')->findOrFail($id_session);
         $registration = Registration::with(['participant.userAccount', 'invoice'])
             ->findOrFail($request->integer('id_registration'));
@@ -84,11 +76,28 @@ class AttendanceController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        if ($registration->invoice && !$registration->invoice->isVerified() && !$isPanitia) {
+        if (!$registration->invoice || $registration->invoice->status_pembayaran !== 'Terverifikasi') {
             return response()->json([
                 'success' => false,
-                'message' => 'Pembayaran pendaftaran belum terverifikasi oleh Bendahara.',
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+                'message' => 'Presensi ditolak: invoice belum tersedia atau status pembayaran belum Terverifikasi.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        if (!$isPanitia) {
+            if (!is_string($session->qr_token) || $session->qr_token === '' || !hash_equals($session->qr_token, (string) $request->input('qr_token'))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'QR token tidak valid untuk sesi ini.',
+                ], Response::HTTP_FORBIDDEN);
+            }
+
+            $now = now();
+            if (!$session->waktu_selesai || $now->lt($session->waktu) || $now->gt($session->waktu_selesai)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Presensi hanya dapat dilakukan selama rentang waktu sesi berlangsung.',
+                ], Response::HTTP_FORBIDDEN);
+            }
         }
 
         $attendance = Attendance::firstOrNew([
@@ -99,15 +108,14 @@ class AttendanceController extends Controller
         $isNewCheckIn = !$attendance->exists || $attendance->status_kehadiran !== 'Hadir';
 
         $attendance->status_kehadiran = 'Hadir';
+        if (!$attendance->exists || !$attendance->status_presentasi) {
+            $attendance->status_presentasi = 'Belum';
+        }
         if (!$attendance->tanggal_generate) {
             $attendance->tanggal_generate = now();
         }
         if (!$attendance->tanggal_check_in) {
             $attendance->tanggal_check_in = now();
-        }
-
-        if ($request->filled('status_presentasi')) {
-            $attendance->status_presentasi = $request->input('status_presentasi');
         }
 
         $attendance->save();
@@ -153,7 +161,7 @@ class AttendanceController extends Controller
             content: new OA\JsonContent(
                 required: ['status_presentasi'],
                 properties: [
-                    new OA\Property(property: 'status_presentasi', type: 'string', enum: ['Belum', 'Sudah'], example: 'Sudah')
+                    new OA\Property(property: 'status_presentasi', type: 'string', enum: ['Sudah'], example: 'Sudah')
                 ]
             )
         ),
@@ -175,10 +183,10 @@ class AttendanceController extends Controller
     public function updatePresentationStatus(Request $request, int $id_attendance): JsonResponse
     {
         $request->validate([
-            'status_presentasi' => ['required', 'in:Belum,Sudah'],
+            'status_presentasi' => ['required', 'in:Sudah'],
         ], [
             'status_presentasi.required' => 'Status presentasi wajib diisi.',
-            'status_presentasi.in' => 'Status presentasi harus bernilai Belum atau Sudah.',
+            'status_presentasi.in' => 'Status presentasi hanya dapat diubah menjadi Sudah.',
         ]);
 
         $attendance = Attendance::with(['registration.participant', 'eventSession'])->findOrFail($id_attendance);

@@ -17,24 +17,12 @@ class LoginRequest extends FormRequest
     /**
      * Aturan validasi untuk login akun.
      * Mendukung variasi input UI: 'email_or_username', 'email', 'username', atau 'login'
-     * serta mode persona quick login demo.
+     * untuk login akun.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
-        // Jika request berasal dari tombol persona quick login demo pada UI
-        if ($this->filled('demo_role')) {
-            return [
-                'demo_role' => [
-                    'required',
-                    'string',
-                    'in:participant,secretariat,treasurer,admin,abstract_team,Peserta,Sekretariat,Bendahara,Admin,Tim Abstrak',
-                ],
-                'remember' => ['nullable', 'boolean'],
-            ];
-        }
-
         return [
             'email_or_username' => ['sometimes', 'required_without_all:email,username,login', 'string'],
             'email' => ['sometimes', 'required_without_all:email_or_username,username,login', 'string'],
@@ -70,7 +58,6 @@ class LoginRequest extends FormRequest
             'username.required_without_all' => 'Alamat email atau username / nomor registrasi wajib diisi.',
             'login.required_without_all' => 'Alamat email atau username / nomor registrasi wajib diisi.',
             'password.required' => 'Kata sandi wajib diisi.',
-            'demo_role.in' => 'Pilihan peran demo tidak valid.',
         ];
     }
 }

@@ -56,6 +56,8 @@ class EventSession extends Model
         'id_event',
         'nama_sesi',
         'waktu',
+        'waktu_selesai',
+        'qr_token',
         'qr_code_path',
     ];
 
@@ -68,6 +70,7 @@ class EventSession extends Model
     {
         return [
             'waktu' => 'datetime',
+            'waktu_selesai' => 'datetime',
         ];
     }
 

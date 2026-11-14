@@ -38,7 +38,7 @@ class RegisterRequest extends FormRequest
             'country' => ['nullable', 'string', 'max:100'],
 
             // Nama: Mendukung input single 'full_name' / 'name' dari UI maupun 'first_name' / 'last_name' terpisah
-            'full_name' => ['nullable', 'string', 'max:150'],
+            'full_name' => ['required', 'string', 'max:150'],
             'name' => ['nullable', 'string', 'max:150'],
             'first_name' => ['nullable', 'string', 'max:50'],
             'last_name' => ['nullable', 'string', 'max:50'],
@@ -81,6 +81,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'email.required' => 'Alamat email institusi wajib diisi.',
+            'full_name.required' => 'Nama lengkap wajib diisi.',
             'email.email' => 'Format alamat email tidak valid.',
             'email.max' => 'Panjang alamat email maksimal 100 karakter.',
             'email.unique' => 'Alamat email ini sudah terdaftar dalam sistem.',

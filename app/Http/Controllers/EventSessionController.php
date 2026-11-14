@@ -73,11 +73,12 @@ class EventSessionController extends Controller
         requestBody: new OA\RequestBody(
             required: true,
             content: new OA\JsonContent(
-                required: ['id_event', 'nama_sesi', 'waktu'],
+                required: ['id_event', 'nama_sesi', 'waktu', 'waktu_selesai'],
                 properties: [
                     new OA\Property(property: 'id_event', type: 'integer', example: 1),
                     new OA\Property(property: 'nama_sesi', type: 'string', example: 'Parallel Session A - Agronomy Track'),
-                    new OA\Property(property: 'waktu', type: 'string', format: 'date-time', example: '2026-08-20 09:00:00')
+                    new OA\Property(property: 'waktu', type: 'string', format: 'date-time', example: '2026-08-20 09:00:00'),
+                    new OA\Property(property: 'waktu_selesai', type: 'string', format: 'date-time', example: '2026-08-20 10:00:00')
                 ]
             )
         ),
@@ -132,6 +133,8 @@ class EventSessionController extends Controller
             'id_event' => $validated['id_event'],
             'nama_sesi' => $validated['nama_sesi'],
             'waktu' => $validated['waktu'],
+            'waktu_selesai' => $validated['waktu_selesai'],
+            'qr_token' => $token,
             'qr_code_path' => $qrRelativePath,
         ]);
 

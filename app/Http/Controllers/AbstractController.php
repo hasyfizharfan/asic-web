@@ -112,10 +112,10 @@ class AbstractController extends Controller
             content: new OA\MediaType(
                 mediaType: 'multipart/form-data',
                 schema: new OA\Schema(
-                    required: ['judul_abstrak', 'metode_presentasi', 'file_abstrak'],
+                    required: ['judul_abstrak', 'scope', 'metode_presentasi', 'file_abstrak'],
                     properties: [
                         new OA\Property(property: 'judul_abstrak', type: 'string', example: 'Smart Agriculture IoT Implementation in West Sumatra'),
-                        new OA\Property(property: 'scope', type: 'string', example: 'Precision Agriculture'),
+                        new OA\Property(property: 'scope', type: 'string', enum: ['CP', 'PB', 'PP', 'SM', 'SE', 'OT'], example: 'CP'),
                         new OA\Property(property: 'metode_presentasi', type: 'string', enum: ['Oral', 'Poster'], example: 'Oral'),
                         new OA\Property(property: 'file_abstrak', type: 'string', format: 'binary')
                     ]

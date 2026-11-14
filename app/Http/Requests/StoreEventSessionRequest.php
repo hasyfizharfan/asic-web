@@ -17,6 +17,7 @@ class StoreEventSessionRequest extends FormRequest
             'id_event' => ['required', 'integer', 'exists:event,id_event'],
             'nama_sesi' => ['required', 'string', 'max:150'],
             'waktu' => ['required', 'date'],
+            'waktu_selesai' => ['required', 'date', 'after:waktu'],
         ];
     }
 
@@ -29,6 +30,9 @@ class StoreEventSessionRequest extends FormRequest
             'nama_sesi.max' => 'Nama sesi maksimal 150 karakter.',
             'waktu.required' => 'Waktu pelaksanaan sesi wajib diisi.',
             'waktu.date' => 'Format waktu sesi tidak valid.',
+            'waktu_selesai.required' => 'Waktu selesai sesi wajib diisi.',
+            'waktu_selesai.date' => 'Format waktu selesai sesi tidak valid.',
+            'waktu_selesai.after' => 'Waktu selesai harus setelah waktu mulai sesi.',
         ];
     }
 }

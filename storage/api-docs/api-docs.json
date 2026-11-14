@@ -104,6 +104,7 @@
                             "schema": {
                                 "required": [
                                     "judul_abstrak",
+                                    "scope",
                                     "metode_presentasi",
                                     "file_abstrak"
                                 ],
@@ -114,7 +115,15 @@
                                     },
                                     "scope": {
                                         "type": "string",
-                                        "example": "Precision Agriculture"
+                                        "example": "CP",
+                                        "enum": [
+                                            "CP",
+                                            "PB",
+                                            "PP",
+                                            "SM",
+                                            "SE",
+                                            "OT"
+                                        ]
                                     },
                                     "metode_presentasi": {
                                         "type": "string",
@@ -1321,21 +1330,17 @@
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "id_registration"
+                                    "id_registration",
+                                    "qr_token"
                                 ],
                                 "properties": {
                                     "id_registration": {
                                         "type": "integer",
                                         "example": 1
                                     },
-                                    "status_presentasi": {
+                                    "qr_token": {
                                         "type": "string",
-                                        "example": "Sudah",
-                                        "nullable": true,
-                                        "enum": [
-                                            "Belum",
-                                            "Sudah"
-                                        ]
+                                        "example": "ASIC-SESSION-1-ABCD123456"
                                     }
                                 },
                                 "type": "object"
@@ -1367,10 +1372,10 @@
                         }
                     },
                     "403": {
-                        "description": "Akses ditolak"
+                        "description": "Akses ditolak, invoice belum terverifikasi, token tidak valid, atau presensi di luar rentang waktu sesi"
                     },
                     "422": {
-                        "description": "Invoice belum terverifikasi atau input tidak valid"
+                        "description": "Input tidak valid"
                     }
                 },
                 "security": [
@@ -1413,7 +1418,6 @@
                                         "type": "string",
                                         "example": "Sudah",
                                         "enum": [
-                                            "Belum",
                                             "Sudah"
                                         ]
                                     }
@@ -1531,7 +1535,8 @@
                                 "required": [
                                     "email",
                                     "password",
-                                    "password_confirmation"
+                                    "password_confirmation",
+                                    "full_name"
                                 ],
                                 "properties": {
                                     "email": {
@@ -1645,17 +1650,11 @@
                                     },
                                     "password": {
                                         "type": "string",
-                                        "format": "password",
-                                        "example": "Password123#"
+                                        "format": "password"
                                     },
                                     "remember": {
                                         "type": "boolean",
                                         "example": false
-                                    },
-                                    "demo_role": {
-                                        "type": "string",
-                                        "example": "participant",
-                                        "nullable": true
                                     }
                                 },
                                 "type": "object"
@@ -1692,125 +1691,6 @@
                     },
                     "422": {
                         "description": "Kredensial tidak valid"
-                    }
-                }
-            }
-        },
-        "/api/demo-login/{role}": {
-            "get": {
-                "tags": [
-                    "Autentikasi"
-                ],
-                "summary": "Quick Demo Persona Login",
-                "description": "Simulasi login instan berdasarkan peran tertentu untuk pengujian demo sistem.",
-                "operationId": "7d9544a12bf63128083f6d4582ff201f",
-                "parameters": [
-                    {
-                        "name": "role",
-                        "in": "path",
-                        "description": "Nama peran demo (participant, secretariat, treasurer, abstract_team, admin)",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "participant"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Berhasil login sebagai akun demo",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string"
-                                        },
-                                        "data": {
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Autentikasi"
-                ],
-                "summary": "Quick Demo Persona Login (POST)",
-                "description": "Simulasi login instan via metode POST.",
-                "operationId": "364cdc21f90d0c53ba62243836c31327",
-                "parameters": [
-                    {
-                        "name": "role",
-                        "in": "path",
-                        "description": "Nama peran demo",
-                        "required": true,
-                        "schema": {
-                            "type": "string",
-                            "example": "admin"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Berhasil login demo"
-                    }
-                }
-            }
-        },
-        "/api/auth/sso/unand": {
-            "get": {
-                "tags": [
-                    "Autentikasi"
-                ],
-                "summary": "Integrasi Single Sign-On (SSO) UNAND",
-                "description": "Simulasi dan pemrosesan otentikasi akun civitas akademika Universitas Andalas.",
-                "operationId": "4c455a22a861799955e8a6a86d6d107f",
-                "responses": {
-                    "200": {
-                        "description": "Autentikasi SSO berhasil",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": true
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Autentikasi SSO Universitas Andalas berhasil."
-                                        },
-                                        "data": {
-                                            "type": "object"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "tags": [
-                    "Autentikasi"
-                ],
-                "summary": "Integrasi Single Sign-On (SSO) UNAND (POST)",
-                "description": "Menerima callback atau payload autentikasi SSO UNAND.",
-                "operationId": "6f58cc1bba3a69d32321829ee898b286",
-                "responses": {
-                    "200": {
-                        "description": "Autentikasi SSO berhasil"
                     }
                 }
             }
@@ -2198,7 +2078,8 @@
                                 "required": [
                                     "id_event",
                                     "nama_sesi",
-                                    "waktu"
+                                    "waktu",
+                                    "waktu_selesai"
                                 ],
                                 "properties": {
                                     "id_event": {
@@ -2213,6 +2094,11 @@
                                         "type": "string",
                                         "format": "date-time",
                                         "example": "2026-08-20 09:00:00"
+                                    },
+                                    "waktu_selesai": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "example": "2026-08-20 10:00:00"
                                     }
                                 },
                                 "type": "object"
@@ -3054,10 +2940,10 @@
                                     },
                                     "participation_type": {
                                         "type": "string",
-                                        "example": "Presenter Oral",
+                                        "example": "Oral Presenter",
                                         "enum": [
-                                            "Presenter Oral",
-                                            "Presenter Poster",
+                                            "Oral Presenter",
+                                            "Poster Presenter",
                                             "Listener"
                                         ]
                                     },

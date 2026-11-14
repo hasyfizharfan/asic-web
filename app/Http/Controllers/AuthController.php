@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
-use App\Models\Participant;
 use App\Models\Registration;
 use App\Models\Role;
 use App\Models\UserAccount;
@@ -32,7 +31,7 @@ class AuthController extends Controller
             required: true,
             description: 'Data formulir registrasi delegasi',
             content: new OA\JsonContent(
-                required: ['email', 'password', 'password_confirmation'],
+                required: ['email', 'password', 'password_confirmation', 'full_name'],
                 properties: [
                     new OA\Property(property: 'email', type: 'string', format: 'email', example: 'author@univ.ac.id'),
                     new OA\Property(property: 'password', type: 'string', format: 'password', example: 'Secret123#'),
@@ -166,9 +165,8 @@ class AuthController extends Controller
                 required: ['email', 'password'],
                 properties: [
                     new OA\Property(property: 'email', type: 'string', example: 'delegate@asic.unand.ac.id'),
-                    new OA\Property(property: 'password', type: 'string', format: 'password', example: 'Password123#'),
+                    new OA\Property(property: 'password', type: 'string', format: 'password'),
                     new OA\Property(property: 'remember', type: 'boolean', example: false),
-                    new OA\Property(property: 'demo_role', type: 'string', nullable: true, example: 'participant')
                 ]
             )
         ),
@@ -196,11 +194,6 @@ class AuthController extends Controller
     )]
     public function login(LoginRequest $request): JsonResponse|RedirectResponse
     {
-        // 1. Tangani Quick Login Demo (Prototype Role Demo dari UI)
-        if ($request->filled('demo_role')) {
-            return $this->handleDemoRoleLogin($request->string('demo_role')->toString(), $request);
-        }
-
         $credentials = $request->validated();
         $identifier = $request->getLoginIdentifier();
 
@@ -260,141 +253,6 @@ class AuthController extends Controller
                         'institution' => $user->participant?->institution,
                         'country' => $user->participant?->country,
                     ],
-                    'redirect_url' => $redirectUrl,
-                ],
-            ], Response::HTTP_OK);
-        }
-
-        return redirect()->intended($redirectUrl);
-    }
-
-    /**
-     * Endpoint Cepat Quick Login untuk Pengujian Prototipe Peran (Direct Persona Testing).
-     */
-    #[OA\Get(
-        path: '/api/demo-login/{role}',
-        summary: 'Quick Demo Persona Login',
-        description: 'Simulasi login instan berdasarkan peran tertentu untuk pengujian demo sistem.',
-        tags: ['Autentikasi'],
-        parameters: [
-            new OA\Parameter(
-                name: 'role',
-                in: 'path',
-                required: true,
-                description: 'Nama peran demo (participant, secretariat, treasurer, abstract_team, admin)',
-                schema: new OA\Schema(type: 'string', example: 'participant')
-            )
-        ],
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: 'Berhasil login sebagai akun demo',
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
-                    ]
-                )
-            )
-        ]
-    )]
-    #[OA\Post(
-        path: '/api/demo-login/{role}',
-        summary: 'Quick Demo Persona Login (POST)',
-        description: 'Simulasi login instan via metode POST.',
-        tags: ['Autentikasi'],
-        parameters: [
-            new OA\Parameter(
-                name: 'role',
-                in: 'path',
-                required: true,
-                description: 'Nama peran demo',
-                schema: new OA\Schema(type: 'string', example: 'admin')
-            )
-        ],
-        responses: [
-            new OA\Response(response: 200, description: 'Berhasil login demo')
-        ]
-    )]
-    public function demoLogin(string $role, Request $request): JsonResponse|RedirectResponse
-    {
-        return $this->handleDemoRoleLogin($role, $request);
-    }
-
-    /**
-     * Endpoint Integrasi SSO Universitas Andalas (@unand.ac.id).
-     */
-    #[OA\Get(
-        path: '/api/auth/sso/unand',
-        summary: 'Integrasi Single Sign-On (SSO) UNAND',
-        description: 'Simulasi dan pemrosesan otentikasi akun civitas akademika Universitas Andalas.',
-        tags: ['Autentikasi'],
-        responses: [
-            new OA\Response(
-                response: 200,
-                description: 'Autentikasi SSO berhasil',
-                content: new OA\JsonContent(
-                    properties: [
-                        new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'message', type: 'string', example: 'Autentikasi SSO Universitas Andalas berhasil.'),
-                        new OA\Property(property: 'data', type: 'object')
-                    ]
-                )
-            )
-        ]
-    )]
-    #[OA\Post(
-        path: '/api/auth/sso/unand',
-        summary: 'Integrasi Single Sign-On (SSO) UNAND (POST)',
-        description: 'Menerima callback atau payload autentikasi SSO UNAND.',
-        tags: ['Autentikasi'],
-        responses: [
-            new OA\Response(response: 200, description: 'Autentikasi SSO berhasil')
-        ]
-    )]
-    public function ssoUnand(Request $request): JsonResponse|RedirectResponse
-    {
-        $unandEmail = 'delegate.unand@agr.unand.ac.id';
-        $user = UserAccount::with(['role', 'participant'])->where('email', $unandEmail)->first();
-
-        if (!$user) {
-            $pesertaRole = Role::firstOrCreate(
-                ['nama_role' => Role::ROLE_PESERTA],
-                ['deskripsi' => 'Peserta seminar internasional ASIC']
-            );
-
-            $user = UserAccount::create([
-                'id_role' => $pesertaRole->id_role,
-                'email' => $unandEmail,
-                'password' => Hash::make('Password123#'),
-                'status_akun' => 'Aktif',
-            ]);
-
-            Participant::create([
-                'id_user' => $user->id_user,
-                'prefix' => 'Dr.',
-                'first_name' => 'Delegasi',
-                'last_name' => 'Universitas Andalas',
-                'institution' => 'Fakultas Pertanian, Universitas Andalas',
-                'country' => 'Indonesia',
-            ]);
-
-            $user->load(['role', 'participant']);
-        }
-
-        Auth::login($user, true);
-        $request->session()->regenerate();
-        $redirectUrl = $this->resolveRedirectUrl($user);
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Autentikasi SSO Universitas Andalas berhasil.',
-                'data' => [
-                    'id_user' => $user->id_user,
-                    'email' => $user->email,
-                    'role' => $user->role?->nama_role,
                     'redirect_url' => $redirectUrl,
                 ],
             ], Response::HTTP_OK);
@@ -583,84 +441,6 @@ class AuthController extends Controller
                   ->orWhere('passport_no', $identifier);
             })
             ->first();
-    }
-
-    /**
-     * Tangani login demo persona cepat (Direct Persona Testing).
-     */
-    protected function handleDemoRoleLogin(string $rawRole, Request $request): JsonResponse|RedirectResponse
-    {
-        $roleMap = [
-            'participant' => Role::ROLE_PESERTA,
-            'peserta' => Role::ROLE_PESERTA,
-            'secretariat' => Role::ROLE_SEKRETARIAT,
-            'sekretariat' => Role::ROLE_SEKRETARIAT,
-            'treasurer' => Role::ROLE_BENDAHARA,
-            'bendahara' => Role::ROLE_BENDAHARA,
-            'abstract_team' => Role::ROLE_TIM_ABSTRAK,
-            'tim abstrak' => Role::ROLE_TIM_ABSTRAK,
-            'admin' => Role::ROLE_ADMIN,
-        ];
-
-        $targetRoleName = $roleMap[strtolower(trim($rawRole))] ?? Role::ROLE_PESERTA;
-
-        $user = UserAccount::with(['role', 'participant'])
-            ->whereHas('role', function ($q) use ($targetRoleName) {
-                $q->where('nama_role', $targetRoleName);
-            })
-            ->where('status_akun', 'Aktif')
-            ->first();
-
-        if (!$user) {
-            $role = Role::firstOrCreate(
-                ['nama_role' => $targetRoleName],
-                ['deskripsi' => "Peran {$targetRoleName} ASIC 2026"]
-            );
-
-            $slug = strtolower(str_replace(' ', '', $targetRoleName));
-            $user = UserAccount::create([
-                'id_role' => $role->id_role,
-                'email' => "{$slug}.demo@asic.unand.ac.id",
-                'password' => Hash::make('DemoPassword2026!'),
-                'status_akun' => 'Aktif',
-            ]);
-
-            Participant::create([
-                'id_user' => $user->id_user,
-                'prefix' => $targetRoleName === 'Admin' ? 'Prof. Dr.' : 'Dr.',
-                'first_name' => 'Demo',
-                'last_name' => $targetRoleName,
-                'institution' => 'Universitas Andalas',
-                'country' => 'Indonesia',
-            ]);
-
-            $user->load(['role', 'participant']);
-        }
-
-        Auth::login($user, true);
-        $request->session()->regenerate();
-        $redirectUrl = $this->resolveRedirectUrl($user);
-
-        if ($request->expectsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => "Quick demo login berhasil sebagai persona {$targetRoleName}.",
-                'data' => [
-                    'id_user' => $user->id_user,
-                    'email' => $user->email,
-                    'role' => $user->role?->nama_role,
-                    'status_akun' => $user->status_akun,
-                    'profile' => [
-                        'full_name' => $user->participant?->full_name ?? $targetRoleName,
-                        'institution' => $user->participant?->institution,
-                        'country' => $user->participant?->country,
-                    ],
-                    'redirect_url' => $redirectUrl,
-                ],
-            ], Response::HTTP_OK);
-        }
-
-        return redirect()->intended($redirectUrl);
     }
 
     /**

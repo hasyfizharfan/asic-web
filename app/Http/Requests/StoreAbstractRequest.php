@@ -23,7 +23,7 @@ class StoreAbstractRequest extends FormRequest
     {
         return [
             'judul_abstrak' => ['required', 'string', 'max:255'],
-            'scope' => ['nullable', 'string', 'max:150'],
+            'scope' => ['required', 'string', 'in:CP,PB,PP,SM,SE,OT'],
             'metode_presentasi' => ['required', 'in:Oral,Poster'],
             'file_abstrak' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
         ];
@@ -40,6 +40,8 @@ class StoreAbstractRequest extends FormRequest
             'judul_abstrak.required' => 'Judul abstrak wajib diisi.',
             'judul_abstrak.max' => 'Judul abstrak maksimal 255 karakter.',
             'scope.max' => 'Ruang lingkup (scope) maksimal 150 karakter.',
+            'scope.required' => 'Ruang lingkup abstrak wajib dipilih.',
+            'scope.in' => 'Ruang lingkup harus salah satu dari CP, PB, PP, SM, SE, atau OT.',
             'metode_presentasi.required' => 'Metode presentasi (Oral/Poster) wajib dipilih.',
             'metode_presentasi.in' => 'Metode presentasi harus berupa Oral atau Poster.',
             'file_abstrak.required' => 'Berkas naskah abstrak wajib diunggah.',

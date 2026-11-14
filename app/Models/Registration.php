@@ -134,6 +134,11 @@ class Registration extends Model
         return $this->hasOne(Attendance::class, 'id_registration', 'id_registration');
     }
 
+    public function invoice(): HasOne
+    {
+        return $this->hasOne(Invoice::class, 'id_registration', 'id_registration');
+    }
+
     /**
      * Relasi hasMany ke ParticipantFile (1:N).
      */
