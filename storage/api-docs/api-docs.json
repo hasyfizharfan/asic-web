@@ -434,7 +434,7 @@
                     "Admin - Hak Akses"
                 ],
                 "summary": "Matriks Peran dan Hak Akses (RBAC Matrix)",
-                "description": "Mendapatkan data matriks hak akses 5 peran terhadap 10 node kapabilitas sistem konferensi (Admin).",
+                "description": "Mendapatkan data matriks hak akses berdasarkan ID lima peran untuk seluruh kapabilitas sistem (Admin).",
                 "operationId": "3d1481aa3c3bc8da87ba6518cd837859",
                 "responses": {
                     "200": {
@@ -474,7 +474,7 @@
                     "Admin - Hak Akses"
                 ],
                 "summary": "Simpan Perubahan Matriks Hak Akses",
-                "description": "Memperbarui konfigurasi hak akses matriks peran pada cache persisten dan mencatat jejak audit.",
+                "description": "Memperbarui konfigurasi hak akses matriks peran di database dan mencatat jejak audit.",
                 "operationId": "795ee31b1815b422715f7fd7a384fe15",
                 "requestBody": {
                     "required": true,

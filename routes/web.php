@@ -13,3 +13,7 @@ Route::get('/password/reset/{token}', function (string $token) {
         'email' => request('email'),
     ]);
 })->name('password.reset');
+
+if (app()->environment('local') && file_exists(__DIR__.'/fe-preview.php')) {
+    require __DIR__.'/fe-preview.php';
+}
