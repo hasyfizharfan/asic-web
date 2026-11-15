@@ -15,8 +15,16 @@
     isSubmitted: {{ $isSubmitted ? 'true' : 'false' }},
     showConfirmModal: false,
     errorMessage: '',
+    submitting: false,
 
-    saveDraft() {
+    async saveDraft() {
+        const payload = {
+            abstract_id: '{{ $abstractId }}',
+            recommendation: this.recommendation,
+            comments: this.comments,
+            status: 'draft'
+        };
+        await window.asicApi.post('/api/reviewer/abstracts/{{ $abstractId }}/draft', payload);
         $store.toast.add('Draft review berhasil disimpan.', 'info');
     },
 
@@ -33,10 +41,26 @@
         this.showConfirmModal = true;
     },
 
-    confirmSubmit() {
+    async confirmSubmit() {
+        this.submitting = true;
         this.showConfirmModal = false;
+        
+        const payload = {
+            abstract_id: '{{ $abstractId }}',
+            recommendation: this.recommendation,
+            comments: this.comments,
+            timestamp: new Date().toISOString()
+        };
+
+        const res = await window.asicApi.post('/api/reviewer/abstracts/{{ $abstractId }}/review', payload);
+        this.submitting = false;
         this.isSubmitted = true;
-        $store.toast.add('{{ app()->getLocale() === 'id' ? 'Review berhasil dikirim ke sekretariat!' : 'Review submitted successfully to secretariat!' }}', 'success');
+
+        if (res.ok) {
+            $store.toast.add('{{ app()->getLocale() === 'id' ? 'Review berhasil dikirim via API ke sekretariat!' : 'Review submitted successfully via API to secretariat!' }}', 'success');
+        } else {
+            $store.toast.add('API Call: POST /api/reviewer/abstracts/{{ $abstractId }}/review (Status ' + (res.status || '404') + ' pending BE controller). Keputusan tersimpan lokal.', 'info');
+        }
     }
 }">
 
@@ -237,8 +261,10 @@
                 </button>
                 <button type="button" 
                         @click="confirmSubmit" 
-                        class="px-5 py-2 rounded-xl bg-primary hover:bg-primary-container text-white text-xs font-bold shadow transition active:scale-95">
-                    {{ __('asic-reviewer.btn_confirm_submit') ?? 'Konfirmasi & Kirim' }}
+                        :disabled="submitting"
+                        class="px-5 py-2 rounded-xl bg-primary hover:bg-primary-container text-white text-xs font-bold shadow transition active:scale-95 disabled:opacity-50 inline-flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[16px] animate-spin" x-show="submitting" style="display: none;">progress_activity</span>
+                    <span x-text="submitting ? '{{ app()->getLocale() === 'id' ? 'Mengirim...' : 'Submitting...' }}' : '{{ __('asic-reviewer.btn_confirm_submit') ?? 'Konfirmasi & Kirim' }}'"></span>
                 </button>
             </div>
         </div>

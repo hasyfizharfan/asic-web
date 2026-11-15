@@ -19,6 +19,7 @@
     nationality: 'domestic',
     category: 'regular',
     includeFieldTrip: false,
+    submitting: false,
     get calculatedFee() {
         if (this.nationality === 'domestic') {
             let base = this.participationType === 'listener' ? 750000 : (this.category === 'student' ? 1200000 : 1500000);
@@ -29,6 +30,19 @@
             if (this.includeFieldTrip) base += 40;
             return 'USD ' + base;
         }
+    },
+    async handleSubmit(e) {
+        this.submitting = true;
+        const payload = {
+            participation_type: this.participationType,
+            nationality: this.nationality,
+            category: this.category,
+            include_field_trip: this.includeFieldTrip,
+            estimated_fee: this.calculatedFee
+        };
+        const res = await window.asicApi.post('/api/participant/register', payload);
+        this.submitting = false;
+        window.location.href = '{{ route('fe.participant.payment.checkout') }}';
     }
 }">
     
@@ -44,8 +58,8 @@
         </div>
     </x-layout.page-header>
 
-    {{-- TODO(BE): ganti action route('fe.participant.register.post') --}}
-    <form action="{{ route('fe.participant.payment.checkout') }}" method="GET" class="space-y-6">
+    {{-- TODO(BE): action route('fe.participant.register.post') --}}
+    <form action="{{ route('fe.participant.payment.checkout') }}" method="GET" class="space-y-6" @submit.prevent="handleSubmit($event)">
         @csrf
 
         <!-- Section 1: Participation Type -->
@@ -170,8 +184,8 @@
                     <x-ui.button variant="outline" href="{{ route('fe.participant.login') }}">
                         Cancel
                     </x-ui.button>
-                    <x-ui.button type="submit" variant="primary" class="w-full sm:w-auto px-8" iconRight="arrow_forward">
-                        Proceed to Checkout
+                    <x-ui.button type="submit" variant="primary" class="w-full sm:w-auto px-8" iconRight="arrow_forward" ::disabled="submitting">
+                        <span x-text="submitting ? 'Processing...' : 'Proceed to Checkout'">Proceed to Checkout</span>
                     </x-ui.button>
                 </div>
             </div>

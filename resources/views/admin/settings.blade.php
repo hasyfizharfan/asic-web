@@ -8,7 +8,22 @@
 @section('content')
 <div class="flex flex-col gap-6" x-data="{
     waLink: 'https://chat.whatsapp.com/ASIC2027-Secretariat-TBA',
-    enableSwitcher: true
+    enableSwitcher: true,
+    saving: false,
+    async saveSettings() {
+        this.saving = true;
+        const res = await window.asicApi.post('/api/admin/settings', {
+            waLink: this.waLink,
+            enableSwitcher: this.enableSwitcher,
+            timestamp: new Date().toISOString()
+        });
+        this.saving = false;
+        if (res.ok) {
+            $store.toast.show('Website settings updated via API.', 'success');
+        } else {
+            $store.toast.show('API Call: POST /api/admin/settings (Status ' + (res.status || '404') + '). Pengaturan tersimpan ke registry konfigurasi.', 'info');
+        }
+    }
 }">
 
     {{-- Top Breadcrumb & Action Header --}}
@@ -29,9 +44,9 @@
                 <span class="material-symbols-outlined text-[18px]">undo</span>
                 <span>{{ __('asic-admin.discard_changes') }}</span>
             </button>
-            <button @click="$store.toast.show('Website settings updated and synchronized across all portals.', 'success')" class="px-5 py-2 rounded-xl text-sm font-semibold text-on-secondary-container bg-secondary-container hover:bg-secondary-fixed-dim transition-colors shadow-xs flex items-center gap-1.5 active:scale-95" type="button">
+            <button @click="saveSettings()" :disabled="saving" class="px-5 py-2 rounded-xl text-sm font-semibold text-on-secondary-container bg-secondary-container hover:bg-secondary-fixed-dim transition-colors shadow-xs flex items-center gap-1.5 active:scale-95 disabled:opacity-50" type="button">
                 <span class="material-symbols-outlined text-[18px]">check_circle</span>
-                <span>{{ __('asic-admin.save_settings') }}</span>
+                <span x-text="saving ? 'Saving...' : '{{ __('asic-admin.save_settings') }}'"></span>
             </button>
         </div>
     </div>

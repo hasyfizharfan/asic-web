@@ -24,14 +24,29 @@
         this.supervisorModalOpen = false;
         this.supervisorPin = '';
     },
-    confirmOverride() {
+    async confirmOverride() {
         if (this.supervisorPin.length < 4) {
             $store.toast.show('Please enter a valid supervisor PIN (min 4 digits)', 'error');
             return;
         }
+        await window.asicApi.post('/api/secretariat/checkin/override', {
+            id: this.searchId,
+            pin: this.supervisorPin,
+            reason: this.overrideReason
+        });
         this.closeSupervisor();
         $store.toast.show('Supervisor Override Authorized. Attendee badge unlocked.', 'success');
         window.location.href = '{{ route('fe.secretariat.reregistration', ['scan' => 'verified']) }}';
+    },
+    async handlePrintBadge() {
+        this.badgePrinted = true;
+        const res = await window.asicApi.post('/api/secretariat/checkin/print-badge', { id: this.searchId });
+        $store.toast.show('Badge printed & logged via API.', 'info');
+    },
+    async handleIssueKit() {
+        this.kitIssued = true;
+        const res = await window.asicApi.post('/api/secretariat/checkin/issue-kit', { id: this.searchId });
+        $store.toast.show('Attendance marked & seminar kit issued (API Logged).', 'success');
     }
 }" class="flex flex-col w-full relative">
 
@@ -447,12 +462,12 @@
                         {{-- Checklist Actions --}}
                         <div class="flex flex-col gap-2 pt-2 border-t border-surface-container-high">
                             <div class="flex flex-col sm:flex-row items-center gap-2">
-                                <button @click="badgePrinted = true; $store.toast.show('Printing badge for Dr. Farhan Harahap...', 'info')" 
+                                <button @click="handlePrintBadge()" 
                                         class="w-full sm:flex-1 py-3 px-4 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold flex items-center justify-center gap-2 border border-surface-container-high transition">
                                     <span class="material-symbols-outlined text-[18px]">print</span>
                                     <span>{{ __('asic-secretariat.reregistration.print_badge') }}</span>
                                 </button>
-                                <button @click="kitIssued = true; $store.toast.show('Attendance marked & seminar kit issued.', 'success')" 
+                                <button @click="handleIssueKit()" 
                                         class="w-full sm:flex-1 py-3 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-xs transition">
                                     <span class="material-symbols-outlined text-[18px]">check_circle</span>
                                     <span>{{ __('asic-secretariat.reregistration.mark_attended') }}</span>

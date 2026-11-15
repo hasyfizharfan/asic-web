@@ -1,121 +1,167 @@
 @extends('layouts.portal', [
-    'role' => 'participant'
+    'role' => 'participant',
+    'title' => (app()->getLocale() === 'id' ? 'Kebijakan Pengembalian Dana' : 'Refund Policy & Settlement') . ' - ASIC 2027'
 ])
 
+@php
+    $isId = (app()->getLocale() === 'id');
+@endphp
+
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6" x-data="{
-    refundSubmitted: false,
-    bankName: 'bni',
-    accountNo: '',
-    accountHolder: '',
-    reason: ''
-}">
-    <x-layout.page-header title="{{ __('asic-participant.refund_title') }}" subtitle="Financial settlement unit • Faculty of Agriculture, Universitas Andalas" :breadcrumbs="[
-        ['label' => 'Portal', 'url' => route('fe.participant.dashboard')],
-        ['label' => 'Payment', 'url' => route('fe.participant.payment.checkout')],
-        ['label' => 'Refund Request']
-    ]">
-        <x-ui.badge variant="warning" dot>Evaluation Pending</x-ui.badge>
+<div class="max-w-4xl mx-auto space-y-6">
+    <x-layout.page-header 
+        title="{{ $isId ? 'Kebijakan Pengembalian Dana' : 'Refund Policy & Manual Settlement' }}" 
+        subtitle="{{ $isId ? 'Ketentuan pemrosesan manual di luar sistem sesuai Analisis Kebutuhan Bagian D' : 'Offline manual settlement terms according to Requirements Analysis Section D' }}" 
+        :breadcrumbs="[
+            ['label' => 'Portal', 'url' => route('fe.participant.dashboard')],
+            ['label' => $isId ? 'Informasi Pembayaran' : 'Payment Information', 'url' => route('fe.participant.documents')],
+            ['label' => $isId ? 'Kebijakan Refund' : 'Refund Policy']
+        ]">
+        <x-ui.badge variant="secondary">
+            <span class="material-symbols-outlined text-[14px] mr-1">policy</span>
+            <span>{{ $isId ? 'Proses Manual di Luar Sistem' : 'Offline Manual Process' }}</span>
+        </x-ui.badge>
     </x-layout.page-header>
 
-    <!-- Strict Policy Notice Banner -->
-    <div class="p-5 rounded-2xl bg-error-container/30 border border-error/30 text-xs flex items-start gap-4 shadow-xs">
-        <div class="w-10 h-10 rounded-xl bg-error text-white flex items-center justify-center shrink-0 shadow-sm">
-            <span class="material-symbols-outlined text-[24px]">gavel</span>
+    <!-- Directive Notice Banner (Analisis Kebutuhan Bagian D) -->
+    <div class="p-5 sm:p-6 rounded-2xl bg-surface-container-lowest border border-amber-300 shadow-xs flex flex-col sm:flex-row items-start gap-4">
+        <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center shrink-0 shadow-sm">
+            <span class="material-symbols-outlined text-[28px]">gavel</span>
         </div>
-        <div class="space-y-1">
-            <div class="flex items-center gap-2">
-                <span class="font-bold text-sm text-error font-display">Academic Treasury Policy Notice</span>
-                <span class="font-mono text-[10px] text-error bg-error-container px-2 py-0.5 rounded-full">ASIC/FIN/2027-IV</span>
+        <div class="space-y-2 flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+                <span class="font-bold text-base text-on-surface font-display">
+                    {{ $isId ? 'Ketentuan Resmi Pengembalian Dana (ASIC 2027)' : 'Official Refund Directive (ASIC 2027)' }}
+                </span>
+                <span class="font-mono text-[10px] text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full font-bold">
+                    {{ $isId ? 'Analisis Kebutuhan Bagian D' : 'Requirements Section D' }}
+                </span>
             </div>
-            <p class="text-on-surface leading-relaxed">
-                <strong>Seminar attendance and registration fees are non-refundable</strong> under any personal circumstance. Only <strong>Publication Fees</strong> (for withdrawn manuscripts prior to editorial typesetting or unselected proceeding submissions) qualify for refund evaluation, subject to a 20% administrative handling fee.
+            <p class="text-xs sm:text-sm text-on-surface leading-relaxed">
+                {!! $isId 
+                    ? 'Sesuai dengan <strong>Analisis Kebutuhan Sistem Bagian D</strong>, seluruh proses pengajuan dan pengembalian dana (refund) <strong>dilakukan secara manual di luar sistem aplikasi web</strong> dan dikoordinasikan langsung bersama Bendahara Konferensi. Sistem web tidak memproses transaksi transfer dana keluar secara otomatis.' 
+                    : 'In accordance with <strong>Requirements Analysis Section D</strong>, all refund claims and disbursements are <strong>handled manually outside this web portal</strong> through direct coordination with the Conference Treasury. The system does not execute automated outbound fund disbursements.' 
+                !!}
             </p>
         </div>
     </div>
 
-    <!-- Main Grid -->
+    <!-- Main Grid: Terms & Procedures -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left: Form Submission -->
+        <!-- Left: Detailed Guidelines (2 cols) -->
         <div class="lg:col-span-2 space-y-6">
-            {{-- TODO(BE): action route('fe.participant.refund.store') --}}
-            <form action="{{ route('fe.participant.dashboard') }}" method="GET" class="space-y-6" @submit.prevent="$store.toast.add('Refund request submitted to Treasury for audit.', 'success'); refundSubmitted = true">
-                @csrf
-                
-                <!-- Financial Ledger Card -->
-                <x-ui.card title="Eligible Financial Ledger" icon="account_balance_wallet">
-                    <div class="p-4 rounded-xl bg-surface-container-low border border-surface-container-highest text-xs space-y-2.5">
-                        <div class="flex justify-between">
-                            <span class="text-on-surface-variant">Eligible Publication Fee:</span>
-                            <span class="font-mono font-bold text-on-surface">IDR 1.250.000</span>
+            <!-- Eligibility Card -->
+            <x-ui.card title="{{ $isId ? 'Kriteria Kelayakan Pengembalian Dana' : 'Eligibility & Deductions' }}" icon="account_balance_wallet">
+                <div class="space-y-4 text-xs sm:text-sm text-on-surface leading-relaxed">
+                    <div class="p-4 rounded-xl bg-surface-container-low border border-surface-container-highest space-y-2.5">
+                        <div class="flex items-start gap-2.5">
+                            <span class="material-symbols-outlined text-error text-[20px] shrink-0 mt-0.5">cancel</span>
+                            <p>
+                                <strong>{{ $isId ? 'Biaya Registrasi / Kehadiran Seminar:' : 'Registration & Attendance Fees:' }}</strong>
+                                <span class="text-on-surface-variant block mt-0.5">
+                                    {{ $isId ? 'Bersifat non-refundable (tidak dapat dikembalikan) atas alasan pembatalan kehadiran pribadi peserta.' : 'Strictly non-refundable for any personal cancellation of attendance.' }}
+                                </span>
+                            </p>
                         </div>
-                        <div class="flex justify-between text-error">
-                            <span>Administrative & Banking Handling (20%):</span>
-                            <span class="font-mono font-bold">- IDR 250.000</span>
+                        <div class="flex items-start gap-2.5 border-t border-surface-container-highest pt-2.5">
+                            <span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">check_circle</span>
+                            <p>
+                                <strong>{{ $isId ? 'Biaya Publikasi Prosiding (Publication Fee):' : 'Proceedings Publication Fee:' }}</strong>
+                                <span class="text-on-surface-variant block mt-0.5">
+                                    {{ $isId ? 'Hanya naskah yang ditarik (withdrawn) sebelum proses layout/typesetting percetakan atau tidak lolos seleksi prosiding terindeks yang dapat dievaluasi untuk pengembalian dana manual.' : 'Only manuscripts withdrawn prior to editorial typesetting or unselected proceeding submissions qualify for evaluation.' }}
+                                </span>
+                            </p>
                         </div>
-                        <div class="border-t border-surface-container-highest pt-2 flex justify-between text-sm font-bold text-primary">
-                            <span>Estimated Net Disbursement:</span>
-                            <span class="font-mono text-base">IDR 1.000.000</span>
+                        <div class="flex items-start gap-2.5 border-t border-surface-container-highest pt-2.5">
+                            <span class="material-symbols-outlined text-amber-700 text-[20px] shrink-0 mt-0.5">percent</span>
+                            <p>
+                                <strong>{{ $isId ? 'Potongan Biaya Administrasi Perbankan:' : 'Administrative & Banking Handling:' }}</strong>
+                                <span class="text-on-surface-variant block mt-0.5">
+                                    {{ $isId ? 'Pengembalian dana dikenakan potongan biaya penanganan administrasi dan kliring bank sebesar 20% dari nilai biaya publikasi.' : 'Disbursements are subject to a standard 20% administrative handling and clearing fee.' }}
+                                </span>
+                            </p>
                         </div>
                     </div>
-                </x-ui.card>
+                </div>
+            </x-ui.card>
 
-                <!-- Bank Disbursement Form -->
-                <x-ui.card title="Disbursement Destination Account" icon="payments">
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <x-ui.select label="Beneficiary Bank / Gateway" name="bank_name" x-model="bankName" required iconLeft="account_balance">
-                                <option value="bni">Bank BNI (Bank Negara Indonesia)</option>
-                                <option value="bri">Bank BRI (Bank Rakyat Indonesia)</option>
-                                <option value="mandiri">Bank Mandiri</option>
-                                <option value="bca">Bank BCA</option>
-                                <option value="nagari">Bank Nagari</option>
-                                <option value="bsi">Bank Syariah Indonesia (BSI)</option>
-                                <option value="paypal">PayPal Account (International)</option>
-                            </x-ui.select>
-
-                            <x-ui.input label="Bank Branch & City" name="bank_branch" placeholder="e.g. Limau Manih, Padang" required />
+            <!-- Step by Step Offline Procedure -->
+            <x-ui.card title="{{ $isId ? 'Tata Cara Pengajuan Manual ke Bendahara' : 'Manual Submission Procedure' }}" icon="checklist">
+                <ol class="space-y-3.5 text-xs sm:text-sm text-on-surface-variant">
+                    <li class="flex items-start gap-3">
+                        <span class="w-6 h-6 rounded-full bg-primary-fixed text-primary font-bold text-xs flex items-center justify-center shrink-0">1</span>
+                        <div>
+                            <strong class="text-on-surface">{{ $isId ? 'Kirimkan Surat Permohonan Tertulis' : 'Send Written Request Letter' }}</strong>
+                            <p class="text-xs text-on-surface-variant mt-0.5">
+                                {{ $isId ? 'Buat surat resmi bertanda tangan pemakalah utama yang memuat Nomor Registrasi ASIC, Judul Naskah, dan Alasan Penarikan.' : 'Draft an official signed letter containing your ASIC Registration ID, Abstract Title, and Withdrawal Rationale.' }}
+                            </p>
                         </div>
-
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <x-ui.input label="{{ __('asic-participant.account_number') }}" name="account_number" placeholder="e.g. 0123456789" iconLeft="tag" x-model="accountNo" required />
-                            <x-ui.input label="{{ __('asic-participant.account_holder') }}" name="account_holder" placeholder="Must match ID card" iconLeft="person" x-model="accountHolder" required />
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="w-6 h-6 rounded-full bg-primary-fixed text-primary font-bold text-xs flex items-center justify-center shrink-0">2</span>
+                        <div>
+                            <strong class="text-on-surface">{{ $isId ? 'Lampirkan Dokumen Pendukung' : 'Attach Supporting Documents' }}</strong>
+                            <p class="text-xs text-on-surface-variant mt-0.5">
+                                {{ $isId ? 'Lampirkan Bukti Transfer Pembayaran resmi, KTP/Paspor pemohon, dan rincian rekening bank atas nama penulis terdaftar.' : 'Attach official payment receipt, author ID card / passport, and bank account book matching the registered author.' }}
+                            </p>
                         </div>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <span class="w-6 h-6 rounded-full bg-primary-fixed text-primary font-bold text-xs flex items-center justify-center shrink-0">3</span>
+                        <div>
+                            <strong class="text-on-surface">{{ $isId ? 'Audit dan Rekonsiliasi Offline' : 'Offline Audit & Disbursement' }}</strong>
+                            <p class="text-xs text-on-surface-variant mt-0.5">
+                                {{ $isId ? 'Bendahara dan tim keuangan Fakultas Pertanian UNAND akan memverifikasi permohonan dalam waktu 14 hari kerja.' : 'Treasury will verify your file and process the settlement transfer within 14 working days.' }}
+                            </p>
+                        </div>
+                    </li>
+                </ol>
 
-                        <x-ui.textarea label="{{ __('asic-participant.refund_reason') }}" name="reason" placeholder="Explain reasons for manuscript withdrawal or refund claim..." rows="3" x-model="reason" required />
-
-                        <x-ui.file-upload label="Upload ID Card / KTP & Payment Receipt" name="identity_file" accept=".pdf,.jpg,.png" maxSize="5 MB" hint="Required for anti-fraud reconciliation" required />
+                <x-slot:footer>
+                    <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+                        <x-ui.button variant="outline" href="{{ route('fe.participant.dashboard') }}" iconLeft="arrow_back">
+                            {{ $isId ? 'Kembali ke Dashboard' : 'Back to Dashboard' }}
+                        </x-ui.button>
+                        <x-ui.button variant="primary" href="mailto:{{ $asic['email'] ?? 'asic@agr.unand.ac.id' }}?subject=Pengajuan%20Refund%20Manual%20ASIC%202027" iconLeft="mail">
+                            {{ $isId ? 'Hubungi Email Bendahara' : 'Email Treasury Desk' }}
+                        </x-ui.button>
                     </div>
-
-                    <x-slot:footer>
-                        <div class="w-full flex items-center justify-between text-xs">
-                            <x-ui.button variant="outline" href="{{ route('fe.participant.payment.status') }}">
-                                Cancel
-                            </x-ui.button>
-                            <x-ui.button type="submit" variant="danger" iconLeft="send">
-                                Submit Refund Claim
-                            </x-ui.button>
-                        </div>
-                    </x-slot:footer>
-                </x-ui.card>
-            </form>
+                </x-slot:footer>
+            </x-ui.card>
         </div>
 
-        <!-- Right: Treasury SLA & Guidelines -->
+        <!-- Right: Helpdesk & Contacts -->
         <div class="space-y-6">
-            <x-ui.card title="Treasury SLA Guidelines" icon="schedule">
-                <div class="space-y-3 text-xs text-on-surface-variant leading-relaxed">
-                    <div class="flex items-start gap-2">
-                        <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">verified_user</span>
-                        <p><strong class="text-on-surface">Verification Period:</strong> Treasury reviews requests within 5 business days after submission.</p>
+            <x-ui.card title="{{ $isId ? 'Kontak Layanan Keuangan' : 'Treasury Contacts' }}" icon="support_agent">
+                <div class="space-y-4 text-xs text-on-surface-variant">
+                    <div class="p-3.5 rounded-xl bg-surface-container-low border border-surface-container-highest space-y-2">
+                        <div class="font-bold text-on-surface text-sm flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[18px]">account_balance</span>
+                            <span>{{ $isId ? 'Unit Keuangan ASIC 2027' : 'ASIC Finance Unit' }}</span>
+                        </div>
+                        <p class="leading-relaxed">
+                            {{ $isId ? 'Fakultas Pertanian, Universitas Andalas' : 'Faculty of Agriculture, Universitas Andalas' }}<br>
+                            Kampus Limau Manih, Padang 25163
+                        </p>
                     </div>
-                    <div class="flex items-start gap-2">
-                        <span class="material-symbols-outlined text-secondary text-[18px] shrink-0 mt-0.5">currency_exchange</span>
-                        <p><strong class="text-on-surface">Disbursement Transfer:</strong> Approved funds are transferred within 14 business days to the specified account.</p>
-                    </div>
-                    <div class="flex items-start gap-2">
-                        <span class="material-symbols-outlined text-error text-[18px] shrink-0 mt-0.5">warning</span>
-                        <p><strong class="text-on-surface">Account Holder:</strong> Disbursement cannot be made to third-party accounts not matching the registered author.</p>
+
+                    <div class="space-y-2.5">
+                        <div class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-primary text-[18px]">mail</span>
+                            <div>
+                                <span class="block text-[10px] uppercase font-bold text-on-surface-variant">Email Resmi</span>
+                                <a href="mailto:{{ $asic['email'] ?? 'asic@agr.unand.ac.id' }}" class="text-primary font-bold hover:underline font-mono">
+                                    {{ $asic['email'] ?? 'asic@agr.unand.ac.id' }}
+                                </a>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
+                            <div>
+                                <span class="block text-[10px] uppercase font-bold text-on-surface-variant">{{ $isId ? 'Jam Operasional' : 'Service Hours' }}</span>
+                                <span class="text-on-surface font-semibold">Senin – Jumat, 08:30 – 16:00 WIB</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </x-ui.card>
@@ -123,4 +169,3 @@
     </div>
 </div>
 @endsection
-

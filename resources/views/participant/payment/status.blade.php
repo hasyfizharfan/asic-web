@@ -162,8 +162,8 @@
                     <x-ui.button variant="danger" href="{{ route('fe.participant.payment.checkout') }}" iconLeft="refresh">
                         Retry Payment Transaction
                     </x-ui.button>
-                    <x-ui.button variant="outline" href="{{ route('fe.participant.refund') }}" iconLeft="contact_support">
-                        Request Refund / Assistance
+                    <x-ui.button variant="outline" href="mailto:{{ $asic['email'] ?? 'asic@agr.unand.ac.id' }}?subject=Bantuan%20Pembayaran%20ASIC%202027" iconLeft="support_agent">
+                        {{ app()->getLocale() === 'id' ? 'Hubungi Bantuan Keuangan' : 'Contact Support' }}
                     </x-ui.button>
                 @endif
             </div>
