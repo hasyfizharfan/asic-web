@@ -37,11 +37,10 @@
         this.drawerOpen = false;
     },
     saveEntry() {
-        this.closeDrawer();
-        $store.toast.show('Entry saved successfully.', 'success');
+        $store.toast.show('Form CMS belum terhubung ke API; perubahan tidak disimpan.', 'warning');
     },
     publishChanges() {
-        $store.toast.show('All content updates deployed to public landing gateway.', 'success');
+        $store.toast.show('Publikasi massal CMS belum tersedia; tidak ada perubahan yang diterapkan.', 'warning');
     }
 }" class="flex flex-col w-full gap-6 relative">
 

@@ -178,10 +178,10 @@
                                 <button class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Edit" type="button">
                                     <span class="material-symbols-outlined text-[18px]">edit</span>
                                 </button>
-                                <button @click="$store.toast.show('Password reset email dispatched to participant.', 'info')" class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Reset Password" type="button">
+                                <button @click="$store.toast.show('Reset password oleh admin belum tersedia.', 'warning')" class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Reset Password belum tersedia" type="button">
                                     <span class="material-symbols-outlined text-[18px]">lock_reset</span>
                                 </button>
-                                <button @click="$store.toast.show('User session suspended.', 'error')" class="w-8 h-8 rounded-lg hover:bg-error-container/40 flex items-center justify-center text-error transition-colors" title="Deactivate" type="button">
+                                <button @click="$store.toast.show('Perubahan status belum terhubung ke API.', 'warning')" class="w-8 h-8 rounded-lg hover:bg-error-container/40 flex items-center justify-center text-error transition-colors" title="Status belum terhubung" type="button">
                                     <span class="material-symbols-outlined text-[18px]">block</span>
                                 </button>
                             </div>
@@ -226,10 +226,10 @@
                                 <button class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Edit" type="button">
                                     <span class="material-symbols-outlined text-[18px]">edit</span>
                                 </button>
-                                <button @click="$store.toast.show('Password reset email dispatched.', 'info')" class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Reset Password" type="button">
+                                <button @click="$store.toast.show('Reset password oleh admin belum tersedia.', 'warning')" class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Reset Password belum tersedia" type="button">
                                     <span class="material-symbols-outlined text-[18px]">lock_reset</span>
                                 </button>
-                                <button @click="$store.toast.show('User session suspended.', 'error')" class="w-8 h-8 rounded-lg hover:bg-error-container/40 flex items-center justify-center text-error transition-colors" title="Deactivate" type="button">
+                                <button @click="$store.toast.show('Perubahan status belum terhubung ke API.', 'warning')" class="w-8 h-8 rounded-lg hover:bg-error-container/40 flex items-center justify-center text-error transition-colors" title="Status belum terhubung" type="button">
                                     <span class="material-symbols-outlined text-[18px]">block</span>
                                 </button>
                             </div>
@@ -274,10 +274,10 @@
                                 <button class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Edit" type="button">
                                     <span class="material-symbols-outlined text-[18px]">edit</span>
                                 </button>
-                                <button @click="$store.toast.show('Password reset email dispatched.', 'info')" class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Reset Password" type="button">
+                                <button @click="$store.toast.show('Reset password oleh admin belum tersedia.', 'warning')" class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Reset Password belum tersedia" type="button">
                                     <span class="material-symbols-outlined text-[18px]">lock_reset</span>
                                 </button>
-                                <button @click="$store.toast.show('User session suspended.', 'error')" class="w-8 h-8 rounded-lg hover:bg-error-container/40 flex items-center justify-center text-error transition-colors" title="Deactivate" type="button">
+                                <button @click="$store.toast.show('Perubahan status belum terhubung ke API.', 'warning')" class="w-8 h-8 rounded-lg hover:bg-error-container/40 flex items-center justify-center text-error transition-colors" title="Status belum terhubung" type="button">
                                     <span class="material-symbols-outlined text-[18px]">block</span>
                                 </button>
                             </div>
@@ -322,7 +322,7 @@
                                 <button class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Edit" type="button">
                                     <span class="material-symbols-outlined text-[18px]">edit</span>
                                 </button>
-                                <button @click="$store.toast.show('Password reset email dispatched.', 'info')" class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Reset Password" type="button">
+                                <button @click="$store.toast.show('Reset password oleh admin belum tersedia.', 'warning')" class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-on-surface-variant hover:text-on-surface transition-colors" title="Reset Password belum tersedia" type="button">
                                     <span class="material-symbols-outlined text-[18px]">lock_reset</span>
                                 </button>
                                 <button @click="$store.toast.show('Super Admin role cannot be suspended.', 'warning')" class="w-8 h-8 rounded-lg hover:bg-error-container/40 flex items-center justify-center text-error transition-colors" title="Deactivate" type="button">
@@ -367,10 +367,10 @@
                         <td class="py-3.5 px-4 text-xs text-on-surface-variant italic">Invited 3d ago</td>
                         <td class="py-3.5 px-4 text-right">
                             <div class="inline-flex items-center justify-end gap-1">
-                                <button @click="$store.toast.show('Invitation resent to reviewer.', 'success')" class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-primary transition-colors" title="Resend Invitation" type="button">
+                                <button @click="$store.toast.show('Pengiriman undangan belum tersedia.', 'warning')" class="w-8 h-8 rounded-lg hover:bg-surface-container flex items-center justify-center text-primary transition-colors" title="Undangan belum tersedia" type="button">
                                     <span class="material-symbols-outlined text-[18px]">forward_to_inbox</span>
                                 </button>
-                                <button @click="$store.toast.show('Invitation revoked.', 'info')" class="w-8 h-8 rounded-lg hover:bg-error-container/40 flex items-center justify-center text-error transition-colors" title="Revoke" type="button">
+                                <button @click="$store.toast.show('Pencabutan undangan belum tersedia.', 'warning')" class="w-8 h-8 rounded-lg hover:bg-error-container/40 flex items-center justify-center text-error transition-colors" title="Undangan belum tersedia" type="button">
                                     <span class="material-symbols-outlined text-[18px]">close</span>
                                 </button>
                             </div>
@@ -412,7 +412,7 @@
                 </button>
             </div>
 
-            <form @submit.prevent="showAddModal = false; $store.toast.show('Staff account invitation dispatched successfully.', 'success')" class="flex flex-col gap-4 mt-2">
+            <form @submit.prevent="$store.toast.show('Form tambah pengguna belum terhubung; akun tidak dibuat.', 'warning')" class="flex flex-col gap-4 mt-2">
                 <div class="flex flex-col gap-1.5">
                     <label class="text-xs font-semibold uppercase text-on-surface tracking-wider">{{ __('asic-admin.full_name') }}</label>
                     <input class="h-11 px-4 bg-surface-container-lowest rounded-xl text-sm text-on-surface border border-surface-container-highest shadow-xs focus:outline-none focus:ring-2 focus:ring-primary" placeholder="[Participant Name]" required type="text">

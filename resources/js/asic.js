@@ -130,6 +130,13 @@ window.asicApi = {
         });
     },
 
+    patch(endpoint, data = {}) {
+        return this.request(endpoint, {
+            method: 'PATCH',
+            body: data
+        });
+    },
+
     delete(endpoint) {
         return this.request(endpoint, { method: 'DELETE' });
     },

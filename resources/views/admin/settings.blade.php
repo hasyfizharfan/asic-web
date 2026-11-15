@@ -11,20 +11,13 @@
     enableSwitcher: true,
     saving: false,
     async saveSettings() {
-        this.saving = true;
-        const res = await window.asicApi.post('/api/admin/settings', {
-            waLink: this.waLink,
-            enableSwitcher: this.enableSwitcher,
-            timestamp: new Date().toISOString()
-        });
-        this.saving = false;
-        if (res.ok) {
-            $store.toast.show('Website settings updated via API.', 'success');
-        } else {
-            $store.toast.show('API Call: POST /api/admin/settings (Status ' + (res.status || '404') + '). Pengaturan tersimpan ke registry konfigurasi.', 'info');
-        }
+        $store.toast.show('Penyimpanan website settings belum tersedia.', 'error');
     }
 }">
+    <div role="status" class="rounded-xl border border-secondary/30 bg-secondary-container p-5 text-sm text-on-secondary-container">
+        Website settings belum tersedia di backend. Nilai contoh tidak dimuat atau disimpan.
+    </div>
+    <div x-show="false" style="display: none;" aria-hidden="true">
 
     {{-- Top Breadcrumb & Action Header --}}
     <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 pb-2 border-b border-surface-container-highest/60">
@@ -445,5 +438,6 @@
         </div>
     </div>
 
+    </div>
 </div>
 @endsection

@@ -33,7 +33,7 @@
         return c > 0 ? c : 0;
     },
     dispatchNotice() {
-        $store.toast.show('Broadcast dispatched successfully to ' + this.recipientCount + ' recipients via 3 channels.', 'success');
+        $store.toast.show('Pengiriman email/WhatsApp belum tersedia. Pengumuman yang tersimpan lewat API tidak mengirim broadcast.', 'warning');
     }
 }" class="flex flex-col w-full gap-6">
 

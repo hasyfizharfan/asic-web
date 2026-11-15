@@ -41,3 +41,10 @@ Dijalankan pada branch `feat/fe-be-integration`, dari HEAD awal `4d96ac4` (`dev`
 - Logout form memanggil `POST /api/logout`. `asicApi` menggunakan cookie same-origin, mem-prime/refresh CSRF, retry satu kali pada 419, menangani 401/403/422, dan menyediakan `upload`/`postForm` untuk `FormData`.
 - Route portal simulasi dan flag `logged_in_*` telah dihapus dari `routes/fe-preview.php`. Route `/_fe/*` lokal yang tersisa adalah fixture visual tanpa autentikasi dan bukan alur login.
 - Feature coverage: redirect login setiap role, guard lintas role, guest redirect, logout, reset form, landing, dan form login. `php artisan test`: 115 tests, 782 assertions; Pint, build, serta route list lulus.
+
+## Tahap C — keputusan kontrak
+
+- Registrasi peserta memakai `POST /api/registrations`; pilihan event dan periode diambil dari endpoint publik, dan FE hanya melanjutkan ke checkout setelah respons 201 memuat `id_registration`.
+- Agar urutan alur yang disepakati dapat dilakukan (registrasi → invoice → bukti bayar → verifikasi → abstrak), invoice kini diterbitkan untuk semua registrasi yang memiliki tarif. LoA Listener tetap terbit saat registrasi; LoA presenter tetap menunggu hasil review. `InvoiceIssuer` idempoten sehingga pemanggilan setelah keputusan tidak menggandakan invoice.
+- Tim Abstrak memakai `POST /api/tim-abstrak/submissions/{id_abstract}/review` dan payload DB `hasil_review`/`catatan_review`. Draft, override check-in, badge, kit, dan website settings belum didukung API dan tidak boleh ditampilkan sebagai sukses.
+- Tarif memakai daftar `GET /api/registration-fees`; pembaruan backend dilakukan per ID lewat `PATCH /api/registration-fees/{id_fee}`, bukan PUT agregat siklus.

@@ -138,6 +138,42 @@
     </div>
 </header>
 
+<section class="bg-surface-container-lowest px-6 py-10 lg:px-16" x-data="{
+    event: null, speakers: [], schedules: [], publicFees: [], loading: true, loadError: '',
+    async init() {
+        try {
+            const [eventsResponse, feesResponse] = await Promise.all([
+                window.asicApi.get('/api/public/events'),
+                window.asicApi.get('/api/public/registration-fees')
+            ]);
+            if (!eventsResponse.ok || !feesResponse.ok) throw new Error(eventsResponse.error || feesResponse.error || 'Informasi event gagal dimuat.');
+            const events = eventsResponse.data?.data || [];
+            this.event = events[0] || null;
+            this.publicFees = feesResponse.data?.data || [];
+            if (this.event) {
+                const [speakersResponse, schedulesResponse] = await Promise.all([
+                    window.asicApi.get('/api/public/events/' + this.event.id_event + '/speakers'),
+                    window.asicApi.get('/api/public/events/' + this.event.id_event + '/schedules')
+                ]);
+                if (!speakersResponse.ok || !schedulesResponse.ok) throw new Error(speakersResponse.error || schedulesResponse.error || 'Agenda event gagal dimuat.');
+                this.speakers = speakersResponse.data?.data || [];
+                this.schedules = schedulesResponse.data?.data || [];
+            }
+        } catch (error) { this.loadError = error.message || 'Informasi publik gagal dimuat.'; }
+        finally { this.loading = false; }
+    }
+}" class="mx-auto max-w-7xl space-y-5">
+    <div><h2 class="text-2xl font-bold text-on-surface" x-text="event?.nama_event || 'Event ASIC'"></h2><p class="mt-1 text-sm text-on-surface-variant" x-text="event?.tema || event?.deskripsi || ''"></p></div>
+    <p x-show="loading" role="status" class="text-sm text-on-surface-variant">Memuat informasi event, pembicara, jadwal, dan tarif…</p>
+    <p x-show="loadError" x-text="loadError" role="alert" class="text-sm text-error"></p>
+    <p x-show="!loading && !loadError && !event" class="text-sm text-on-surface-variant">Belum ada event aktif.</p>
+    <div x-show="event && !loading && !loadError" class="grid gap-5 md:grid-cols-3">
+        <article class="rounded-xl border border-surface-container-highest p-4"><h3 class="font-bold">Pembicara</h3><p x-show="speakers.length === 0" class="mt-2 text-sm text-on-surface-variant">Belum ada pembicara diumumkan.</p><template x-for="speaker in speakers" :key="speaker.id_speaker"><div class="mt-3 text-sm"><p class="font-semibold" x-text="speaker.nama_speaker"></p><p class="text-xs text-on-surface-variant" x-text="speaker.institusi || ''"></p></div></template></article>
+        <article class="rounded-xl border border-surface-container-highest p-4"><h3 class="font-bold">Jadwal</h3><p x-show="schedules.length === 0" class="mt-2 text-sm text-on-surface-variant">Jadwal belum tersedia.</p><template x-for="(schedule, index) in schedules" :key="schedule.id_schedule || index"><div class="mt-3 text-sm"><p class="font-semibold" x-text="schedule.nama_sesi || schedule.judul || schedule.nama_kegiatan"></p><p class="text-xs text-on-surface-variant" x-text="schedule.waktu_mulai || schedule.tanggal || schedule.waktu || ''"></p></div></template></article>
+        <article class="rounded-xl border border-surface-container-highest p-4"><h3 class="font-bold">Tarif aktif</h3><p x-show="publicFees.length === 0" class="mt-2 text-sm text-on-surface-variant">Tarif belum tersedia.</p><template x-for="fee in publicFees" :key="fee.id_fee"><div class="mt-3 text-sm"><p class="font-semibold" x-text="fee.registration_type + ' · ' + fee.attendance_mode"></p><p class="text-xs text-on-surface-variant" x-text="(fee.period?.nama_periode || '') + ' · ' + fee.tujuan_publikasi + ' · IDR ' + fee.final_amount"></p></div></template></article>
+    </div>
+</section>
+
 <!-- Countdown & Date Announcement Strip -->
 <div class="text-white border-t-4 border-[#F5C518] py-6 px-6 lg:px-16 shadow-md" style="background-color: #0F3D24;">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">

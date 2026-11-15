@@ -7,24 +7,37 @@
 
 @section('content')
 <div x-data="{
-    saving: false,
+    saving: false, loading: true, loadError: '', fees: [],
+    async init() {
+        const res = await window.asicApi.get('/api/registration-fees');
+        this.loading = false;
+        if (!res.ok) { this.loadError = res.error || 'Tarif gagal dimuat.'; return; }
+        this.fees = res.data?.data?.data || [];
+    },
     async saveChanges() {
-        this.saving = true;
-        const res = await window.asicApi.put('/api/treasurer/tariffs', {
-            cycle: 'ASIC 2027',
-            updated_at: new Date().toISOString()
-        });
-        this.saving = false;
-        if (res.ok) {
-            $store.toast.show('Tariff schedules updated via API.', 'success');
-        } else {
-            $store.toast.show('API Call: PUT /api/treasurer/tariffs (Status ' + (res.status || '404') + '). Perubahan disimpan ke registry lokal.', 'info');
-        }
+        $store.toast.show('Pilih tarif tertentu untuk memperbarui melalui PATCH /api/registration-fees/{id_fee}. Penyimpanan massal belum tersedia.', 'error');
     },
     resetChanges() {
-        $store.toast.show('Tariff values restored to last confirmed senate baseline.', 'info');
+        $store.toast.show('Tidak ada perubahan lokal yang disimpan.', 'info');
     }
 }" class="flex flex-col w-full">
+
+    <section class="mb-6 rounded-xl border border-surface-container-highest bg-surface-container-lowest p-4" aria-live="polite">
+        <h2 class="font-bold text-on-surface">Tarif dari backend</h2>
+        <p x-show="loading" class="mt-2 text-sm text-on-surface-variant">Memuat tarif…</p>
+        <p x-show="loadError" x-text="loadError" role="alert" class="mt-2 text-sm text-error"></p>
+        <p x-show="!loading && !loadError && fees.length === 0" class="mt-2 text-sm text-on-surface-variant">Belum ada tarif.</p>
+        <div x-show="!loading && !loadError && fees.length" class="mt-3 overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead><tr><th class="p-2">Event</th><th class="p-2">Periode</th><th class="p-2">Kategori</th><th class="p-2">Mode</th><th class="p-2">Publikasi</th><th class="p-2">Tarif</th></tr></thead>
+                <tbody><template x-for="fee in fees" :key="fee.id_fee"><tr class="border-t border-surface-container-highest">
+                    <td class="p-2" x-text="fee.event?.nama_event || fee.id_event"></td><td class="p-2" x-text="fee.period?.nama_periode || fee.id_period"></td><td class="p-2" x-text="fee.registration_type"></td><td class="p-2" x-text="fee.attendance_mode"></td><td class="p-2" x-text="fee.tujuan_publikasi"></td><td class="p-2" x-text="fee.final_amount"></td>
+                </tr></template></tbody>
+            </table>
+        </div>
+    </section>
+
+    <div x-show="false" style="display: none;" aria-hidden="true">
 
     {{-- Status & Session Banner --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface-container px-4 sm:px-6 py-3 rounded-xl mb-6 shadow-xs border border-surface-container-high">
@@ -335,5 +348,6 @@
         </section>
     </div>
 </div>
+    </div>
 @endsection
 

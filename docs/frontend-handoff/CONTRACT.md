@@ -79,3 +79,22 @@ Dokumen ini memetakan seluruh view Blade frontend, nama route preview `fe.*`, va
 | `asic.errors.429` | `fe.error` | `/_fe/errors/429` | `$code`, `$title`, `$message`, `$icon` | Too Many Requests (Rate limit) |
 | `asic.errors.500` | `fe.error` | `/_fe/errors/500` | `$code`, `$title`, `$message`, `$icon` | Internal Server Error |
 
+## Stage C — Integrasi view ke kontrak API
+
+| View action lama | Kontrak yang dipakai | Payload / perilaku |
+| --- | --- | --- |
+| `participant.registration` → `/api/participant/register` (tidak ada) | `POST /api/registrations` | `id_event`, `id_period`, `registration_type` (`Student`/`Regular`/`Committee`), `participation_type` (`Oral Presenter`/`Poster Presenter`/`Listener`), `attendance_mode` (`Daring`/`Luring`), `publication_option`, opsional `add_ons`. Arahkan ke checkout hanya setelah HTTP 201 dan menerima `id_registration`. Event dan periode dipilih dari `GET /api/public/events` serta `GET /api/public/registration-fees`. |
+| `reviewer.detail` → `/api/reviewer/abstracts/{id}/review` (tidak ada) | `POST /api/tim-abstrak/submissions/{id_abstract}/review` | `hasil_review: Diterima|Ditolak`, `catatan_review`; UI baru terkunci setelah sukses. Draft review belum memiliki endpoint. |
+| `treasurer.tariffs` → `/api/treasurer/tariffs` (tidak ada) | `GET /api/registration-fees`; perubahan memakai `PATCH /api/registration-fees/{id_fee}` | Setiap baris tarif harus menggunakan kontrak `RegistrationFeeResource` dan payload `UpdateRegistrationFeeRequest`. PUT agregat per siklus tidak didukung. |
+| `secretariat.reregistration` → `/api/secretariat/checkin/{override,print-badge,issue-kit}` (tidak ada) | Scan QR staf: `POST /api/sessions/{id_session}/attendance/scan`; sesi peserta: `GET /api/sessions/{id_session}/attendees` | Payload scan mengikuti `ScanAttendanceRequest`. Override, cetak badge, penerbitan kit, dan pencarian peserta berdasarkan nomor registrasi belum tersedia; UI tidak boleh menandai tindakan tersebut berhasil. |
+| `admin.settings` → `/api/admin/settings` (tidak ada) | Belum ada endpoint settings | Tombol simpan harus menyatakan fitur belum tersedia, tanpa menyimpan state lokal. |
+
+Status API dibungkus sebagai `{success, message?, data}`. Untuk daftar berhalaman, baca item dari `data.data`; untuk `RegistrationFeeResource`, field tarif menggunakan `id_event`, `id_period`, `registration_type`, `attendance_mode`, `tujuan_publikasi`, `final_amount`, serta relasi `event` dan `period`.
+
+### Field UI yang memakai nama/enum database
+
+- Halaman abstrak menampilkan `id_abstract` integer (PK) sebagai identifier; kode tampilan lama `ASIC27-*` tidak menjadi route ID. Status ditampilkan memakai nilai DB `Diajukan`, `Revisi`, `Diterima`, `Ditolak`.
+- Status invoice ditampilkan memakai nilai DB (`Menunggu Pembayaran`, `Menunggu Verifikasi`, `Terverifikasi`, `Ditolak`, `Kedaluwarsa`). UI tidak membuat status `failed` atau `under_review` sendiri.
+- Profil peserta ditampilkan lewat relasi `registration.participant`; file download menggunakan endpoint terotorisasi `participant-files/{id_file}/download`, bukan `file_url` publik.
+- Endpoint kehadiran mengembalikan token `qr_token`; format gambar QR/kamera belum menjadi bagian kontrak backend.
+

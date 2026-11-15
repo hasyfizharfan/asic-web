@@ -75,6 +75,9 @@ View::share('asic', [
 |--------------------------------------------------------------------------
 */
 View::composer(['participant.*', 'layouts.portal'], function ($view) {
+    if (! request()->is('_fe/*')) {
+        return;
+    }
     $participantType = request()->query('type', 'oral');
     if ($participantType === 'presenter') {
         $participantType = 'oral';
@@ -117,6 +120,9 @@ View::composer(['participant.*', 'layouts.portal'], function ($view) {
 View::share('blindReview', true);
 
 View::composer('reviewer.*', function ($view) {
+    if (! request()->is('_fe/*')) {
+        return;
+    }
     $reviewerNav = [
         ['label' => __('asic-reviewer.queue_title') ?? 'Review Queue', 'route' => 'fe.reviewer.queue', 'active_pattern' => '_fe/reviewer*', 'icon' => 'rate_review'],
         ['label' => __('asic-reviewer.profile_title') ?? 'Profile', 'route' => 'fe.reviewer.profile', 'icon' => 'account_circle'],
@@ -129,6 +135,9 @@ View::composer('reviewer.*', function ($view) {
 });
 
 View::composer('secretariat.*', function ($view) {
+    if (! request()->is('_fe/*')) {
+        return;
+    }
     $secNav = [
         ['label' => __('asic-nav.abstracts'), 'route' => 'fe.secretariat.abstracts.index', 'active_pattern' => '_fe/secretariat/abstracts*', 'icon' => 'description'],
         ['label' => __('asic-nav.reregistration'), 'route' => 'fe.secretariat.reregistration', 'icon' => 'qr_code_scanner'],
@@ -141,6 +150,9 @@ View::composer('secretariat.*', function ($view) {
 });
 
 View::composer('treasurer.*', function ($view) {
+    if (! request()->is('_fe/*')) {
+        return;
+    }
     $treasurerNav = [
         ['label' => __('asic-nav.tariffs'), 'route' => 'fe.treasurer.tariffs', 'icon' => 'price_change'],
         ['label' => __('asic-nav.payment_queue'), 'route' => 'fe.treasurer.payments.index', 'active_pattern' => '_fe/treasurer/payments*', 'icon' => 'receipt_long'],
@@ -150,6 +162,9 @@ View::composer('treasurer.*', function ($view) {
 });
 
 View::composer('admin.*', function ($view) {
+    if (! request()->is('_fe/*')) {
+        return;
+    }
     $adminNav = [
         ['label' => __('asic-nav.overview'), 'route' => 'fe.admin.overview', 'icon' => 'dashboard'],
         ['label' => __('asic-nav.users_roles'), 'route' => 'fe.admin.users', 'icon' => 'group'],

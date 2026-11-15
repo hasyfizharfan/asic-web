@@ -13,8 +13,8 @@
         title="{{ $isId ? 'Kebijakan Pengembalian Dana' : 'Refund Policy & Manual Settlement' }}" 
         subtitle="{{ $isId ? 'Ketentuan pemrosesan manual di luar sistem sesuai Analisis Kebutuhan Bagian D' : 'Offline manual settlement terms according to Requirements Analysis Section D' }}" 
         :breadcrumbs="[
-            ['label' => 'Portal', 'url' => route('fe.participant.dashboard')],
-            ['label' => $isId ? 'Informasi Pembayaran' : 'Payment Information', 'url' => route('fe.participant.documents')],
+            ['label' => 'Portal', 'url' => route('portal.participant.dashboard')],
+            ['label' => $isId ? 'Informasi Pembayaran' : 'Payment Information', 'url' => route('portal.participant.documents')],
             ['label' => $isId ? 'Kebijakan Refund' : 'Refund Policy']
         ]">
         <x-ui.badge variant="secondary">
@@ -119,10 +119,10 @@
 
                 <x-slot:footer>
                     <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-                        <x-ui.button variant="outline" href="{{ route('fe.participant.dashboard') }}" iconLeft="arrow_back">
+                        <x-ui.button variant="outline" href="{{ route('portal.participant.dashboard') }}" iconLeft="arrow_back">
                             {{ $isId ? 'Kembali ke Dashboard' : 'Back to Dashboard' }}
                         </x-ui.button>
-                        <x-ui.button variant="primary" href="mailto:{{ $asic['email'] ?? 'asic@agr.unand.ac.id' }}?subject=Pengajuan%20Refund%20Manual%20ASIC%202027" iconLeft="mail">
+                        <x-ui.button variant="primary" href="mailto:asic@agr.unand.ac.id?subject=Pengajuan%20Refund%20Manual%20ASIC%202027" iconLeft="mail">
                             {{ $isId ? 'Hubungi Email Bendahara' : 'Email Treasury Desk' }}
                         </x-ui.button>
                     </div>
