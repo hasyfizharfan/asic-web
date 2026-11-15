@@ -19,5 +19,9 @@ class DatabaseSeeder extends Seeder
             RolePermissionSeeder::class,
             AdminUserSeeder::class,
         ]);
+
+        if ($this->command?->getLaravel()->environment('local')) {
+            $this->call(DemoSeeder::class);
+        }
     }
 }
