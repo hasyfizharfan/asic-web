@@ -98,3 +98,9 @@ Status API dibungkus sebagai `{success, message?, data}`. Untuk daftar berhalama
 - Profil peserta ditampilkan lewat relasi `registration.participant`; file download menggunakan endpoint terotorisasi `participant-files/{id_file}/download`, bukan `file_url` publik.
 - Endpoint kehadiran mengembalikan token `qr_token`; format gambar QR/kamera belum menjadi bagian kontrak backend.
 
+### Pemetaan Tahap C tambahan
+
+- `admin.users` memakai `GET/POST /api/admin/users`, `GET/PUT/DELETE /api/admin/users/{id_user}`, `PATCH /api/admin/users/{id_user}/toggle-status`, `POST /api/admin/users/batch-action`, dan `GET /api/admin/users/export-csv`. Reset password admin dan pengiriman undangan tetap belum tersedia.
+- `secretariat.announcements` memakai CRUD `/api/content/announcements` dan `/api/content/communication-channels`. Penyimpanan pengumuman tidak mengirim email/WhatsApp karena gateway broadcast belum tersedia.
+- Editor `secretariat.content` untuk event, speaker, dan jadwal masih belum terhubung penuh; endpoint CRUD tersedia dan pekerjaan UI tercatat di `REMAINING.md`.
+

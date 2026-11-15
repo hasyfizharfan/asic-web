@@ -16,8 +16,7 @@ Fitur berikut belum boleh menampilkan keberhasilan atau mengubah state seolah-ol
 | CRUD template dokumen | Belum tersedia. |
 | Profil peserta dan ganti password | Endpoint belum tersedia; UI menyatakan fitur belum tersedia. |
 | Dashboard peserta agregat dan assignment reviewer | Endpoint belum tersedia. |
-| Secretariat announcements/channels/content manager | Endpoint CRUD tersedia, tetapi halaman composer/CMS belum dihubungkan penuh. Aksi yang belum tersambung menyatakan kegagalan/ketidaktersediaan, bukan sukses. |
-| Admin users CRUD/batch/export | Endpoint tersedia, tetapi direktori/modal UI belum dihubungkan penuh. Tombol yang belum tersambung memberi keterangan belum tersedia. |
+| Secretariat website content manager (events/speakers/schedules) | Endpoint CRUD tersedia, tetapi editor CMS belum dihubungkan. Konten yang tampil pada landing event/speaker/schedule sudah mengambil data API. |
 | Landing sections selain event/speaker/schedule/tarif aktif | Masih memakai konten presentasi statis. |
 | Pemindaian kamera QR dan pembentukan gambar QR | Check-in menerima token melalui input manual/pemindai keyboard; kamera dan gambar QR belum disediakan. |
 

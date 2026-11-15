@@ -41,10 +41,13 @@ class ParticipantPaymentReviewCheckinWorkflowTest extends TestCase
         $this->as(Role::ROLE_SEKRETARIAT)->get('/secretariat/reregistration')->assertOk();
         $this->as(Role::ROLE_SEKRETARIAT)->get('/secretariat/recap')->assertOk();
         $this->as(Role::ROLE_SEKRETARIAT)->get('/secretariat/attendance')->assertOk();
+        $this->as(Role::ROLE_SEKRETARIAT)->get('/secretariat/announcements')->assertOk();
+        $this->as(Role::ROLE_SEKRETARIAT)->get('/secretariat/content')->assertOk();
         $this->as(Role::ROLE_BENDAHARA)->get('/treasurer/tariffs')->assertOk();
         $this->as(Role::ROLE_BENDAHARA)->get('/treasurer/payments')->assertOk();
         $this->as(Role::ROLE_TIM_ABSTRAK)->get('/reviewer/queue')->assertOk();
         $this->as(Role::ROLE_ADMIN)->get('/admin/settings')->assertOk();
+        $this->as(Role::ROLE_ADMIN)->get('/admin/users')->assertOk();
         $this->as(Role::ROLE_ADMIN)->get('/admin/signatures')->assertOk();
 
         $created = $this->as(Role::ROLE_PESERTA, 'workflow')->postJson('/api/registrations', [
