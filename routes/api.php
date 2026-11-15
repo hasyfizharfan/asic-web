@@ -16,6 +16,7 @@ use App\Http\Controllers\EventSessionController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\ParticipantFileController;
+use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentProofController;
 use App\Http\Controllers\PaymentVerificationController;
@@ -51,6 +52,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     // Logout Akun & Info Profil
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
     Route::get('/me', [AuthController::class, 'me'])->name('api.me');
+    Route::put('/me/profile', [MyProfileController::class, 'update'])->middleware('permission:access_participant_portal')->name('api.me.profile.update');
+    Route::put('/me/password', [MyProfileController::class, 'updatePassword'])->middleware('permission:access_participant_portal')->name('api.me.password.update');
 
     // -----------------------------------------------------------------
     // MODUL M-03: PENDAFTARAN PESERTA & ADD-ON (KF-10)

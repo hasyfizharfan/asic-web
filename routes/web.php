@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthPageController;
 use App\Http\Controllers\PortalController;
+use App\Http\Controllers\Portal\ParticipantController;
 use App\Http\Controllers\PublicPortalController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,19 +28,19 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/portal', [PortalController::class, 'redirectToDashboard'])->name('portal.dashboard');
 
     Route::prefix('participant')->name('portal.participant.')->middleware('permission:access_participant_portal')->group(function (): void {
-        Route::get('/', fn () => redirect()->route('portal.participant.dashboard'));
-        Route::get('/dashboard', [PortalController::class, 'dashboard'])->name('dashboard');
-        Route::view('/registration', 'participant.registration')->name('registration');
-        Route::view('/abstract', 'participant.abstract')->name('abstract');
-        Route::view('/payment/checkout', 'participant.payment.checkout')->name('payment.checkout');
-        Route::view('/payment/status', 'participant.payment.status')->name('payment.status');
-        Route::view('/documents', 'participant.documents')->name('documents');
-        Route::view('/attendance', 'participant.attendance-qr')->name('attendance');
-        Route::view('/files/full-paper', 'participant.full-paper')->name('full-paper');
-        Route::view('/profile', 'participant.profile')->name('profile');
-        Route::view('/refund', 'participant.refund')->name('refund');
-        Route::view('/notifications', 'participant.notifications')->name('notifications');
-        Route::view('/certificate', 'participant.certificate')->name('certificate');
+        Route::get('/', [ParticipantController::class, 'index']);
+        Route::get('/dashboard', [ParticipantController::class, 'dashboard'])->name('dashboard');
+        Route::get('/registration', [ParticipantController::class, 'registration'])->name('registration');
+        Route::get('/abstract', [ParticipantController::class, 'abstract'])->name('abstract');
+        Route::get('/payment/checkout', [ParticipantController::class, 'checkout'])->name('payment.checkout');
+        Route::get('/payment/status', [ParticipantController::class, 'paymentStatus'])->name('payment.status');
+        Route::get('/documents', [ParticipantController::class, 'documents'])->name('documents');
+        Route::get('/attendance', [ParticipantController::class, 'attendance'])->name('attendance');
+        Route::get('/files/full-paper', [ParticipantController::class, 'fullPaper'])->name('full-paper');
+        Route::get('/profile', [ParticipantController::class, 'profile'])->name('profile');
+        Route::get('/refund', [ParticipantController::class, 'refund'])->name('refund');
+        Route::get('/notifications', [ParticipantController::class, 'notifications'])->name('notifications');
+        Route::get('/certificate', [ParticipantController::class, 'certificate'])->name('certificate');
     });
 
     Route::prefix('secretariat')->name('portal.secretariat.')->middleware('permission:access_secretariat_portal')->group(function (): void {

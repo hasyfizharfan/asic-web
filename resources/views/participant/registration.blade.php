@@ -3,15 +3,7 @@
     $isListener = ($type === 'listener');
 @endphp
 
-@extends('layouts.portal', [
-    'role' => 'participant',
-    'roleName' => 'Registration',
-    'nav' => [
-        ['label' => __('asic-nav.dashboard'), 'route' => 'portal.participant.dashboard', 'icon' => 'space_dashboard'],
-        ['label' => __('asic-nav.payment'), 'route' => 'portal.participant.payment.checkout', 'icon' => 'payments'],
-        ['label' => __('asic-nav.documents'), 'route' => 'portal.participant.documents', 'icon' => 'folder'],
-    ]
-])
+@extends('layouts.portal', ['role' => 'participant', 'roleName' => 'Registrasi'])
 
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6" x-data="{
@@ -71,16 +63,15 @@
     <x-layout.page-header title="{{ __('asic-participant.reg_form_title') }}" subtitle="{{ __('asic-participant.reg_form_desc') }}">
         <div class="flex items-center gap-2 p-1 bg-surface-container-low rounded-xl border border-surface-container-highest text-xs">
             <span class="text-[11px] font-bold text-on-surface-variant px-2 uppercase">Mode:</span>
-            <button type="button" @click="participationType = 'oral'" :class="participationType !== 'listener' ? 'bg-primary text-white font-bold shadow-xs' : 'text-on-surface'" class="px-2.5 py-1 rounded-lg transition">
+                <button type="button" @click="participationType = 'Oral Presenter'" :class="participationType !== 'Listener' ? 'bg-primary text-white font-bold shadow-xs' : 'text-on-surface'" class="px-2.5 py-1 rounded-lg transition">
                 Presenter
             </button>
-            <button type="button" @click="participationType = 'listener'" :class="participationType === 'listener' ? 'bg-primary text-white font-bold shadow-xs' : 'text-on-surface'" class="px-2.5 py-1 rounded-lg transition">
+                <button type="button" @click="participationType = 'Listener'" :class="participationType === 'Listener' ? 'bg-primary text-white font-bold shadow-xs' : 'text-on-surface'" class="px-2.5 py-1 rounded-lg transition">
                 Listener
             </button>
         </div>
     </x-layout.page-header>
 
-    {{-- TODO(BE): action route('fe.participant.register.post') --}}
     <form action="#" method="POST" class="space-y-6" @submit.prevent="handleSubmit($event)">
         @csrf
 

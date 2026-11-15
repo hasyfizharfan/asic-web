@@ -14,10 +14,14 @@ Fitur berikut belum boleh menampilkan keberhasilan atau mengubah state seolah-ol
 | Sertifikat | Belum tersedia. |
 | Archive | Belum tersedia. |
 | CRUD template dokumen | Belum tersedia. |
-| Profil peserta dan ganti password | Endpoint belum tersedia; UI menyatakan fitur belum tersedia. |
-| Dashboard peserta agregat dan assignment reviewer | Endpoint belum tersedia. |
+| Assignment reviewer | Belum tersedia. |
 | Bendahara create/update tarif satuan | Daftar tarif membaca API; form create/update belum disediakan. Endpoint `POST/PATCH /api/registration-fees` tersedia, sementara tombol UI menjelaskan bahwa update massal tidak didukung. |
 | Landing sections selain event/speaker/schedule/tarif aktif | Masih memakai konten presentasi statis. |
 | Pemindaian kamera QR dan pembentukan gambar QR | Check-in menerima token melalui input manual/pemindai keyboard; kamera dan gambar QR belum disediakan. |
 
 Untuk fitur baru, tambahkan kontrak backend (Form Request, middleware `permission:`, API Resource, OpenAPI, dan Feature test) sebelum menghubungkan kontrol UI.
+# Fitur portal peserta yang belum tersedia
+
+- Pengajuan dan pemrosesan refund belum memiliki endpoint backend. Halaman refund menampilkan status **Belum tersedia** dan aksi pengajuan dinonaktifkan.
+- Penerbitan/pengunduhan sertifikat belum memiliki endpoint backend. Halaman sertifikat menampilkan status **Belum tersedia** dan tombol unduh dinonaktifkan.
+- Layanan notifikasi peserta belum memiliki endpoint backend. Halaman notifikasi menampilkan status **Belum tersedia** dan aksinya dinonaktifkan.

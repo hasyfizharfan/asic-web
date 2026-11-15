@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Models\Registration;
+use App\Models\Role;
 use App\Observers\RegistrationObserver;
+use App\Support\PermissionMatrix;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -25,15 +27,15 @@ class AppServiceProvider extends ServiceProvider
         Registration::observe(RegistrationObserver::class);
 
         View::composer('participant.*', function ($view): void {
-            $view->with('participantNav', [
-                ['label' => __('asic-nav.dashboard'), 'route' => 'portal.participant.dashboard', 'icon' => 'space_dashboard'],
-                ['label' => __('asic-nav.my_abstract'), 'route' => 'portal.participant.abstract', 'icon' => 'description'],
-                ['label' => __('asic-nav.payment'), 'route' => 'portal.participant.payment.checkout', 'icon' => 'payments'],
-                ['label' => __('asic-nav.documents'), 'route' => 'portal.participant.documents', 'icon' => 'folder'],
-                ['label' => __('asic-nav.attendance_qr'), 'route' => 'portal.participant.attendance', 'icon' => 'qr_code_2'],
-                ['label' => __('asic-nav.full_paper'), 'route' => 'portal.participant.full-paper', 'icon' => 'upload_file'],
-                ['label' => __('asic-nav.profile'), 'route' => 'portal.participant.profile', 'icon' => 'account_circle'],
-            ]);
+            $user = auth()->user();
+            $user?->loadMissing('role');
+            $roleKey = match ($user?->role?->nama_role) {
+                Role::ROLE_PESERTA => 'participant', Role::ROLE_SEKRETARIAT => 'secretariat',
+                Role::ROLE_BENDAHARA => 'treasurer', Role::ROLE_TIM_ABSTRAK => 'reviewer', Role::ROLE_ADMIN => 'admin', default => null,
+            };
+            $nav = collect(config('portal-nav.'.$roleKey, []))->filter(fn (array $item) => $roleKey !== 'participant' || app(PermissionMatrix::class)->allows($user, $item['permission'], 'view_only'))
+                ->map(fn (array $item) => [...$item, 'label' => __($item['label'])])->values()->all();
+            $view->with(['participantNav' => $nav, 'nav' => $nav]);
         });
         View::composer('reviewer.*', function ($view): void {
             $view->with([
