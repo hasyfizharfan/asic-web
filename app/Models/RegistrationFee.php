@@ -12,9 +12,13 @@ class RegistrationFee extends Model
     use HasFactory;
 
     protected $table = 'registration_fee';
+
     protected $primaryKey = 'id_fee';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -51,7 +55,9 @@ class RegistrationFee extends Model
     }
 
     public const REGISTRATION_TYPES = ['Student', 'Regular', 'Committee'];
+
     public const ATTENDANCE_MODES = ['Daring', 'Luring'];
+
     public const PUBLICATION_TARGETS = ['Prosiding', 'Jurnal', 'Tidak'];
 
     /**

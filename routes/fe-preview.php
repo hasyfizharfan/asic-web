@@ -1,9 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Session;
-use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\View;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,13 +26,16 @@ if (in_array(config('session.driver'), ['database', 'redis', 'memcached'])) {
             </div>
         ', 503);
     })->where('any', '.*');
+
     return;
 }
 
 // Temporary FE Auth Simulation Middlewares
-if (!class_exists('FeParticipantAuthMiddleware')) {
-    class FeParticipantAuthMiddleware {
-        public function handle($request, \Closure $next) {
+if (! class_exists('FeParticipantAuthMiddleware')) {
+    class FeParticipantAuthMiddleware
+    {
+        public function handle($request, Closure $next)
+        {
             if ($request->has('type') && in_array($request->query('type'), ['oral', 'poster', 'listener', 'presenter'])) {
                 $mode = $request->query('type');
                 if ($mode === 'presenter') {
@@ -42,61 +44,76 @@ if (!class_exists('FeParticipantAuthMiddleware')) {
                 session(['participant_type' => $mode]);
                 session()->save();
             }
-            if (!session('logged_in_participant')) {
+            if (! session('logged_in_participant')) {
                 return redirect()->route('fe.participant.login');
             }
+
             return $next($request);
         }
     }
 }
 
-if (!class_exists('FeReviewerAuthMiddleware')) {
-    class FeReviewerAuthMiddleware {
-        public function handle($request, \Closure $next) {
-            if (!session('logged_in_reviewer')) {
+if (! class_exists('FeReviewerAuthMiddleware')) {
+    class FeReviewerAuthMiddleware
+    {
+        public function handle($request, Closure $next)
+        {
+            if (! session('logged_in_reviewer')) {
                 return redirect()->route('fe.reviewer.login');
             }
+
             return $next($request);
         }
     }
 }
 
-if (!class_exists('FeSecretariatAuthMiddleware')) {
-    class FeSecretariatAuthMiddleware {
-        public function handle($request, \Closure $next) {
-            if (!session('logged_in_secretariat')) {
+if (! class_exists('FeSecretariatAuthMiddleware')) {
+    class FeSecretariatAuthMiddleware
+    {
+        public function handle($request, Closure $next)
+        {
+            if (! session('logged_in_secretariat')) {
                 return redirect()->route('fe.secretariat.login');
             }
+
             return $next($request);
         }
     }
 }
 
-if (!class_exists('FeTreasurerAuthMiddleware')) {
-    class FeTreasurerAuthMiddleware {
-        public function handle($request, \Closure $next) {
-            if (!session('logged_in_treasurer')) {
+if (! class_exists('FeTreasurerAuthMiddleware')) {
+    class FeTreasurerAuthMiddleware
+    {
+        public function handle($request, Closure $next)
+        {
+            if (! session('logged_in_treasurer')) {
                 return redirect()->route('fe.treasurer.login');
             }
+
             return $next($request);
         }
     }
 }
 
-if (!class_exists('FeAdminAuthMiddleware')) {
-    class FeAdminAuthMiddleware {
-        public function handle($request, \Closure $next) {
-            if (!session('logged_in_admin')) {
+if (! class_exists('FeAdminAuthMiddleware')) {
+    class FeAdminAuthMiddleware
+    {
+        public function handle($request, Closure $next)
+        {
+            if (! session('logged_in_admin')) {
                 return redirect()->route('fe.admin.login');
             }
+
             return $next($request);
         }
     }
 }
 
-if (!class_exists('FeLocaleMiddleware')) {
-    class FeLocaleMiddleware {
-        public function handle($request, \Closure $next) {
+if (! class_exists('FeLocaleMiddleware')) {
+    class FeLocaleMiddleware
+    {
+        public function handle($request, Closure $next)
+        {
             // Locale isolation inside preview group only
             if ($request->has('lang') && in_array($request->query('lang'), ['en', 'id'])) {
                 session(['locale' => $request->query('lang')]);
@@ -104,6 +121,7 @@ if (!class_exists('FeLocaleMiddleware')) {
             $locale = session('locale', config('app.locale', 'en'));
             app()->setLocale($locale);
             View::share('currentLocale', $locale);
+
             return $next($request);
         }
     }
@@ -151,20 +169,20 @@ View::composer(['participant.*', 'layouts.portal'], function ($view) {
     $participantNav = [
         ['label' => __('asic-nav.dashboard'), 'route' => 'fe.participant.dashboard', 'icon' => 'space_dashboard'],
     ];
-    if (!$isListener) {
+    if (! $isListener) {
         $participantNav[] = ['label' => __('asic-nav.my_abstract'), 'route' => 'fe.participant.abstract', 'icon' => 'description'];
     }
     $participantNav[] = ['label' => __('asic-nav.payment'), 'route' => 'fe.participant.payment.checkout', 'active_pattern' => '_fe/participant/payment*', 'icon' => 'payments'];
     $participantNav[] = ['label' => __('asic-nav.documents'), 'route' => 'fe.participant.documents', 'icon' => 'folder'];
     $participantNav[] = ['label' => __('asic-nav.attendance_qr'), 'route' => 'fe.participant.attendance-qr', 'icon' => 'qr_code_2'];
-    if (!$isListener) {
+    if (! $isListener) {
         $participantNav[] = ['label' => __('asic-nav.full_paper'), 'route' => 'fe.participant.full-paper', 'icon' => 'upload_file'];
     }
     $participantNav[] = ['label' => __('asic-nav.certificate'), 'route' => 'fe.participant.certificate', 'icon' => 'workspace_premium'];
     $participantNav[] = ['label' => __('asic-nav.notifications'), 'route' => 'fe.participant.notifications', 'icon' => 'notifications', 'badge' => '2'];
     $participantNav[] = ['label' => __('asic-nav.profile'), 'route' => 'fe.participant.profile', 'icon' => 'account_circle'];
 
-    $roleName = match($participantType) {
+    $roleName = match ($participantType) {
         'listener' => __('asic-participant.role_listener'),
         'poster' => __('asic-participant.role_poster'),
         default => __('asic-participant.role_oral'),
@@ -246,6 +264,7 @@ Route::prefix('_fe')->name('fe.')->middleware(FeLocaleMiddleware::class)->group(
             session(['locale' => $locale]);
             app()->setLocale($locale);
         }
+
         return redirect()->back();
     })->name('lang.switch');
 
@@ -257,7 +276,7 @@ Route::prefix('_fe')->name('fe.')->middleware(FeLocaleMiddleware::class)->group(
     Route::get('/errors/{code}', function ($code) {
         $allowedCodes = ['401', '403', '404', '419', '429', '500'];
         if (in_array($code, $allowedCodes) && view()->exists("asic.errors.{$code}")) {
-            return response()->view("asic.errors.{$code}", [], (int)$code);
+            return response()->view("asic.errors.{$code}", [], (int) $code);
         }
         abort(404);
     })->name('error');
@@ -268,6 +287,7 @@ Route::prefix('_fe')->name('fe.')->middleware(FeLocaleMiddleware::class)->group(
         if (file_exists($templatePath)) {
             return response()->download($templatePath, 'ASIC-2027-IOP-Author-Template.docx');
         }
+
         return response('Template file not found in resources/private/templates', 404);
     })->name('template.author');
 
@@ -282,80 +302,95 @@ Route::prefix('_fe')->name('fe.')->middleware(FeLocaleMiddleware::class)->group(
             if (request()->has('type') && in_array(request('type'), ['oral', 'poster', 'listener'])) {
                 session(['participant_type' => request('type')]);
             }
+
             return redirect()->route('fe.participant.dashboard');
         }
         if (session('logged_in_participant')) {
             return redirect()->route('fe.participant.dashboard');
         }
+
         return view('auth.participant');
     })->name('participant.login');
 
     Route::get('/participant/logout', function () {
         session()->forget('logged_in_participant');
+
         return redirect()->route('fe.participant.login');
     })->name('participant.logout');
 
     Route::match(['get', 'post'], '/reviewer/login', function () {
         if (request()->isMethod('post') || request()->has('action')) {
             session(['logged_in_reviewer' => true]);
+
             return redirect()->route('fe.reviewer.queue');
         }
         if (session('logged_in_reviewer')) {
             return redirect()->route('fe.reviewer.queue');
         }
+
         return view('auth.reviewer');
     })->name('reviewer.login');
 
     Route::get('/reviewer/logout', function () {
         session()->forget('logged_in_reviewer');
+
         return redirect()->route('fe.reviewer.login');
     })->name('reviewer.logout');
 
     Route::match(['get', 'post'], '/secretariat/login', function () {
         if (request()->isMethod('post') || request()->has('action')) {
             session(['logged_in_secretariat' => true]);
+
             return redirect()->route('fe.secretariat.abstracts.index');
         }
         if (session('logged_in_secretariat')) {
             return redirect()->route('fe.secretariat.abstracts.index');
         }
+
         return view('auth.secretariat');
     })->name('secretariat.login');
 
     Route::get('/secretariat/logout', function () {
         session()->forget('logged_in_secretariat');
+
         return redirect()->route('fe.secretariat.login');
     })->name('secretariat.logout');
 
     Route::match(['get', 'post'], '/treasurer/login', function () {
         if (request()->isMethod('post') || request()->has('action')) {
             session(['logged_in_treasurer' => true]);
+
             return redirect()->route('fe.treasurer.tariffs');
         }
         if (session('logged_in_treasurer')) {
             return redirect()->route('fe.treasurer.tariffs');
         }
+
         return view('auth.treasurer');
     })->name('treasurer.login');
 
     Route::get('/treasurer/logout', function () {
         session()->forget('logged_in_treasurer');
+
         return redirect()->route('fe.treasurer.login');
     })->name('treasurer.logout');
 
     Route::match(['get', 'post'], '/admin/login', function () {
         if (request()->isMethod('post') || request()->has('action')) {
             session(['logged_in_admin' => true]);
+
             return redirect()->route('fe.admin.overview');
         }
         if (session('logged_in_admin')) {
             return redirect()->route('fe.admin.overview');
         }
+
         return view('auth.admin');
     })->name('admin.login');
 
     Route::get('/admin/logout', function () {
         session()->forget('logged_in_admin');
+
         return redirect()->route('fe.admin.login');
     })->name('admin.logout');
 
@@ -370,6 +405,7 @@ Route::prefix('_fe')->name('fe.')->middleware(FeLocaleMiddleware::class)->group(
                 session(['participant_type' => $type]);
                 session()->save();
             }
+
             return redirect()->back();
         })->name('switch-track');
 

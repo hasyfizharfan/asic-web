@@ -11,12 +11,16 @@ class PaymentVerification extends Model
     use HasFactory;
 
     protected $table = 'payment_verification';
+
     protected $primaryKey = 'id_verification';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
-    protected $fillable = ['id_payment_proof','id_treasurer','tanggal_verifikasi','hasil_verifikasi','alasan_penolakan'];
+    protected $fillable = ['id_payment_proof', 'id_treasurer', 'tanggal_verifikasi', 'hasil_verifikasi', 'alasan_penolakan'];
 
     protected function casts(): array
     {

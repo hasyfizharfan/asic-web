@@ -4,6 +4,7 @@ namespace App\Http\Requests\Admin;
 
 use App\Models\Role;
 use App\Models\UserAccount;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,7 +23,7 @@ class UpdateUserRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        if (!$this->filled('id_role') && $this->filled('role')) {
+        if (! $this->filled('id_role') && $this->filled('role')) {
             $roleInput = strtolower(trim((string) $this->input('role')));
             $roleMap = [
                 'participant' => Role::ROLE_PESERTA,
@@ -55,7 +56,7 @@ class UpdateUserRequest extends FormRequest
     /**
      * Aturan validasi untuk update akun pengguna oleh Admin.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {

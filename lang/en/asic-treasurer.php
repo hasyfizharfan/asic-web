@@ -5,7 +5,7 @@ return [
     'desk_title' => 'Treasury Operations • Universitas Andalas',
     'finance_secretariat' => 'Finance Secretariat',
     'system_active' => 'Treasury Active',
-    
+
     // E1 - Tariffs
     'tariffs' => [
         'title' => 'Tariff Manager',
@@ -95,7 +95,7 @@ return [
         'check_amount' => 'Remittance amount matches exact invoice sum',
         'check_beneficiary' => 'Beneficiary account is verified UNAND conference escrow',
         'check_rrn' => 'RRN / Bank reference number is unique & unlogged',
-        
+
         // PayPal
         'gateway_summary' => 'Gateway Settlement Summary',
         'gross_invoiced' => 'Gross Invoiced',
@@ -154,4 +154,3 @@ return [
         'secure_hash' => 'Verification Hash',
     ],
 ];
-

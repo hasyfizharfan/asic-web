@@ -5,12 +5,13 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ReviewAbstractRequest;
 use App\Models\AbstractReview;
 use App\Models\AbstractSubmission;
+use App\Models\UserAccount;
 use App\Services\AbstractDecisionProcessor;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -40,7 +41,7 @@ class AbstractReviewController extends Controller
                 required: false,
                 description: 'Filter berdasarkan scope / bidang topik',
                 schema: new OA\Schema(type: 'string', example: 'Agronomy')
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -50,11 +51,11 @@ class AbstractReviewController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 403, description: 'Akses ditolak (khusus Tim Abstrak)')
+            new OA\Response(response: 403, description: 'Akses ditolak (khusus Tim Abstrak)'),
         ]
     )]
     public function index(Request $request): JsonResponse
@@ -103,7 +104,7 @@ class AbstractReviewController extends Controller
                 required: true,
                 description: 'ID Pengajuan Abstrak',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -113,12 +114,12 @@ class AbstractReviewController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'data', type: 'object'),
-                        new OA\Property(property: 'file_url', type: 'string', nullable: true)
+                        new OA\Property(property: 'file_url', type: 'string', nullable: true),
                     ]
                 )
             ),
             new OA\Response(response: 403, description: 'Akses ditolak'),
-            new OA\Response(response: 404, description: 'Naskah abstrak tidak ditemukan')
+            new OA\Response(response: 404, description: 'Naskah abstrak tidak ditemukan'),
         ]
     )]
     public function show(int $id_abstract): JsonResponse
@@ -156,7 +157,7 @@ class AbstractReviewController extends Controller
                 required: true,
                 description: 'ID Pengajuan Abstrak',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         requestBody: new OA\RequestBody(
             required: true,
@@ -164,7 +165,7 @@ class AbstractReviewController extends Controller
                 required: ['hasil_review'],
                 properties: [
                     new OA\Property(property: 'hasil_review', type: 'string', enum: ['Diterima', 'Ditolak', 'Revisi'], example: 'Diterima'),
-                    new OA\Property(property: 'catatan_review', type: 'string', example: 'Abstrak memenuhi kriteria konferensi. Silakan persiapkan slide presentasi.')
+                    new OA\Property(property: 'catatan_review', type: 'string', example: 'Abstrak memenuhi kriteria konferensi. Silakan persiapkan slide presentasi.'),
                 ]
             )
         ),
@@ -176,16 +177,16 @@ class AbstractReviewController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: 'Status hasil review tidak valid')
+            new OA\Response(response: 422, description: 'Status hasil review tidak valid'),
         ]
     )]
     public function review(ReviewAbstractRequest $request, int $id_abstract): JsonResponse
     {
-        /** @var \App\Models\UserAccount $user */
+        /** @var UserAccount $user */
         $user = Auth::user();
         $validated = $request->validated();
 

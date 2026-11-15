@@ -23,7 +23,7 @@ return [
         'acceptance_rate' => ':pct% Rate',
         'rejected' => 'Rejected',
         'rejection_rate' => ':pct% Rate',
-        
+
         'search_placeholder' => 'Search by title, author name, or submission ID...',
         'all_topics' => 'All Topics',
         'all_types' => 'All Types',
@@ -37,7 +37,7 @@ return [
         'internal_note_placeholder' => 'Add confidential review note for academic committee...',
         'issue_loa' => 'Issue Official LoA / Decision',
         'open_dossier' => 'Open Full Academic Dossier',
-        
+
         // Table
         'col_id' => 'ID',
         'col_title' => 'Title & Academic Track',
@@ -65,7 +65,7 @@ return [
         'section_conclusion' => '4. Conclusion & Policy Implications',
         'download_pdf' => 'Download PDF Draft',
         'field_context' => 'Field Research Site & Microscopic Root Assessment',
-        
+
         // Decision Panel
         'decision_title' => 'Committee Secretariat Decision',
         'decision_notice' => 'Selecting an action automatically generates and dispatches official letter and registration invoice to the corresponding author.',
@@ -93,7 +93,7 @@ return [
         'manual_desc' => 'If participant cannot present a readable mobile badge, query the registration registry manually:',
         'query_btn' => 'Query',
         'prior_checkins' => 'Prior Check-ins at Desk #02',
-        
+
         // Dossier
         'participant_dossier' => 'Participant Dossier',
         'confirmed_attendee' => 'Confirmed Attendee',
@@ -101,7 +101,7 @@ return [
         'kit_issued' => 'Seminar Kit',
         'print_badge' => 'Print Official Badge',
         'mark_attended' => 'Confirm Attendance & Issue Kit',
-        
+
         // Error / Blocked state
         'blocked_title' => 'BLOCKED AT GATE — Payment Pending',
         'billing_details' => 'Billing Details',
@@ -118,7 +118,7 @@ return [
         'btn_redirect_finance' => 'Redirect to Finance / Billing Desk',
         'btn_supervisor_override' => 'Manual Override (Supervisor PIN)',
         'btn_dismiss' => 'Dismiss & Scan Another QR Code',
-        
+
         // Override Modal
         'supervisor_modal_title' => 'Supervisor Authorization',
         'supervisor_modal_desc' => 'Overriding an unpaid check-in will issue an unconditional attendee badge. This action is permanently logged to the secretariat audit ledger.',
@@ -143,13 +143,13 @@ return [
         'certs_ready' => 'Certificates Ready / Issued',
         'auto_eligible' => ':pct% Auto-Eligible Today',
         'batch_print' => 'Batch Print (:count)',
-        
+
         'filter_category' => 'Category: All Participants',
         'filter_room' => 'Session: All Rooms',
         'filter_cert' => 'Certificate: All Status',
         'day_1' => 'Day 1',
         'day_2' => 'Day 2',
-        
+
         'col_participant' => 'Presenter / Attendee',
         'col_session' => 'Presentation / Room',
         'col_attendance_log' => 'Attendance Log',
@@ -172,7 +172,7 @@ return [
         'tab_all_tracks' => 'All Tracks',
         'tab_day1' => 'Day 1 Live',
         'tab_day2' => 'Day 2 Projected',
-        
+
         'total_registrants' => 'Total Registrants',
         'presenters' => 'Presenters',
         'listeners' => 'Listeners',
@@ -182,7 +182,7 @@ return [
         'settled' => ':pct% Settled',
         'pending_verification' => ':count Pending Verification',
         'checkin_rate' => 'On-site Check-in Rate',
-        
+
         'chart_track_title' => 'Submissions & Registrations by Academic Track',
         'chart_demographics' => 'Participant Demographic & Origin',
         'summary_table_title' => 'Detailed Session Breakdown & Cap Analysis',
@@ -211,7 +211,7 @@ return [
         'content_label' => 'Notice Content (Markdown / Rich Text)',
         'btn_dispatch' => 'Broadcast Immediately',
         'btn_schedule' => 'Schedule for Later',
-        
+
         'preview_title' => 'Live Multi-Device Preview',
         'tab_banner' => 'In-App Banner',
         'tab_wa' => 'WhatsApp',
@@ -230,13 +230,13 @@ return [
         'tab_fees' => 'Fees Information',
         'tab_faq' => 'FAQ',
         'tab_pages' => 'Other Pages',
-        
+
         'search_entries' => 'Search entries in :section...',
         'all_tracks' => 'All Tracks & Sessions',
         'any_status' => 'Any Status',
         'reorder' => 'Reorder / Drag',
         'publish_all' => 'Publish All Changes',
-        
+
         'col_order' => 'Order',
         'col_speaker' => 'Speaker & Institution',
         'col_role' => 'Role / Session',
@@ -248,4 +248,3 @@ return [
         'draft' => 'Draft',
     ],
 ];
-

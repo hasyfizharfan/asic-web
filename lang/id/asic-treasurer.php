@@ -5,7 +5,7 @@ return [
     'desk_title' => 'Operasional Keuangan • Universitas Andalas',
     'finance_secretariat' => 'Sekretariat Keuangan',
     'system_active' => 'Keuangan Aktif',
-    
+
     // E1 - Tariffs
     'tariffs' => [
         'title' => 'Pengelola Tarif & Biaya',
@@ -95,7 +95,7 @@ return [
         'check_amount' => 'Nominal transfer sesuai persis hingga digit terakhir',
         'check_beneficiary' => 'Rekening tujuan adalah rekening escrow resmi ASIC UNAND',
         'check_rrn' => 'Nomor referensi bank (RRN) unik dan belum pernah tercatat',
-        
+
         // PayPal
         'gateway_summary' => 'Ringkasan Pelunasan Gerbang',
         'gross_invoiced' => 'Total Ditagihkan',
@@ -154,4 +154,3 @@ return [
         'secure_hash' => 'Kode Hash Verifikasi',
     ],
 ];
-

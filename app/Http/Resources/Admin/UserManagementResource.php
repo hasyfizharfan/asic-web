@@ -19,7 +19,7 @@ class UserManagementResource extends JsonResource
 
         // Format nama lengkap & gelar
         $fullName = $participant?->full_name;
-        if (!$fullName || trim($fullName) === '') {
+        if (! $fullName || trim($fullName) === '') {
             $fullName = explode('@', $this->email)[0];
         }
 
@@ -75,7 +75,7 @@ class UserManagementResource extends JsonResource
         $words = preg_split('/\s+/', trim((string) $clean));
 
         if (count($words) >= 2) {
-            return strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1));
+            return strtoupper(substr($words[0], 0, 1).substr($words[1], 0, 1));
         }
 
         return strtoupper(substr($words[0] ?? 'U', 0, 2));
@@ -99,8 +99,7 @@ class UserManagementResource extends JsonResource
             'Bendahara' => "Rek: Mandiri TF-00{$this->id_user}",
             'Sekretariat' => 'Scientific Desk',
             'Tim Abstrak' => 'Reviewer Panel',
-            default => "Paper ID: ASIC-2026-" . str_pad((string) $this->id_user, 3, '0', STR_PAD_LEFT),
+            default => 'Paper ID: ASIC-2026-'.str_pad((string) $this->id_user, 3, '0', STR_PAD_LEFT),
         };
     }
 }
-

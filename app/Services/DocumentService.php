@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\DocumentTemplate;
+use App\Models\Event;
 use App\Models\IssuedDocument;
 use App\Models\Registration;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -66,8 +68,8 @@ class DocumentService
             ->count() + 1;
         $format = $template->format_nomor ?: self::DEFAULT_FORMATS[$jenis];
 
-        $event = $reg?->event ?? \App\Models\Event::find($eventId);
-        $year = $event?->tanggal_mulai ? \Carbon\Carbon::parse($event->tanggal_mulai)->format('Y') : now()->format('Y');
+        $event = $reg?->event ?? Event::find($eventId);
+        $year = $event?->tanggal_mulai ? Carbon::parse($event->tanggal_mulai)->format('Y') : now()->format('Y');
 
         return str_replace(
             ['{SEQ}', '{SCOPE}', '{EDITION}', '{YYYY}', '{MM}'],
@@ -125,7 +127,7 @@ class DocumentService
             'publication_option' => $reg->publication_option,
             'is_presenter' => $reg->isPresenter(),
             'event_dates' => $e->tanggal_mulai && $e->tanggal_selesai
-                ? \Carbon\Carbon::parse($e->tanggal_mulai)->format('d F Y').' - '.\Carbon\Carbon::parse($e->tanggal_selesai)->format('d F Y') : null,
+                ? Carbon::parse($e->tanggal_mulai)->format('d F Y').' - '.Carbon::parse($e->tanggal_selesai)->format('d F Y') : null,
             'event_location' => $e->lokasi,
             'registration_type' => $reg->registration_type,
             'attendance_mode' => $reg->attendance_mode,

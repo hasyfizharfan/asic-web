@@ -106,4 +106,3 @@ class EventSession extends Model
         return null;
     }
 }
-

@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Models\Event;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Database\QueryException;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -16,6 +16,7 @@ class EventController extends Controller
     use ApiResponses;
 
     private const MODES = ['Hybrid', 'Daring', 'Luring'];
+
     private const STATUSES = ['Draft', 'Aktif', 'Selesai', 'Arsip'];
 
     private function rules(bool $partial): array

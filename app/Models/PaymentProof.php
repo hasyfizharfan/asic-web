@@ -12,12 +12,16 @@ class PaymentProof extends Model
     use HasFactory;
 
     protected $table = 'payment_proof';
+
     protected $primaryKey = 'id_payment_proof';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
-    protected $fillable = ['id_invoice','file_bukti','tanggal_upload','nominal_transfer','catatan_peserta'];
+    protected $fillable = ['id_invoice', 'file_bukti', 'tanggal_upload', 'nominal_transfer', 'catatan_peserta'];
 
     protected function casts(): array
     {

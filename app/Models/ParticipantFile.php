@@ -79,4 +79,3 @@ class ParticipantFile extends Model
         return $this->belongsTo(Registration::class, 'id_registration', 'id_registration');
     }
 }
-

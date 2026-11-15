@@ -11,9 +11,13 @@ class AbstractReview extends Model
     use HasFactory;
 
     protected $table = 'abstract_review';
+
     protected $primaryKey = 'id_review';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -41,4 +45,3 @@ class AbstractReview extends Model
         return $this->belongsTo(UserAccount::class, 'id_reviewer', 'id_user');
     }
 }
-

@@ -59,9 +59,13 @@ class Role extends Model
      * Konstanta 5 Peran (Roles) Sistem Seminar ASIC sesuai PRD & ERD.
      */
     public const ROLE_PESERTA = 'Peserta';
+
     public const ROLE_SEKRETARIAT = 'Sekretariat';
+
     public const ROLE_BENDAHARA = 'Bendahara';
+
     public const ROLE_TIM_ABSTRAK = 'Tim Abstrak';
+
     public const ROLE_ADMIN = 'Admin';
 
     /**
@@ -84,4 +88,3 @@ class Role extends Model
         return $this->hasMany(DigitalSignature::class, 'id_role', 'id_role');
     }
 }
-

@@ -119,7 +119,7 @@ class UserAccount extends Authenticatable
     /**
      * Cek apakah akun memiliki peran (role) tertentu.
      *
-     * @param string|array<string> $roles
+     * @param  string|array<string>  $roles
      */
     public function hasRole(string|array $roles): bool
     {
@@ -138,4 +138,3 @@ class UserAccount extends Authenticatable
         return $this->hasRole(Role::ROLE_ADMIN);
     }
 }
-

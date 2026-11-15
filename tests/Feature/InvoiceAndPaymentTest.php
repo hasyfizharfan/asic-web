@@ -13,8 +13,10 @@ use App\Models\Role;
 use App\Services\InvoiceIssuer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Smalot\PdfParser\Parser;
 use Tests\Concerns\BuildsAsicFixtures;
 use Tests\TestCase;
 
@@ -75,7 +77,7 @@ class InvoiceAndPaymentTest extends TestCase
         $this->fee(['amount' => 1500000, 'discount' => 200000]);
         $addOn = $this->addOn();
         // Urutan seperti RegistrationController::store: registrasi + add-on dalam satu transaksi.
-        $reg = \Illuminate\Support\Facades\DB::transaction(function () use ($addOn) {
+        $reg = DB::transaction(function () use ($addOn) {
             $r = $this->registration('1', ['participation_type' => 'Listener']);
             RegistrationAddOn::create(['id_registration' => $r->id_registration, 'id_add_on' => $addOn->id_add_on, 'jumlah' => 2, 'subtotal' => 500000]);
 
@@ -222,7 +224,7 @@ class InvoiceAndPaymentTest extends TestCase
 
         $receipt = IssuedDocument::where('jenis_dokumen', 'Receipt')->firstOrFail();
         $this->assertSame($inv->id_registration, $receipt->id_registration);
-        $text = (new \Smalot\PdfParser\Parser)->parseContent(Storage::disk('local')->get($receipt->file_document))->getText();
+        $text = (new Parser)->parseContent(Storage::disk('local')->get($receipt->file_document))->getText();
         $this->assertStringContainsString('500,000', $text);
         $this->assertStringContainsString('Five hundred thousand rupiah', $text);
         $this->as(Role::ROLE_PESERTA, '1')->get("/api/documents/{$receipt->id_document}/download")->assertOk();

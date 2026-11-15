@@ -31,7 +31,7 @@ return [
     'country' => 'Country of Origin',
     'department' => 'Department / Study Program',
     'city' => 'City',
-    
+
     // Abstract Section in Reg Form
     'abstract_info' => 'Abstract Manuscript Submission',
     'abstract_title' => 'Abstract Title',
@@ -40,7 +40,7 @@ return [
     'abstract_body' => 'Abstract Text',
     'keywords' => 'Keywords (3–5 terms)',
     'upload_abstract_doc' => 'Upload Abstract Document (Optional .docx/.pdf)',
-    
+
     // Listener Section
     'field_trip_title' => 'Minangkabau Agricultural Excursion (Field Trip)',
     'field_trip_desc' => 'Optional full-day tour to traditional highland farming systems in Bukittinggi & Harau Valley.',
@@ -93,4 +93,3 @@ return [
     'download_pdf' => 'Download Certificate (PDF)',
     'verify_online' => 'Verify Credential Online',
 ];
-

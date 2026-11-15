@@ -79,4 +79,3 @@ class RegistrationAddOn extends Model
         return $this->belongsTo(AddOn::class, 'id_add_on', 'id_add_on');
     }
 }
-

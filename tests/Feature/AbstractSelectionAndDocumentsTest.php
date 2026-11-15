@@ -10,6 +10,7 @@ use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Smalot\PdfParser\Parser;
 use Tests\Concerns\BuildsAsicFixtures;
 use Tests\TestCase;
 
@@ -250,6 +251,6 @@ class AbstractSelectionAndDocumentsTest extends TestCase
 
     private function pdfText(IssuedDocument $d): string
     {
-        return (new \Smalot\PdfParser\Parser)->parseContent(Storage::disk('local')->get($d->file_document))->getText();
+        return (new Parser)->parseContent(Storage::disk('local')->get($d->file_document))->getText();
     }
 }

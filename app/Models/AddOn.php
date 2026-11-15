@@ -12,9 +12,13 @@ class AddOn extends Model
     use HasFactory;
 
     protected $table = 'add_on';
+
     protected $primaryKey = 'id_add_on';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -35,4 +39,3 @@ class AddOn extends Model
         return $this->hasMany(RegistrationAddOn::class, 'id_add_on', 'id_add_on');
     }
 }
-

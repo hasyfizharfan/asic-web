@@ -44,7 +44,7 @@ class AuthController extends Controller
                     new OA\Property(property: 'phone', type: 'string', example: '+628123456789'),
                     new OA\Property(property: 'affiliation', type: 'string', example: 'Universitas Andalas'),
                     new OA\Property(property: 'country', type: 'string', example: 'Indonesia'),
-                    new OA\Property(property: 'delegate_category', type: 'string', example: 'Domestic Presenter')
+                    new OA\Property(property: 'delegate_category', type: 'string', example: 'Domestic Presenter'),
                 ]
             )
         ),
@@ -57,14 +57,14 @@ class AuthController extends Controller
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string', example: 'Akun delegasi berhasil dibuat.'),
                         new OA\Property(property: 'activation_link_required', type: 'boolean', example: true),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
             new OA\Response(
                 response: 422,
                 description: 'Validasi input gagal'
-            )
+            ),
         ]
     )]
     public function register(RegisterRequest $request): JsonResponse|RedirectResponse
@@ -98,7 +98,7 @@ class AuthController extends Controller
 
             // 4. Resolusi negara berdasarkan pilihan Delegate Category & Nationality di UI
             $country = $validated['country'] ?? null;
-            if (!$country) {
+            if (! $country) {
                 $category = strtolower($validated['delegate_category'] ?? $validated['nationality'] ?? '');
                 if (str_contains($category, 'indonesia') || str_contains($category, 'domestic')) {
                     $country = 'Indonesia';
@@ -179,7 +179,7 @@ class AuthController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string', example: 'Login berhasil.'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
@@ -190,7 +190,7 @@ class AuthController extends Controller
             new OA\Response(
                 response: 422,
                 description: 'Kredensial tidak valid'
-            )
+            ),
         ]
     )]
     public function login(LoginRequest $request): JsonResponse|RedirectResponse
@@ -202,7 +202,7 @@ class AuthController extends Controller
         $user = $this->findUserByIdentifier($identifier);
 
         // 3. Validasi kredensial pengguna dan kecocokan password
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -216,7 +216,7 @@ class AuthController extends Controller
         }
 
         // 4. Validasi status keaktifan akun pengguna
-        if (!$user->isActive()) {
+        if (! $user->isActive()) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -275,7 +275,7 @@ class AuthController extends Controller
             content: new OA\JsonContent(
                 required: ['query'],
                 properties: [
-                    new OA\Property(property: 'query', type: 'string', example: 'John Doe')
+                    new OA\Property(property: 'query', type: 'string', example: 'John Doe'),
                 ]
             )
         ),
@@ -288,11 +288,11 @@ class AuthController extends Controller
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
                         new OA\Property(property: 'count', type: 'integer'),
-                        new OA\Property(property: 'hint', type: 'string')
+                        new OA\Property(property: 'hint', type: 'string'),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: 'Format kueri tidak valid')
+            new OA\Response(response: 422, description: 'Format kueri tidak valid'),
         ]
     )]
     public function forgotUsername(Request $request): JsonResponse
@@ -306,8 +306,8 @@ class AuthController extends Controller
             ->where('email', 'like', "%{$search}%")
             ->orWhereHas('participant', function ($p) use ($search) {
                 $p->where('first_name', 'like', "%{$search}%")
-                  ->orWhere('last_name', 'like', "%{$search}%")
-                  ->orWhere('phone', 'like', "%{$search}%");
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             })
             ->take(5)
             ->get();
@@ -336,11 +336,11 @@ class AuthController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'message', type: 'string', example: 'Logout berhasil.')
+                        new OA\Property(property: 'message', type: 'string', example: 'Logout berhasil.'),
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: 'Belum terautentikasi')
+            new OA\Response(response: 401, description: 'Belum terautentikasi'),
         ]
     )]
     public function logout(Request $request): JsonResponse|RedirectResponse
@@ -376,11 +376,11 @@ class AuthController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 401, description: 'Belum terautentikasi')
+            new OA\Response(response: 401, description: 'Belum terautentikasi'),
         ]
     )]
     public function me(Request $request): JsonResponse
@@ -436,10 +436,10 @@ class AuthController extends Controller
 
         // 4. Pencarian fallback berdasarkan awalan email atau nomor identitas/telepon
         return UserAccount::with(['role', 'participant'])
-            ->where('email', 'like', strtolower($identifier) . '@%')
+            ->where('email', 'like', strtolower($identifier).'@%')
             ->orWhereHas('participant', function ($q) use ($identifier) {
                 $q->where('phone', $identifier)
-                  ->orWhere('passport_no', $identifier);
+                    ->orWhere('passport_no', $identifier);
             })
             ->first();
     }
@@ -508,7 +508,7 @@ class AuthController extends Controller
         $words = preg_split('/\s+/', $name);
         $firstName = $words[0] ?? $fallback;
         array_shift($words);
-        $lastName = !empty($words) ? implode(' ', $words) : null;
+        $lastName = ! empty($words) ? implode(' ', $words) : null;
 
         return [
             'prefix' => $prefix,

@@ -10,6 +10,7 @@ use App\Models\UserAccount;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Smalot\PdfParser\Parser;
 use Tests\Concerns\BuildsAsicFixtures;
 use Tests\TestCase;
 
@@ -53,7 +54,7 @@ class QaRegressionTest extends TestCase
         $loa = IssuedDocument::where('id_registration', $reg->id_registration)->where('jenis_dokumen', 'LOA')->firstOrFail();
 
         $this->assertSame('001/L/4th ASIC/2027', $loa->nomor_dokumen);
-        $text = (new \Smalot\PdfParser\Parser)->parseContent(Storage::disk('local')->get($loa->file_document))->getText();
+        $text = (new Parser)->parseContent(Storage::disk('local')->get($loa->file_document))->getText();
         $this->assertStringContainsString('Listener', $text);
         $this->assertStringContainsString($invoice->nomor_invoice, $text);
     }

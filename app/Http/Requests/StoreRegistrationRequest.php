@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreRegistrationRequest extends FormRequest
@@ -17,7 +18,7 @@ class StoreRegistrationRequest extends FormRequest
     /**
      * Aturan validasi pendaftaran event seminar (KF-10).
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -58,4 +59,3 @@ class StoreRegistrationRequest extends FormRequest
         ];
     }
 }
-

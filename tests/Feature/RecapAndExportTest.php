@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\Invoice;
+use App\Models\Participant;
 use App\Models\PaymentProof;
 use App\Models\RegistrationPeriod;
 use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Mail;
 use Tests\Concerns\BuildsAsicFixtures;
 use Tests\TestCase;
@@ -55,11 +57,11 @@ class RecapAndExportTest extends TestCase
         $this->as(Role::ROLE_TIM_ABSTRAK)->postJson("/api/tim-abstrak/submissions/{$a2->id_abstract}/review", ['hasil_review' => 'Ditolak'])->assertOk();
 
         $inv1 = Invoice::where('id_registration', $r1->id_registration)->firstOrFail();
-        $this->as(Role::ROLE_PESERTA, '1')->postJson("/api/invoices/{$inv1->id_invoice}/payment-proofs", ['file_bukti' => \Illuminate\Http\UploadedFile::fake()->image('a.jpg'), 'nominal_transfer' => 1400000])->assertCreated();
+        $this->as(Role::ROLE_PESERTA, '1')->postJson("/api/invoices/{$inv1->id_invoice}/payment-proofs", ['file_bukti' => UploadedFile::fake()->image('a.jpg'), 'nominal_transfer' => 1400000])->assertCreated();
         $this->as(Role::ROLE_BENDAHARA)->postJson('/api/payment-proofs/'.PaymentProof::firstOrFail()->id_payment_proof.'/verify', ['hasil_verifikasi' => 'Valid'])->assertOk();
 
         $inv4 = Invoice::whereHas('registration', fn ($q) => $q->where('participation_type', 'Listener')->where('id_period', $this->period->id_period))->firstOrFail();
-        $this->as(Role::ROLE_PESERTA, '4')->postJson("/api/invoices/{$inv4->id_invoice}/payment-proofs", ['file_bukti' => \Illuminate\Http\UploadedFile::fake()->image('b.jpg')])->assertCreated();
+        $this->as(Role::ROLE_PESERTA, '4')->postJson("/api/invoices/{$inv4->id_invoice}/payment-proofs", ['file_bukti' => UploadedFile::fake()->image('b.jpg')])->assertCreated();
     }
 
     private function counts(array $rows): array
@@ -251,7 +253,7 @@ class RecapAndExportTest extends TestCase
 
     public function test_export_neutralises_spreadsheet_formula_injection(): void
     {
-        \App\Models\Participant::query()->update(['institution' => '=HYPERLINK("http://evil","x")']);
+        Participant::query()->update(['institution' => '=HYPERLINK("http://evil","x")']);
         $content = $this->as(Role::ROLE_SEKRETARIAT)->get('/api/exports/participants')->getContent();
         $rows = $this->sheetRows($content);
         $this->assertStringStartsWith("'=", $rows[1][3]);

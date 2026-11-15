@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Admin;
 
 use App\Models\Role;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreUserRequest extends FormRequest
@@ -21,7 +22,7 @@ class StoreUserRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Normalisasi role jika dikirimkan sebagai string nama peran (e.g., "Secretariat", "Participant")
-        if (!$this->filled('id_role') && $this->filled('role')) {
+        if (! $this->filled('id_role') && $this->filled('role')) {
             $roleInput = strtolower(trim((string) $this->input('role')));
             $roleMap = [
                 'participant' => Role::ROLE_PESERTA,
@@ -47,7 +48,7 @@ class StoreUserRequest extends FormRequest
             $statusInput = strtolower(trim((string) $this->input('status')));
             $statusAkun = in_array($statusInput, ['active', 'aktif'], true) ? 'Aktif' : 'Nonaktif';
             $this->merge(['status_akun' => $statusAkun]);
-        } elseif (!$this->filled('status_akun')) {
+        } elseif (! $this->filled('status_akun')) {
             $this->merge(['status_akun' => 'Aktif']);
         }
     }
@@ -55,7 +56,7 @@ class StoreUserRequest extends FormRequest
     /**
      * Aturan validasi untuk pembuatan akun pengguna oleh Admin / modal "+ Invite New User".
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {

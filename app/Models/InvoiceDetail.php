@@ -11,12 +11,16 @@ class InvoiceDetail extends Model
     use HasFactory;
 
     protected $table = 'invoice_detail';
+
     protected $primaryKey = 'id_invoice_detail';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
-    protected $fillable = ['id_invoice','jenis_biaya','deskripsi','jumlah','harga_satuan','subtotal'];
+    protected $fillable = ['id_invoice', 'jenis_biaya', 'deskripsi', 'jumlah', 'harga_satuan', 'subtotal'];
 
     protected function casts(): array
     {

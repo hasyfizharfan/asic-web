@@ -12,7 +12,7 @@ return [
     'password_placeholder' => 'Enter password',
     'forgot_password' => 'Forgot password?',
     'btn_signin' => 'Sign In to Reviewer Portal',
-    
+
     // Queue / Dashboard
     'queue_breadcrumb' => 'Scientific Review / Assigned Abstracts',
     'queue_title' => 'Abstract Review Queue',
@@ -34,7 +34,7 @@ return [
     'empty_queue_desc' => 'Abstract submissions assigned to you by the secretariat will appear here.',
     'btn_review' => 'Review',
     'btn_view_review' => 'View Review',
-    
+
     // Detail & Form
     'btn_back' => 'Back to Assigned Abstracts',
     'submission_id' => 'Submission ID',
@@ -43,7 +43,7 @@ return [
     'keywords_heading' => 'Keywords',
     'btn_download_file' => 'Download Abstract File (PDF)',
     'blind_review_notice' => 'Double-Blind Review: Author identity and institution are concealed.',
-    
+
     'form_title' => 'Review Form',
     'form_lead' => 'Provide rigorous scholarly evaluation and select a decision recommendation.',
     'recommendation_label' => 'Recommendation',
@@ -61,7 +61,7 @@ return [
     'btn_cancel' => 'Cancel',
     'btn_confirm_submit' => 'Confirm & Submit',
     'readonly_badge' => 'Submitted (Read-Only)',
-    
+
     // Profile
     'profile_title' => 'Reviewer Profile',
     'change_password' => 'Change Password',
@@ -71,4 +71,3 @@ return [
     'btn_update_password' => 'Update Password',
     'profile_updated' => 'Profile updated successfully',
 ];
-

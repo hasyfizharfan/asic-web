@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Symfony\Component\HttpFoundation\Response;
 
 class EventSessionController extends Controller
@@ -29,7 +30,7 @@ class EventSessionController extends Controller
                 required: true,
                 description: 'ID Kegiatan Event',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -39,11 +40,11 @@ class EventSessionController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'event', type: 'string'),
-                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object'))
+                        new OA\Property(property: 'data', type: 'array', items: new OA\Items(type: 'object')),
                     ]
                 )
             ),
-            new OA\Response(response: 404, description: 'Event tidak ditemukan')
+            new OA\Response(response: 404, description: 'Event tidak ditemukan'),
         ]
     )]
     public function index(int $id_event): JsonResponse
@@ -78,7 +79,7 @@ class EventSessionController extends Controller
                     new OA\Property(property: 'id_event', type: 'integer', example: 1),
                     new OA\Property(property: 'nama_sesi', type: 'string', example: 'Parallel Session A - Agronomy Track'),
                     new OA\Property(property: 'waktu', type: 'string', format: 'date-time', example: '2026-08-20 09:00:00'),
-                    new OA\Property(property: 'waktu_selesai', type: 'string', format: 'date-time', example: '2026-08-20 10:00:00')
+                    new OA\Property(property: 'waktu_selesai', type: 'string', format: 'date-time', example: '2026-08-20 10:00:00'),
                 ]
             )
         ),
@@ -91,41 +92,41 @@ class EventSessionController extends Controller
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
                         new OA\Property(property: 'data', type: 'object'),
-                        new OA\Property(property: 'qr_image_url', type: 'string')
+                        new OA\Property(property: 'qr_image_url', type: 'string'),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: 'Validasi input gagal')
+            new OA\Response(response: 422, description: 'Validasi input gagal'),
         ]
     )]
     public function store(StoreEventSessionRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
-        $token = 'ASIC-SESSION-' . $validated['id_event'] . '-' . strtoupper(Str::random(10));
-        $qrRelativePath = 'session_qrcodes/qr_' . $token . '.svg';
+        $token = 'ASIC-SESSION-'.$validated['id_event'].'-'.strtoupper(Str::random(10));
+        $qrRelativePath = 'session_qrcodes/qr_'.$token.'.svg';
 
-        if (class_exists(\SimpleSoftwareIO\QrCode\Facades\QrCode::class)) {
-            $svgContent = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
+        if (class_exists(QrCode::class)) {
+            $svgContent = QrCode::format('svg')
                 ->size(350)
                 ->errorCorrection('H')
                 ->generate($token);
             Storage::disk('public')->put($qrRelativePath, (string) $svgContent);
         } else {
             $svgContent = '<svg xmlns="http://www.w3.org/2000/svg" width="350" height="350" viewBox="0 0 350 350">'
-                . '<rect width="350" height="350" fill="#ffffff"/>'
-                . '<rect x="25" y="25" width="90" height="90" fill="#1e3a8a"/>'
-                . '<rect x="35" y="35" width="70" height="70" fill="#ffffff"/>'
-                . '<rect x="45" y="45" width="50" height="50" fill="#1e3a8a"/>'
-                . '<rect x="235" y="25" width="90" height="90" fill="#1e3a8a"/>'
-                . '<rect x="245" y="35" width="70" height="70" fill="#ffffff"/>'
-                . '<rect x="255" y="45" width="50" height="50" fill="#1e3a8a"/>'
-                . '<rect x="25" y="235" width="90" height="90" fill="#1e3a8a"/>'
-                . '<rect x="35" y="245" width="70" height="70" fill="#ffffff"/>'
-                . '<rect x="45" y="255" width="50" height="50" fill="#1e3a8a"/>'
-                . '<text x="175" y="180" font-family="Arial" font-size="14" text-anchor="middle" fill="#0f172a">'
-                . htmlspecialchars($token) . '</text>'
-                . '</svg>';
+                .'<rect width="350" height="350" fill="#ffffff"/>'
+                .'<rect x="25" y="25" width="90" height="90" fill="#1e3a8a"/>'
+                .'<rect x="35" y="35" width="70" height="70" fill="#ffffff"/>'
+                .'<rect x="45" y="45" width="50" height="50" fill="#1e3a8a"/>'
+                .'<rect x="235" y="25" width="90" height="90" fill="#1e3a8a"/>'
+                .'<rect x="245" y="35" width="70" height="70" fill="#ffffff"/>'
+                .'<rect x="255" y="45" width="50" height="50" fill="#1e3a8a"/>'
+                .'<rect x="25" y="235" width="90" height="90" fill="#1e3a8a"/>'
+                .'<rect x="35" y="245" width="70" height="70" fill="#ffffff"/>'
+                .'<rect x="45" y="255" width="50" height="50" fill="#1e3a8a"/>'
+                .'<text x="175" y="180" font-family="Arial" font-size="14" text-anchor="middle" fill="#0f172a">'
+                .htmlspecialchars($token).'</text>'
+                .'</svg>';
             Storage::disk('public')->put($qrRelativePath, $svgContent);
         }
 
@@ -162,7 +163,7 @@ class EventSessionController extends Controller
                 required: true,
                 description: 'ID Sesi Acara',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -172,11 +173,11 @@ class EventSessionController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'data', type: 'object'),
-                        new OA\Property(property: 'qr_image_url', type: 'string')
+                        new OA\Property(property: 'qr_image_url', type: 'string'),
                     ]
                 )
             ),
-            new OA\Response(response: 404, description: 'Sesi tidak ditemukan')
+            new OA\Response(response: 404, description: 'Sesi tidak ditemukan'),
         ]
     )]
     public function showQr(int $id_session): JsonResponse
@@ -206,7 +207,7 @@ class EventSessionController extends Controller
                 required: true,
                 description: 'ID Sesi Acara',
                 schema: new OA\Schema(type: 'integer', example: 1)
-            )
+            ),
         ],
         responses: [
             new OA\Response(
@@ -215,11 +216,11 @@ class EventSessionController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 404, description: 'Sesi tidak ditemukan')
+            new OA\Response(response: 404, description: 'Sesi tidak ditemukan'),
         ]
     )]
     public function attendees(int $id_session): JsonResponse

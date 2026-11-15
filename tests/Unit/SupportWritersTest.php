@@ -37,7 +37,7 @@ class SupportWritersTest extends TestCase
         $sheet = $zip->getFromName('xl/worksheets/sheet1.xml');
         $this->assertStringContainsString('Budi &amp; Co', $sheet);
         $this->assertStringContainsString('<v>1500000.5</v>', $sheet);
-        $this->assertStringContainsString("&apos;=HYPERLINK", $sheet);
+        $this->assertStringContainsString('&apos;=HYPERLINK', $sheet);
         $this->assertStringContainsString('autoFilter', $sheet);
         $zip->close();
         unlink($tmp);

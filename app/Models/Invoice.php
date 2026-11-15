@@ -14,9 +14,13 @@ class Invoice extends Model
     use HasFactory;
 
     protected $table = 'invoice';
+
     protected $primaryKey = 'id_invoice';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -83,6 +87,7 @@ class Invoice extends Model
         }
 
         $effectiveDueDate = $this->tanggal_jatuh_tempo_baru ?? $this->tanggal_jatuh_tempo;
+
         return $effectiveDueDate && Carbon::parse($effectiveDueDate)->isPast() && $this->status_pembayaran === 'Menunggu Pembayaran';
     }
 

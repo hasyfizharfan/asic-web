@@ -27,4 +27,3 @@ class ExtendInvoiceRequest extends FormRequest
         ];
     }
 }
-

@@ -2,22 +2,26 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Builder;
 
 class Announcement extends Model
 {
     use HasFactory;
 
     protected $table = 'announcement';
+
     protected $primaryKey = 'id_announcement';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
-    protected $fillable = ['id_event','id_author','judul','isi_pengumuman','tanggal_publikasi','status'];
+    protected $fillable = ['id_event', 'id_author', 'judul', 'isi_pengumuman', 'tanggal_publikasi', 'status'];
 
     protected function casts(): array
     {

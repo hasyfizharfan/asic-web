@@ -39,4 +39,3 @@ return [
     'website_settings' => 'Website Settings',
     'archive' => 'Archive',
 ];
-

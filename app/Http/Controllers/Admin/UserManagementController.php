@@ -36,7 +36,7 @@ class UserManagementController extends Controller
             new OA\Parameter(name: 'id_role', in: 'query', required: false, description: 'Filter ID peran', schema: new OA\Schema(type: 'integer', example: 1)),
             new OA\Parameter(name: 'status', in: 'query', required: false, description: 'Filter status akun (active / inactive)', schema: new OA\Schema(type: 'string', example: 'active')),
             new OA\Parameter(name: 'search', in: 'query', required: false, description: 'Pencarian multifield (nama, email, instansi, dll)', schema: new OA\Schema(type: 'string', example: 'Andalas')),
-            new OA\Parameter(name: 'per_page', in: 'query', required: false, description: 'Jumlah data per halaman (default: 15)', schema: new OA\Schema(type: 'integer', example: 15))
+            new OA\Parameter(name: 'per_page', in: 'query', required: false, description: 'Jumlah data per halaman (default: 15)', schema: new OA\Schema(type: 'integer', example: 15)),
         ],
         responses: [
             new OA\Response(
@@ -50,11 +50,11 @@ class UserManagementController extends Controller
                         new OA\Property(property: 'governance_matrix', type: 'object'),
                         new OA\Property(property: 'available_roles', type: 'array', items: new OA\Items(type: 'object')),
                         new OA\Property(property: 'users', type: 'array', items: new OA\Items(type: 'object')),
-                        new OA\Property(property: 'pagination', type: 'object')
+                        new OA\Property(property: 'pagination', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 403, description: 'Akses ditolak (khusus Admin)')
+            new OA\Response(response: 403, description: 'Akses ditolak (khusus Admin)'),
         ]
     )]
     public function index(Request $request): JsonResponse|RedirectResponse
@@ -82,7 +82,7 @@ class UserManagementController extends Controller
         }
 
         if ($request->filled('search')) {
-            $search = '%' . trim($request->string('search')) . '%';
+            $search = '%'.trim($request->string('search')).'%';
             $query->where(function ($q) use ($search) {
                 $q->where('email', 'like', $search)
                     ->orWhereHas('participant', function ($p) use ($search) {
@@ -147,10 +147,10 @@ class UserManagementController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'available_roles', type: 'array', items: new OA\Items(type: 'object'))
+                        new OA\Property(property: 'available_roles', type: 'array', items: new OA\Items(type: 'object')),
                     ]
                 )
-            )
+            ),
         ]
     )]
     public function create(): JsonResponse
@@ -185,7 +185,7 @@ class UserManagementController extends Controller
                     new OA\Property(property: 'nip', type: 'string', nullable: true, example: '198501012010121001'),
                     new OA\Property(property: 'phone', type: 'string', example: '+62811223344'),
                     new OA\Property(property: 'affiliation', type: 'string', example: 'Fakultas Pertanian UNAND'),
-                    new OA\Property(property: 'job_title', type: 'string', example: 'Dosen / Peneliti')
+                    new OA\Property(property: 'job_title', type: 'string', example: 'Dosen / Peneliti'),
                 ]
             )
         ),
@@ -197,11 +197,11 @@ class UserManagementController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: 'Validasi gagal (email sudah terdaftar dll)')
+            new OA\Response(response: 422, description: 'Validasi gagal (email sudah terdaftar dll)'),
         ]
     )]
     public function store(StoreUserRequest $request): JsonResponse|RedirectResponse
@@ -209,9 +209,9 @@ class UserManagementController extends Controller
         $validated = $request->validated();
 
         $user = DB::transaction(function () use ($validated) {
-            $rawPassword = !empty($validated['password'])
+            $rawPassword = ! empty($validated['password'])
                 ? $validated['password']
-                : 'Asic2026#' . Str::random(6);
+                : 'Asic2026#'.Str::random(6);
 
             $userAccount = UserAccount::create([
                 'id_role' => $validated['id_role'],
@@ -269,7 +269,7 @@ class UserManagementController extends Controller
         tags: ['Admin - Manajemen Pengguna'],
         security: [['sanctumAuth' => []]],
         parameters: [
-            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1))
+            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1)),
         ],
         responses: [
             new OA\Response(
@@ -278,11 +278,11 @@ class UserManagementController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 404, description: 'Pengguna tidak ditemukan')
+            new OA\Response(response: 404, description: 'Pengguna tidak ditemukan'),
         ]
     )]
     public function show(int $id_user): JsonResponse
@@ -305,7 +305,7 @@ class UserManagementController extends Controller
         tags: ['Admin - Manajemen Pengguna'],
         security: [['sanctumAuth' => []]],
         parameters: [
-            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1))
+            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1)),
         ],
         responses: [
             new OA\Response(
@@ -314,10 +314,10 @@ class UserManagementController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
-            )
+            ),
         ]
     )]
     public function edit(int $id_user): JsonResponse
@@ -344,7 +344,7 @@ class UserManagementController extends Controller
         tags: ['Admin - Manajemen Pengguna'],
         security: [['sanctumAuth' => []]],
         parameters: [
-            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1))
+            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1)),
         ],
         requestBody: new OA\RequestBody(
             required: true,
@@ -358,7 +358,7 @@ class UserManagementController extends Controller
                     new OA\Property(property: 'full_name', type: 'string', example: 'Dr. Jane Doe'),
                     new OA\Property(property: 'nip', type: 'string', nullable: true, example: '198501012010121001'),
                     new OA\Property(property: 'phone', type: 'string', example: '+62811223344'),
-                    new OA\Property(property: 'affiliation', type: 'string', example: 'Fakultas Pertanian UNAND')
+                    new OA\Property(property: 'affiliation', type: 'string', example: 'Fakultas Pertanian UNAND'),
                 ]
             )
         ),
@@ -370,11 +370,11 @@ class UserManagementController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: 'Validasi input gagal')
+            new OA\Response(response: 422, description: 'Validasi input gagal'),
         ]
     )]
     public function update(UpdateUserRequest $request, int $id_user): JsonResponse|RedirectResponse
@@ -389,7 +389,7 @@ class UserManagementController extends Controller
                 'status_akun' => $validated['status_akun'],
             ];
 
-            if (!empty($validated['password'])) {
+            if (! empty($validated['password'])) {
                 $userPayload['password'] = Hash::make($validated['password']);
             }
 
@@ -415,9 +415,9 @@ class UserManagementController extends Controller
                 'city' => $validated['city'] ?? null,
                 'country' => $validated['country'] ?? null,
                 'postcode' => $validated['postcode'] ?? null,
-            ], fn($val) => !is_null($val));
+            ], fn ($val) => ! is_null($val));
 
-            if (!empty($participantData)) {
+            if (! empty($participantData)) {
                 $user->participant()->updateOrCreate(
                     ['id_user' => $user->id_user],
                     $participantData
@@ -448,7 +448,7 @@ class UserManagementController extends Controller
         tags: ['Admin - Manajemen Pengguna'],
         security: [['sanctumAuth' => []]],
         parameters: [
-            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1))
+            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1)),
         ],
         responses: [
             new OA\Response(
@@ -457,11 +457,11 @@ class UserManagementController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'message', type: 'string', example: 'Akun pengguna berhasil dihapus.')
+                        new OA\Property(property: 'message', type: 'string', example: 'Akun pengguna berhasil dihapus.'),
                     ]
                 )
             ),
-            new OA\Response(response: 403, description: 'Dilarang menghapus akun sendiri')
+            new OA\Response(response: 403, description: 'Dilarang menghapus akun sendiri'),
         ]
     )]
     public function destroy(Request $request, int $id_user): JsonResponse|RedirectResponse
@@ -476,6 +476,7 @@ class UserManagementController extends Controller
                     'message' => $errorMessage,
                 ], Response::HTTP_FORBIDDEN);
             }
+
             return back()->withErrors(['error' => $errorMessage]);
         }
 
@@ -504,7 +505,7 @@ class UserManagementController extends Controller
         tags: ['Admin - Manajemen Pengguna'],
         security: [['sanctumAuth' => []]],
         parameters: [
-            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1))
+            new OA\Parameter(name: 'id_user', in: 'path', required: true, description: 'ID User Account', schema: new OA\Schema(type: 'integer', example: 1)),
         ],
         responses: [
             new OA\Response(
@@ -514,11 +515,11 @@ class UserManagementController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 403, description: 'Dilarang menonaktifkan akun sendiri')
+            new OA\Response(response: 403, description: 'Dilarang menonaktifkan akun sendiri'),
         ]
     )]
     public function toggleStatus(Request $request, int $id_user): JsonResponse|RedirectResponse
@@ -533,6 +534,7 @@ class UserManagementController extends Controller
                     'message' => $errorMessage,
                 ], Response::HTTP_FORBIDDEN);
             }
+
             return back()->withErrors(['error' => $errorMessage]);
         }
 
@@ -570,7 +572,7 @@ class UserManagementController extends Controller
                 properties: [
                     new OA\Property(property: 'action', type: 'string', enum: ['activate', 'deactivate', 'delete', 'change_role'], example: 'activate'),
                     new OA\Property(property: 'user_ids', type: 'array', items: new OA\Items(type: 'integer'), example: [2, 3, 4]),
-                    new OA\Property(property: 'id_role', type: 'integer', nullable: true, example: 3)
+                    new OA\Property(property: 'id_role', type: 'integer', nullable: true, example: 3),
                 ]
             )
         ),
@@ -582,11 +584,11 @@ class UserManagementController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
-                        new OA\Property(property: 'affected_count', type: 'integer', example: 3)
+                        new OA\Property(property: 'affected_count', type: 'integer', example: 3),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: 'Parameter aksi massal tidak valid')
+            new OA\Response(response: 422, description: 'Parameter aksi massal tidak valid'),
         ]
     )]
     public function batchAction(Request $request): JsonResponse
@@ -645,14 +647,14 @@ class UserManagementController extends Controller
                 response: 200,
                 description: 'File CSV berhasil diunduh',
                 content: new OA\MediaType(mediaType: 'text/csv')
-            )
+            ),
         ]
     )]
     public function exportCsv(): StreamedResponse
     {
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="asic-user-role-audit-log-' . date('Y-m-d') . '.csv"',
+            'Content-Disposition' => 'attachment; filename="asic-user-role-audit-log-'.date('Y-m-d').'.csv"',
             'Pragma' => 'no-cache',
             'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
             'Expires' => '0',
@@ -688,11 +690,11 @@ class UserManagementController extends Controller
     protected function buildSummaryMetrics(): array
     {
         $totalUsers = UserAccount::count();
-        $partCount = UserAccount::whereHas('role', fn($q) => $q->where('nama_role', 'Peserta'))->count();
-        $secCount = UserAccount::whereHas('role', fn($q) => $q->where('nama_role', 'Sekretariat'))->count();
-        $treasCount = UserAccount::whereHas('role', fn($q) => $q->where('nama_role', 'Bendahara'))->count();
-        $adminCount = UserAccount::whereHas('role', fn($q) => $q->where('nama_role', 'Admin'))->count();
-        $absTeamCount = UserAccount::whereHas('role', fn($q) => $q->where('nama_role', 'Tim Abstrak'))->count();
+        $partCount = UserAccount::whereHas('role', fn ($q) => $q->where('nama_role', 'Peserta'))->count();
+        $secCount = UserAccount::whereHas('role', fn ($q) => $q->where('nama_role', 'Sekretariat'))->count();
+        $treasCount = UserAccount::whereHas('role', fn ($q) => $q->where('nama_role', 'Bendahara'))->count();
+        $adminCount = UserAccount::whereHas('role', fn ($q) => $q->where('nama_role', 'Admin'))->count();
+        $absTeamCount = UserAccount::whereHas('role', fn ($q) => $q->where('nama_role', 'Tim Abstrak'))->count();
 
         return [
             'total_system_users' => [
@@ -851,7 +853,7 @@ class UserManagementController extends Controller
         $words = preg_split('/\s+/', $name);
         $firstName = $words[0] ?? $fallback;
         array_shift($words);
-        $lastName = !empty($words) ? implode(' ', $words) : null;
+        $lastName = ! empty($words) ? implode(' ', $words) : null;
 
         return [
             'prefix' => $prefix,

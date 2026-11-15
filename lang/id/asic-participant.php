@@ -31,7 +31,7 @@ return [
     'country' => 'Negara Asal',
     'department' => 'Jurusan / Program Studi',
     'city' => 'Kota',
-    
+
     // Abstract Section in Reg Form
     'abstract_info' => 'Pengiriman Naskah Abstrak',
     'abstract_title' => 'Judul Abstrak',
@@ -40,7 +40,7 @@ return [
     'abstract_body' => 'Isi Abstrak',
     'keywords' => 'Kata Kunci (3–5 istilah)',
     'upload_abstract_doc' => 'Unggah Dokumen Abstrak (Opsional .docx/.pdf)',
-    
+
     // Listener Section
     'field_trip_title' => 'Ekskursi Pertanian Minangkabau (Field Trip)',
     'field_trip_desc' => 'Paket tur opsional 1 hari mengunjungi sistem pertanian dataran tinggi tradisional di Bukittinggi & Lembah Harau.',
@@ -93,4 +93,3 @@ return [
     'download_pdf' => 'Unduh Sertifikat (PDF)',
     'verify_online' => 'Verifikasi Kredensial Online',
 ];
-

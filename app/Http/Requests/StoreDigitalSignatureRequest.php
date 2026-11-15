@@ -33,4 +33,3 @@ class StoreDigitalSignatureRequest extends FormRequest
         ];
     }
 }
-

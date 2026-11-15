@@ -164,4 +164,3 @@ class Registration extends Model
         return $this->attendance_mode === 'Luring';
     }
 }
-

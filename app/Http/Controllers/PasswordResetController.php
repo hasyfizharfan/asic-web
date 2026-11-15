@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ForgotPasswordRequest;
 use App\Http\Requests\ResetPasswordRequest;
-use App\Models\UserAccount;
 use App\Mail\ResetPasswordMail;
+use App\Models\UserAccount;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -42,7 +42,7 @@ class PasswordResetController extends Controller
             content: new OA\JsonContent(
                 required: ['email'],
                 properties: [
-                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'author@univ.ac.id')
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'author@univ.ac.id'),
                 ]
             )
         ),
@@ -55,11 +55,11 @@ class PasswordResetController extends Controller
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'message', type: 'string'),
                         new OA\Property(property: 'dispatch_status', type: 'string', example: 'sent'),
-                        new OA\Property(property: 'data', type: 'object')
+                        new OA\Property(property: 'data', type: 'object'),
                     ]
                 )
             ),
-            new OA\Response(response: 422, description: 'Format email tidak valid')
+            new OA\Response(response: 422, description: 'Format email tidak valid'),
         ]
     )]
     #[OA\Post(
@@ -72,12 +72,12 @@ class PasswordResetController extends Controller
             content: new OA\JsonContent(
                 required: ['email'],
                 properties: [
-                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'author@univ.ac.id')
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'author@univ.ac.id'),
                 ]
             )
         ),
         responses: [
-            new OA\Response(response: 200, description: 'Tautan reset kata sandi berhasil dikirim')
+            new OA\Response(response: 200, description: 'Tautan reset kata sandi berhasil dikirim'),
         ]
     )]
     public function sendResetLinkEmail(ForgotPasswordRequest $request): JsonResponse|RedirectResponse
@@ -86,7 +86,7 @@ class PasswordResetController extends Controller
 
         // Pastikan akun terdaftar di tabel user_account
         $user = UserAccount::where('email', $email)->first();
-        if (!$user) {
+        if (! $user) {
             return response()->json([
                 'success' => true,
                 'message' => 'Jika alamat email terdaftar, instruksi reset kata sandi akan dikirimkan.',
@@ -114,7 +114,7 @@ class PasswordResetController extends Controller
         );
 
         $frontendUrl = rtrim((string) config('app.frontend_url', env('FRONTEND_URL', '')), '/');
-        $resetUrl = $frontendUrl . '/password/reset?token=' . urlencode($rawToken) . '&email=' . urlencode($email);
+        $resetUrl = $frontendUrl.'/password/reset?token='.urlencode($rawToken).'&email='.urlencode($email);
         Mail::to($user->email)->send(new ResetPasswordMail($resetUrl, $this->tokenExpiresMinutes));
 
         if ($request->expectsJson()) {
@@ -146,7 +146,7 @@ class PasswordResetController extends Controller
                     new OA\Property(property: 'email', type: 'string', format: 'email', example: 'author@univ.ac.id'),
                     new OA\Property(property: 'token', type: 'string', example: 'abcdef123456...'),
                     new OA\Property(property: 'password', type: 'string', format: 'password', example: 'NewSecret123#'),
-                    new OA\Property(property: 'password_confirmation', type: 'string', format: 'password', example: 'NewSecret123#')
+                    new OA\Property(property: 'password_confirmation', type: 'string', format: 'password', example: 'NewSecret123#'),
                 ]
             )
         ),
@@ -157,12 +157,12 @@ class PasswordResetController extends Controller
                 content: new OA\JsonContent(
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
-                        new OA\Property(property: 'message', type: 'string', example: 'Kata sandi berhasil diperbarui.')
+                        new OA\Property(property: 'message', type: 'string', example: 'Kata sandi berhasil diperbarui.'),
                     ]
                 )
             ),
             new OA\Response(response: 404, description: 'Pengguna tidak ditemukan'),
-            new OA\Response(response: 422, description: 'Token tidak valid atau kedaluwarsa')
+            new OA\Response(response: 422, description: 'Token tidak valid atau kedaluwarsa'),
         ]
     )]
     public function resetPassword(ResetPasswordRequest $request): JsonResponse|RedirectResponse
@@ -174,7 +174,7 @@ class PasswordResetController extends Controller
         // Ambil data token dari tabel password_reset_tokens
         $record = DB::table('password_reset_tokens')->where('email', $email)->first();
 
-        if (!$record) {
+        if (! $record) {
             return $this->responseError(
                 $request,
                 'Permintaan reset kata sandi tidak valid atau telah kedaluwarsa.'
@@ -185,6 +185,7 @@ class PasswordResetController extends Controller
         $tokenCreatedAt = Carbon::parse($record->created_at);
         if ($tokenCreatedAt->addMinutes($this->tokenExpiresMinutes)->isPast()) {
             DB::table('password_reset_tokens')->where('email', $email)->delete();
+
             return $this->responseError(
                 $request,
                 'Tautan reset kata sandi telah kedaluwarsa (lebih dari 60 menit). Silakan ajukan permohonan baru.'
@@ -192,13 +193,13 @@ class PasswordResetController extends Controller
         }
 
         // Cek kecocokan token
-        if (!Hash::check($token, $record->token)) {
+        if (! Hash::check($token, $record->token)) {
             return $this->responseError($request, 'Token reset kata sandi tidak valid.');
         }
 
         // Cari user account
         $user = UserAccount::where('email', $email)->first();
-        if (!$user) {
+        if (! $user) {
             return $this->responseError($request, 'Pengguna tidak ditemukan.', Response::HTTP_NOT_FOUND);
         }
 

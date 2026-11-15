@@ -148,7 +148,7 @@ class SimplePdf
                 '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 %.2f %.2f] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents %d 0 R >>',
                 self::PAGE_W, self::PAGE_H, $pageId + 1
             );
-            $objects[$pageId + 1] = '<< /Length '.strlen($content)." >>\nstream\n".$content."endstream";
+            $objects[$pageId + 1] = '<< /Length '.strlen($content)." >>\nstream\n".$content.'endstream';
         }
 
         $pdf = "%PDF-1.4\n";

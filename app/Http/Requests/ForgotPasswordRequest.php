@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class ForgotPasswordRequest extends FormRequest
@@ -20,7 +21,7 @@ class ForgotPasswordRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Mendukung key 'registered_email' dari UI label "Registered Email Address"
-        if (!$this->has('email') && $this->has('registered_email')) {
+        if (! $this->has('email') && $this->has('registered_email')) {
             $this->merge([
                 'email' => $this->input('registered_email'),
             ]);
@@ -34,7 +35,7 @@ class ForgotPasswordRequest extends FormRequest
      * - Registered Email Address
      * - Protected by reCAPTCHA Enterprise
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {

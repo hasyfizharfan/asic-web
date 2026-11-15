@@ -23,7 +23,7 @@ return [
         'acceptance_rate' => 'Tingkat :pct%',
         'rejected' => 'Ditolak',
         'rejection_rate' => 'Tingkat :pct%',
-        
+
         'search_placeholder' => 'Cari berdasarkan judul, nama penulis, atau ID pengajuan...',
         'all_topics' => 'Semua Topik',
         'all_types' => 'Semua Format',
@@ -37,7 +37,7 @@ return [
         'internal_note_placeholder' => 'Tambahkan catatan telaah rahasia untuk komite ilmiah...',
         'issue_loa' => 'Terbitkan LoA / Keputusan Resmi',
         'open_dossier' => 'Buka Berkas Akademik Lengkap',
-        
+
         // Table
         'col_id' => 'ID',
         'col_title' => 'Judul & Bidang Keilmuan',
@@ -65,7 +65,7 @@ return [
         'section_conclusion' => '4. Kesimpulan & Implikasi Kebijakan',
         'download_pdf' => 'Unduh Draf PDF',
         'field_context' => 'Lokasi Uji Lapangan & Pengamatan Bintil Akar',
-        
+
         // Decision Panel
         'decision_title' => 'Keputusan Panitia Sekretariat',
         'decision_notice' => 'Memilih tindakan akan secara otomatis menerbitkan dan mengirimkan surat resmi serta faktur registrasi ke penulis korespondensi.',
@@ -93,7 +93,7 @@ return [
         'manual_desc' => 'Jika peserta tidak dapat memindai kartu seluler, lakukan pencarian manual melalui sistem registrasi:',
         'query_btn' => 'Cari',
         'prior_checkins' => 'Riwayat Check-in Meja #02',
-        
+
         // Dossier
         'participant_dossier' => 'Berkas Peserta Terverifikasi',
         'confirmed_attendee' => 'Peserta Terkonfirmasi',
@@ -101,7 +101,7 @@ return [
         'kit_issued' => 'Seminar Kit',
         'print_badge' => 'Cetak Tanda Pengenal Resmi',
         'mark_attended' => 'Konfirmasi Kehadiran & Serahkan Kit',
-        
+
         // Error / Blocked state
         'blocked_title' => 'TERTAHAN DI GERBANG — Pembayaran Belum Lunas',
         'billing_details' => 'Rincian Tagihan',
@@ -118,7 +118,7 @@ return [
         'btn_redirect_finance' => 'Arahkan ke Meja Keuangan / Kasir',
         'btn_supervisor_override' => 'Pintas Manual (PIN Supervisor)',
         'btn_dismiss' => 'Tutup & Pindai QR Lain',
-        
+
         // Override Modal
         'supervisor_modal_title' => 'Otorisasi Khusus Supervisor',
         'supervisor_modal_desc' => 'Membuka akses untuk check-in belum lunas akan menerbitkan tanda pengenal tanpa syarat. Tindakan ini dicatat permanen dalam riwayat audit sekretariat.',
@@ -143,13 +143,13 @@ return [
         'certs_ready' => 'Sertifikat Siap / Diterbitkan',
         'auto_eligible' => ':pct% Memenuhi Syarat Otomatis',
         'batch_print' => 'Cetak Massal (:count)',
-        
+
         'filter_category' => 'Kategori: Semua Peserta',
         'filter_room' => 'Sesi: Semua Ruangan',
         'filter_cert' => 'Sertifikat: Semua Status',
         'day_1' => 'Hari 1',
         'day_2' => 'Hari 2',
-        
+
         'col_participant' => 'Pemakalah / Peserta',
         'col_session' => 'Presentasi / Ruangan',
         'col_attendance_log' => 'Presensi Harian',
@@ -172,7 +172,7 @@ return [
         'tab_all_tracks' => 'Semua Bidang',
         'tab_day1' => 'Hari 1 Berjalan',
         'tab_day2' => 'Hari 2 Proyeksi',
-        
+
         'total_registrants' => 'Total Pendaftar',
         'presenters' => 'Pemakalah',
         'listeners' => 'Peserta Biasa',
@@ -182,7 +182,7 @@ return [
         'settled' => ':pct% Lunas',
         'pending_verification' => ':count Menunggu Verifikasi',
         'checkin_rate' => 'Tingkat Kehadiran On-Site',
-        
+
         'chart_track_title' => 'Pengajuan & Pendaftaran per Bidang Keilmuan',
         'chart_demographics' => 'Demografi & Asal Institusi Peserta',
         'summary_table_title' => 'Rincian Sesi & Analisis Kuota',
@@ -211,7 +211,7 @@ return [
         'content_label' => 'Isi Pesan (Markdown / Teks Terformat)',
         'btn_dispatch' => 'Kirim Siaran Sekarang',
         'btn_schedule' => 'Jadwalkan Pengiriman',
-        
+
         'preview_title' => 'Pratinjau Multi-Perangkat Langsung',
         'tab_banner' => 'Spanduk Dasbor',
         'tab_wa' => 'WhatsApp',
@@ -230,13 +230,13 @@ return [
         'tab_fees' => 'Info Biaya',
         'tab_faq' => 'Tanya Jawab (FAQ)',
         'tab_pages' => 'Halaman Lain',
-        
+
         'search_entries' => 'Cari entri di bagian :section...',
         'all_tracks' => 'Semua Bidang & Sesi',
         'any_status' => 'Semua Status',
         'reorder' => 'Atur Urutan',
         'publish_all' => 'Terbitkan Semua Perubahan',
-        
+
         'col_order' => 'No',
         'col_speaker' => 'Pembicara & Afiliasi',
         'col_role' => 'Peran / Sesi',
@@ -248,4 +248,3 @@ return [
         'draft' => 'Draf',
     ],
 ];
-

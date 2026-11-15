@@ -41,4 +41,3 @@ return new class extends Migration
         Schema::dropIfExists('registration_add_on');
     }
 };
-

@@ -39,4 +39,3 @@ return [
     'website_settings' => 'Pengaturan Website',
     'archive' => 'Manajemen Arsip',
 ];
-

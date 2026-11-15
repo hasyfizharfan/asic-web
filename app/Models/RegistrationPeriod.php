@@ -12,9 +12,13 @@ class RegistrationPeriod extends Model
     use HasFactory;
 
     protected $table = 'registration_period';
+
     protected $primaryKey = 'id_period';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -40,4 +44,3 @@ class RegistrationPeriod extends Model
         return $this->hasMany(Registration::class, 'id_period', 'id_period');
     }
 }
-

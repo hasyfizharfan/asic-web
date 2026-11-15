@@ -24,4 +24,3 @@ return [
     'info' => 'Informasi',
     'demo_notice' => 'Mode Simulasi Prototipe Frontend',
 ];
-

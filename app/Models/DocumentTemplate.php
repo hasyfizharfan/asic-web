@@ -50,12 +50,19 @@ class DocumentTemplate extends Model
      * Konstanta Jenis Dokumen Template (Poin 3 & Poin 5).
      */
     public const JENIS_ABSTRAK = 'Abstrak';
+
     public const JENIS_PRESENTASI = 'Presentasi';
+
     public const JENIS_ARTIKEL = 'Artikel';
+
     public const JENIS_LOA = 'LOA';
+
     public const JENIS_PENOLAKAN = 'Penolakan';
+
     public const JENIS_INVOICE = 'Invoice';
+
     public const JENIS_RECEIPT = 'Receipt';
+
     public const JENIS_SERTIFIKAT = 'Sertifikat';
 
     /**
@@ -107,4 +114,3 @@ class DocumentTemplate extends Model
         return null;
     }
 }
-

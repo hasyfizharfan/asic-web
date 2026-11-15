@@ -11,9 +11,13 @@ class Event extends Model
     use HasFactory;
 
     protected $table = 'event';
+
     protected $primaryKey = 'id_event';
+
     public $incrementing = true;
+
     protected $keyType = 'int';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -57,4 +61,3 @@ class Event extends Model
         return $this->hasMany(DocumentTemplate::class, 'id_event', 'id_event');
     }
 }
-

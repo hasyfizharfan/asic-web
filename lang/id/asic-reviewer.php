@@ -12,7 +12,7 @@ return [
     'password_placeholder' => 'Masukkan kata sandi',
     'forgot_password' => 'Lupa kata sandi?',
     'btn_signin' => 'Masuk ke Portal Reviewer',
-    
+
     // Queue / Dashboard
     'queue_breadcrumb' => 'Scientific Review / Assigned Abstracts',
     'queue_title' => 'Abstrak Review Queue',
@@ -34,7 +34,7 @@ return [
     'empty_queue_desc' => 'Abstrak yang ditugaskan oleh tim sekretariat akan muncul di halaman antrean ini.',
     'btn_review' => 'Tinjau',
     'btn_view_review' => 'Lihat Review',
-    
+
     // Detail & Form
     'btn_back' => 'Kembali ke Assigned Abstracts',
     'submission_id' => 'Pengiriman ID',
@@ -43,7 +43,7 @@ return [
     'keywords_heading' => 'Kata Kunci',
     'btn_download_file' => 'Unduh Berkas Abstrak (PDF)',
     'blind_review_notice' => 'Double-Blind Review: Identitas penulis dan asal institusi disembunyikan.',
-    
+
     'form_title' => 'Review Form',
     'form_lead' => 'Berikan penilaian ilmiah yang komprehensif dan pilih rekomendasi keputusan.',
     'recommendation_label' => 'Rekomendasi',
@@ -61,7 +61,7 @@ return [
     'btn_cancel' => 'Batal',
     'btn_confirm_submit' => 'Konfirmasi & Kirim',
     'readonly_badge' => 'Telah Dikirim (Mode Lihat)',
-    
+
     // Profile
     'profile_title' => 'Profil Reviewer',
     'change_password' => 'Ganti Kata Sandi',
@@ -71,4 +71,3 @@ return [
     'btn_update_password' => 'Perbarui Kata Sandi',
     'profile_updated' => 'Profil berhasil diperbarui',
 ];
-

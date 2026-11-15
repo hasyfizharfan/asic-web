@@ -12,9 +12,7 @@ class ResetPasswordMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(public string $resetUrl, public int $expiresInMinutes)
-    {
-    }
+    public function __construct(public string $resetUrl, public int $expiresInMinutes) {}
 
     public function envelope(): Envelope
     {

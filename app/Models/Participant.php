@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Participant extends Model
 {
@@ -87,9 +88,9 @@ class Participant extends Model
     /**
      * Relasi hasMany ke Registration (1 Participant dapat memiliki riwayat pendaftaran).
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Registration, $this>
+     * @return HasMany<Registration, $this>
      */
-    public function registrations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function registrations(): HasMany
     {
         return $this->hasMany(Registration::class, 'id_participant', 'id_participant');
     }
@@ -100,7 +101,7 @@ class Participant extends Model
     public function getFullNameAttribute(): string
     {
         $parts = array_filter([$this->prefix, $this->first_name, $this->last_name]);
+
         return implode(' ', $parts);
     }
 }
-
