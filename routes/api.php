@@ -27,7 +27,7 @@ Route::post('/password/reset', [PasswordResetController::class, 'resetPassword']
 // =========================================================================
 // 2. AUTHENTICATED ROUTES
 // =========================================================================
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     // Logout Akun & Info Profil
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
     Route::get('/me', [AuthController::class, 'me'])->name('api.me');
