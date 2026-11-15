@@ -32,6 +32,11 @@ class Event extends Model
         return $this->hasMany(RegistrationPeriod::class, 'id_event', 'id_event');
     }
 
+    public function registrationFees(): HasMany
+    {
+        return $this->hasMany(RegistrationFee::class, 'id_event', 'id_event');
+    }
+
     public function addOns(): HasMany
     {
         return $this->hasMany(AddOn::class, 'id_event', 'id_event');

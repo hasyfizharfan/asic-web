@@ -30,6 +30,11 @@ class RegistrationPeriod extends Model
         return $this->belongsTo(Event::class, 'id_event', 'id_event');
     }
 
+    public function registrationFees(): HasMany
+    {
+        return $this->hasMany(RegistrationFee::class, 'id_period', 'id_period');
+    }
+
     public function registrations(): HasMany
     {
         return $this->hasMany(Registration::class, 'id_period', 'id_period');

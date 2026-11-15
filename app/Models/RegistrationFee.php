@@ -49,4 +49,27 @@ class RegistrationFee extends Model
     {
         return $this->hasMany(Invoice::class, 'id_fee', 'id_fee');
     }
+
+    public const REGISTRATION_TYPES = ['Student', 'Regular', 'Committee'];
+    public const ATTENDANCE_MODES = ['Daring', 'Luring'];
+    public const PUBLICATION_TARGETS = ['Prosiding', 'Jurnal', 'Tidak'];
+
+    /**
+     * Tarif dianggap "terpakai" jika sudah dirujuk oleh minimal satu invoice.
+     */
+    public function isUsedByInvoice(): bool
+    {
+        return $this->invoices()->exists();
+    }
+
+    /**
+     * Nominal bersih (amount - discount), tidak pernah negatif.
+     * Dihitung dalam satuan sen agar bebas galat floating point.
+     */
+    public function finalAmount(): string
+    {
+        $cents = max(0, (int) round(((float) $this->amount) * 100) - (int) round(((float) $this->discount) * 100));
+
+        return number_format($cents / 100, 2, '.', '');
+    }
 }
