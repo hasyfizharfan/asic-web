@@ -59,6 +59,7 @@ class RegistrationController extends Controller
         /** @var UserAccount $user */
         $user = Auth::user();
         $query = Registration::with([
+            'invoice',
             'participant.userAccount',
             'event',
             'registrationPeriod',
@@ -127,6 +128,7 @@ class RegistrationController extends Controller
     public function show(int $id_registration): JsonResponse
     {
         $registration = Registration::with([
+            'invoice',
             'participant.userAccount',
             'event',
             'registrationPeriod',

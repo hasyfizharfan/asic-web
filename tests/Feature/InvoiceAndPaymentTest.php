@@ -57,12 +57,12 @@ class InvoiceAndPaymentTest extends TestCase
         $this->assertSame(1, IssuedDocument::where('jenis_dokumen', 'Invoice')->count());
     }
 
-    public function test_presenter_does_not_get_invoice_before_acceptance(): void
+    public function test_presenter_gets_invoice_before_abstract_review(): void
     {
         $this->fee();
         $reg = $this->registration('1');
-        $this->assertSame(0, Invoice::count());
-        $this->assertSame('skipped', $this->issue($reg)['status']);
+        $this->assertSame(1, Invoice::where('id_registration', $reg->id_registration)->count());
+        $this->assertSame('exists', $this->issue($reg)['status']);
     }
 
     public function test_registration_without_fee_is_skipped_not_failed(): void

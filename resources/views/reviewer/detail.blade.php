@@ -4,37 +4,40 @@
 ])
 
 @php
-    $abstractId = $id ?? 'ASIC27-001';
-    $isSubmitted = request()->has('submitted') || request()->query('view') === 'readonly';
+    $abstractId = (int) ($id ?? 0);
 @endphp
 
 @section('content')
 <div class="space-y-6" x-data="{
-    recommendation: '{{ $isSubmitted ? 'accept' : '' }}',
-    comments: '{{ $isSubmitted ? 'The abstract presents a comprehensive methodology addressing climate stress on rice productivity. Highly recommended for oral presentation in the main conference track.' : '' }}',
-    isSubmitted: {{ $isSubmitted ? 'true' : 'false' }},
+    recommendation: '', comments: '', isSubmitted: false,
+    abstractData: null, loading: true, loadError: '',
     showConfirmModal: false,
-    errorMessage: '',
+    errorMessage: '', fieldErrors: {},
     submitting: false,
 
+    async init() {
+        const response = await window.asicApi.get('/api/tim-abstrak/submissions/{{ $abstractId }}');
+        this.loading = false;
+        if (!response.ok) { this.loadError = response.error || 'Detail abstrak gagal dimuat.'; return; }
+        this.abstractData = response.data?.data;
+        this.isSubmitted = !['Diajukan', 'Revisi'].includes(this.abstractData?.status_abstrak);
+        const latest = this.abstractData?.reviews?.at(-1);
+        this.recommendation = latest?.hasil_review === 'Ditolak' ? 'reject' : (latest ? 'accept' : '');
+        this.comments = latest?.catatan_review || '';
+    },
+
     async saveDraft() {
-        const payload = {
-            abstract_id: '{{ $abstractId }}',
-            recommendation: this.recommendation,
-            comments: this.comments,
-            status: 'draft'
-        };
-        await window.asicApi.post('/api/reviewer/abstracts/{{ $abstractId }}/draft', payload);
-        $store.toast.add('Draft review berhasil disimpan.', 'info');
+        $store.toast.add('Penyimpanan draft review belum tersedia.', 'error');
     },
 
     attemptSubmit() {
         this.errorMessage = '';
+        this.fieldErrors = {};
         if (!this.recommendation) {
             this.errorMessage = '{{ app()->getLocale() === 'id' ? 'Silakan pilih rekomendasi evaluasi.' : 'Please select an evaluation recommendation.' }}';
             return;
         }
-        if ((this.recommendation === 'revision' || this.recommendation === 'reject') && (!this.comments || this.comments.trim().length < 15)) {
+        if (this.recommendation === 'reject' && (!this.comments || this.comments.trim().length < 15)) {
             this.errorMessage = '{{ app()->getLocale() === 'id' ? 'Catatan reviewer wajib diisi (minimal 15 karakter) jika meminta revisi atau menolak.' : 'Comments are required (min 15 characters) when requesting revision or rejecting.' }}';
             return;
         }
@@ -46,27 +49,27 @@
         this.showConfirmModal = false;
         
         const payload = {
-            abstract_id: '{{ $abstractId }}',
-            recommendation: this.recommendation,
-            comments: this.comments,
-            timestamp: new Date().toISOString()
+            hasil_review: this.recommendation === 'reject' ? 'Ditolak' : 'Diterima',
+            catatan_review: this.comments
         };
 
-        const res = await window.asicApi.post('/api/reviewer/abstracts/{{ $abstractId }}/review', payload);
+        const res = await window.asicApi.post('/api/tim-abstrak/submissions/{{ $abstractId }}/review', payload);
         this.submitting = false;
-        this.isSubmitted = true;
 
         if (res.ok) {
+            this.isSubmitted = true;
             $store.toast.add('{{ app()->getLocale() === 'id' ? 'Review berhasil dikirim via API ke sekretariat!' : 'Review submitted successfully via API to secretariat!' }}', 'success');
         } else {
-            $store.toast.add('API Call: POST /api/reviewer/abstracts/{{ $abstractId }}/review (Status ' + (res.status || '404') + ' pending BE controller). Keputusan tersimpan lokal.', 'info');
+            this.fieldErrors = res.errors || {};
+            this.errorMessage = res.error || 'Review gagal dikirim.';
+            $store.toast.add(this.errorMessage, 'error');
         }
     }
 }">
 
     <!-- Top Navigation & Breadcrumb (Matching Image 1 / r2_detail) -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <a href="{{ route('fe.reviewer.queue') }}" 
+        <a href="{{ route('portal.reviewer.queue') }}"
            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold transition shadow-xs">
             <span class="material-symbols-outlined text-[18px]">arrow_back</span>
             <span>{{ __('asic-reviewer.btn_back') ?? '← Kembali to Assigned Abstracts' }}</span>
@@ -91,16 +94,16 @@
                     <span class="font-mono">#{{ $abstractId }}</span>
                 </div>
 
-                <h1 class="text-2xl sm:text-3xl font-bold text-on-surface font-display leading-tight">
-                    Sustainable Rice Systems Under Climate Stress
-                </h1>
+                <p x-show="loading" class="text-sm text-on-surface-variant">Memuat detail abstrak…</p>
+                <p x-show="loadError" x-text="loadError" role="alert" class="text-sm text-error"></p>
+                <h1 x-show="abstractData" x-text="abstractData?.judul_abstrak" class="text-2xl sm:text-3xl font-bold text-on-surface font-display leading-tight"></h1>
 
                 <div class="flex flex-wrap items-center gap-3 text-xs text-on-surface-variant font-medium">
                     <span>{{ __('asic-reviewer.submission_id') ?? 'Pengiriman ID' }}: <strong class="text-on-surface font-mono">#{{ $abstractId }}</strong></span>
                     <span>•</span>
-                    <span>{{ __('asic-reviewer.research_area') ?? 'Area' }}: <strong class="text-on-surface">Crop Production</strong></span>
+                    <span>{{ __('asic-reviewer.research_area') ?? 'Area' }}: <strong class="text-on-surface" x-text="abstractData?.scope"></strong></span>
                     <span>•</span>
-                    <span>Format: <strong class="text-on-surface">Oral Presentation</strong></span>
+                    <span>Format: <strong class="text-on-surface" x-text="abstractData?.metode_presentasi"></strong></span>
                 </div>
             </div>
 
@@ -109,9 +112,7 @@
                 <h3 class="text-sm font-bold text-on-surface uppercase tracking-wider font-display">
                     {{ __('asic-reviewer.abstract_heading') ?? 'Abstrak' }}
                 </h3>
-                <p class="text-sm text-on-surface-variant leading-relaxed">
-                    Climate variability presents unprecedented challenges to tropical agricultural productivity, especially regarding lowland and upland rice ecosystems. This study investigates the physiological response, yield stability, and rhizosphere microbial resilience of selected indigenous and improved rice cultivars under induced temperature elevation and drought conditions. Preliminary field trials conducted across diverse agroecological zones in West Sumatra indicate significant adaptive variations across genotypes, with cultivar AR-27 displaying notable stomatal regulation and deeper root penetration under osmotic deficits. These empirical findings offer critical pathways for climate-resilient crop breeding strategies and sustainable agrifood transition across Southeast Asia.
-                </p>
+                <p class="text-sm text-on-surface-variant leading-relaxed">Abstrak lengkap tersedia pada berkas yang diunggah peserta.</p>
             </div>
 
             <!-- Keywords Section -->
@@ -119,17 +120,13 @@
                 <h3 class="text-sm font-bold text-on-surface uppercase tracking-wider font-display">
                     {{ __('asic-reviewer.keywords_heading') ?? 'Kata Kunci' }}
                 </h3>
-                <div class="flex flex-wrap items-center gap-2">
-                    <span class="px-3 py-1 rounded-lg bg-surface-container-high text-xs font-semibold text-on-surface">Sustainable agriculture</span>
-                    <span class="px-3 py-1 rounded-lg bg-surface-container-high text-xs font-semibold text-on-surface">Rice</span>
-                    <span class="px-3 py-1 rounded-lg bg-surface-container-high text-xs font-semibold text-on-surface">Climate resilience</span>
-                    <span class="px-3 py-1 rounded-lg bg-surface-container-high text-xs font-semibold text-on-surface">Agrifood Systems</span>
-                </div>
+                <p class="text-sm text-on-surface-variant">Kata kunci belum tersedia pada kontrak abstrak.</p>
             </div>
 
             <!-- Download Manuscript Button -->
             <div class="pt-4 border-t border-surface-container-highest">
-                <a href="{{ route('fe.template.author') }}" 
+                <a :href="abstractData ? '/api/registrations/' + abstractData.id_registration + '/abstract/download' : '#'"
+                   :aria-disabled="!abstractData"
                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-primary text-primary hover:bg-primary hover:text-white text-xs font-bold transition shadow-xs active:scale-95">
                     <span class="material-symbols-outlined text-[18px]">download</span>
                     <span>{{ __('asic-reviewer.btn_download_file') ?? 'Unduh Berkas Abstrak (PDF)' }}</span>
@@ -175,9 +172,9 @@
                             class="w-full px-3.5 py-2.5 rounded-xl border border-outline-variant bg-surface-container-lowest text-xs text-on-surface focus:ring-2 focus:ring-primary outline-none disabled:bg-surface-container-high disabled:cursor-not-allowed">
                         <option value="">{{ __('asic-reviewer.rec_placeholder') ?? 'Select recommendation' }}</option>
                         <option value="accept">{{ __('asic-reviewer.rec_accept') ?? 'Accept' }}</option>
-                        <option value="revision">{{ __('asic-reviewer.rec_revision') ?? 'Revision Required' }}</option>
                         <option value="reject">{{ __('asic-reviewer.rec_reject') ?? 'Reject' }}</option>
                     </select>
+                    <p x-show="fieldErrors.hasil_review" x-text="fieldErrors.hasil_review?.[0]" class="text-[11px] text-error"></p>
                 </div>
 
                 <!-- Review Comments Textarea -->
@@ -190,6 +187,7 @@
                               rows="6" 
                               placeholder="{{ __('asic-reviewer.comments_placeholder') ?? 'Provide scholarly feedback' }}" 
                               class="w-full p-3.5 rounded-xl border border-outline-variant bg-surface-container-lowest text-xs text-on-surface leading-relaxed focus:ring-2 focus:ring-primary outline-none disabled:bg-surface-container-high disabled:cursor-not-allowed"></textarea>
+                    <p x-show="fieldErrors.catatan_review" x-text="fieldErrors.catatan_review?.[0]" class="text-[11px] text-error"></p>
                     <p class="text-[11px] text-on-surface-variant">
                         {{ __('asic-reviewer.comments_required_help') ?? 'Detailed comments are required when requesting revision or rejecting.' }}
                     </p>

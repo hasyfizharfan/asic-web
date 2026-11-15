@@ -1,114 +1,48 @@
-@extends('layouts.portal', [
-    'role' => 'participant'
-])
+@extends('layouts.portal', ['role' => 'participant', 'roleName' => 'Berkas peserta', 'nav' => $participantNav])
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6">
-    <x-layout.page-header title="{{ __('asic-participant.full_paper_title') }}" subtitle="{{ __('asic-participant.full_paper_desc') }}" :breadcrumbs="[
-        ['label' => 'Portal', 'url' => route('fe.participant.dashboard')],
-        ['label' => 'Full Paper & Files']
-    ]">
-        <x-ui.badge variant="amber" dot>Due: 15 July 2027</x-ui.badge>
-    </x-layout.page-header>
-
-    <!-- Paper Context Banner -->
-    <x-ui.card>
-        <div class="flex items-start justify-between gap-4">
-            <div>
-                <span class="font-mono text-xs font-bold text-primary bg-primary-fixed/30 px-2 py-0.5 rounded">
-                    ASIC-2027-ABS-0089
-                </span>
-                <h3 class="text-base font-bold text-on-surface font-display mt-2">
-                    Application of Biochar and Arbuscular Mycorrhizal Fungi in Restoring Acid Tropical Agricultural Soils
-                </h3>
-                <p class="text-xs text-on-surface-variant mt-1">Topic: Sustainable Food Production & Soil Health</p>
-            </div>
-            <x-ui.button size="sm" variant="outline" href="{{ route('fe.participant.abstract') }}" iconLeft="visibility">
-                View Abstract
-            </x-ui.button>
+<main class="mx-auto max-w-4xl space-y-6" x-data="{
+    registrations: [], registration: null, files: [], loading: true, uploading: false, loadError: '', fieldErrors: {},
+    async init() { await this.load(); },
+    async load() {
+        this.loading = true; this.loadError = '';
+        const response = await window.asicApi.get('/api/registrations');
+        if (!response.ok) { this.loadError = response.error || 'Registrasi gagal dimuat.'; this.loading = false; return; }
+        this.registrations = response.data?.data?.data || [];
+        const id = new URLSearchParams(window.location.search).get('id_registration');
+        this.registration = this.registrations.find(row => String(row.id_registration) === String(id)) || this.registrations[0] || null;
+        if (!this.registration) { this.loadError = 'Belum ada registrasi untuk mengunggah berkas.'; this.files = []; this.loading = false; return; }
+        const fileResponse = await window.asicApi.get('/api/registrations/' + this.registration.id_registration + '/files');
+        this.loading = false;
+        if (!fileResponse.ok) { this.loadError = fileResponse.error || 'Berkas gagal dimuat.'; return; }
+        this.files = fileResponse.data?.data || [];
+    },
+    async upload(event) {
+        this.fieldErrors = {}; this.uploading = true;
+        const response = await window.asicApi.upload('/api/registrations/' + this.registration.id_registration + '/files', new FormData(event.target));
+        this.uploading = false;
+        if (!response.ok) { this.fieldErrors = response.errors || {}; window.asicApi.showToast(response.error || 'Berkas gagal diunggah.'); return; }
+        event.target.reset(); await this.load();
+        window.asicApi.showToast(response.data?.message || 'Berkas berhasil diunggah.', 'success');
+    }
+}">
+    <header><h1 class="text-2xl font-bold text-on-surface">Full paper dan presentasi</h1><p class="mt-1 text-sm text-on-surface-variant">Berkas peserta disimpan privat dan dapat diakses melalui tautan terotorisasi.</p></header>
+    <p x-show="loading" role="status" class="rounded-xl bg-surface-container-low p-4 text-sm">Memuat berkas…</p>
+    <p x-show="loadError" x-text="loadError" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-on-error-container"></p>
+    <section x-show="registration" class="space-y-5">
+        <form class="grid gap-4 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5 sm:grid-cols-2" @submit.prevent="upload($event)">
+            <label class="block text-sm font-semibold">Jenis berkas
+                <select name="jenis_file" required class="mt-1 block w-full rounded-xl border-surface-container-highest"><option value="Artikel">Full paper / Artikel</option><option value="Presentasi">Presentasi</option></select>
+            </label>
+            <label class="block text-sm font-semibold">Pilih berkas (PDF, DOC, DOCX, PPT, PPTX; maks. 10 MB)
+                <input name="file" type="file" required accept=".pdf,.doc,.docx,.ppt,.pptx" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
+            </label>
+            <p x-show="fieldErrors.jenis_file" x-text="fieldErrors.jenis_file?.[0]" class="text-sm text-error"></p><p x-show="fieldErrors.file" x-text="fieldErrors.file?.[0]" class="text-sm text-error"></p>
+            <button type="submit" :disabled="uploading" class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50 sm:col-span-2" x-text="uploading ? 'Mengunggah…' : 'Unggah berkas'"></button>
+        </form>
+        <div class="space-y-3"><h2 class="text-lg font-bold">Berkas terunggah</h2><p x-show="!loading && files.length === 0" class="rounded-xl border border-surface-container-highest p-5 text-sm text-on-surface-variant">Belum ada berkas.</p>
+            <template x-for="file in files" :key="file.id_file"><article class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-surface-container-highest bg-surface-container-lowest p-4"><div><p class="font-semibold" x-text="file.nama_file"></p><p class="text-xs text-on-surface-variant" x-text="file.jenis_file + ' · ' + file.status_file + ' · ' + (file.tanggal_upload || '')"></p></div><a :href="'/api/participant-files/' + file.id_file + '/download'" class="font-semibold text-primary">Unduh</a></article></template>
         </div>
-    </x-ui.card>
-
-    <!-- Upload Form & Template Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left: Upload Card -->
-        <div class="lg:col-span-2 space-y-6">
-            {{-- TODO(BE): action route('fe.participant.full-paper.store') --}}
-            <form action="{{ route('fe.participant.full-paper') }}" method="GET" class="space-y-4" @submit.prevent="$store.toast.add('Manuscript version successfully uploaded!', 'success')">
-                @csrf
-                <x-ui.card title="Upload Camera-Ready Manuscript" icon="cloud_upload">
-                    <div class="space-y-4">
-                        <x-ui.input label="Manuscript Final Title" value="Application of Biochar and Arbuscular Mycorrhizal Fungi in Restoring Acid Tropical Agricultural Soils" required />
-                        
-                        <x-ui.file-upload label="Select Manuscript File (.DOCX / .PDF)" name="manuscript_file" accept=".docx,.pdf" maxSize="15 MB" hint="Must strictly follow ASIC 2027 author template formatting" required />
-
-                        <x-ui.textarea label="Revisions & Author Notes" name="author_notes" placeholder="Summarize changes made addressing peer reviewer feedback..." rows="3" />
-                    </div>
-
-                    <x-slot:footer>
-                        <div class="w-full flex items-center justify-between text-xs">
-                            <span class="text-on-surface-variant">Ensure plagiarism check &lt; 20%</span>
-                            <x-ui.button type="submit" variant="primary" iconLeft="upload">
-                                Submit Manuscript
-                            </x-ui.button>
-                        </div>
-                    </x-slot:footer>
-                </x-ui.card>
-            </form>
-
-            <!-- Submission History Table -->
-            <div>
-                <h3 class="text-sm font-bold text-on-surface mb-3 font-display">Submission Version Log</h3>
-                <x-ui.table :headers="['Version', 'File Name', 'Uploaded At', 'Similarity', 'Status']">
-                    <tr>
-                        <td class="px-5 py-3 font-mono font-bold text-primary">v1.2 (Current)</td>
-                        <td class="px-5 py-3 font-medium">ASIC-0089_FullPaper_Rev1.docx</td>
-                        <td class="px-5 py-3 font-mono text-[11px] text-on-surface-variant">2027-05-10</td>
-                        <td class="px-5 py-3 font-mono text-tertiary font-bold">12% (Pass)</td>
-                        <td class="px-5 py-3">
-                            <x-ui.badge variant="success" dot>Approved</x-ui.badge>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="px-5 py-3 font-mono text-on-surface-variant">v1.0</td>
-                        <td class="px-5 py-3 text-on-surface-variant">ASIC-0089_Draft.docx</td>
-                        <td class="px-5 py-3 font-mono text-[11px] text-on-surface-variant">2027-04-14</td>
-                        <td class="px-5 py-3 font-mono text-on-surface-variant">14%</td>
-                        <td class="px-5 py-3">
-                            <x-ui.badge variant="neutral">Archived</x-ui.badge>
-                        </td>
-                    </tr>
-                </x-ui.table>
-            </div>
-        </div>
-
-        <!-- Right: Author Guidelines & Downloads -->
-        <div class="space-y-6">
-            <x-ui.card title="Author Resources" icon="download">
-                <div class="space-y-3">
-                    <div class="p-3 rounded-xl bg-surface-container-low border border-surface-container-highest space-y-1">
-                        <p class="font-bold text-xs text-on-surface">Official Paper Template</p>
-                        <p class="text-[11px] text-on-surface-variant">Two-column IEEE / IOP standard layout with predefined styles.</p>
-                        <div class="pt-2">
-                            <x-ui.button size="sm" variant="outline" iconLeft="download" @click="$store.toast.add('Downloading ASIC Template .DOCX...', 'info')">
-                                Download Template
-                            </x-ui.button>
-                        </div>
-                    </div>
-
-                    <div class="p-3 rounded-xl bg-surface-container-low border border-surface-container-highest space-y-1">
-                        <p class="font-bold text-xs text-on-surface">Copyright Transfer Form</p>
-                        <p class="text-[11px] text-on-surface-variant">Required for proceeding publisher agreement.</p>
-                        <div class="pt-2">
-                            <x-ui.button size="sm" variant="outline" iconLeft="download" @click="$store.toast.add('Downloading Copyright Form...', 'info')">
-                                Download Form
-                            </x-ui.button>
-                        </div>
-                    </div>
-                </div>
-            </x-ui.card>
-        </div>
-    </div>
-</div>
+    </section>
+</main>
 @endsection
-

@@ -8,32 +8,21 @@
     search: '',
     statusFilter: 'all',
     areaFilter: 'all',
-    abstracts: [
-        {
-            id: 'ASIC27-001',
-            title: 'Sustainable Rice Systems Under Climate Stress',
-            area: 'Crop Production',
-            status: 'awaiting',
-            statusLabel: 'Awaiting review',
-            date: '2027-08-01'
-        },
-        {
-            id: 'ASIC27-002',
-            title: 'Soil Health & Resilience in Tropical Lowlands',
-            area: 'Soil Management',
-            status: 'awaiting',
-            statusLabel: 'Awaiting review',
-            date: '2027-08-02'
-        },
-        {
-            id: 'ASIC27-003',
-            title: 'Agrifood Supply Chain Optimization in Highland Regions',
-            area: 'Socio-Economic',
-            status: 'reviewed',
-            statusLabel: 'Reviewed',
-            date: '2027-08-03'
-        }
-    ],
+    abstracts: [], loading: true, loadError: '',
+    async init() {
+        const response = await window.asicApi.get('/api/tim-abstrak/submissions');
+        this.loading = false;
+        if (!response.ok) { this.loadError = response.error || 'Antrean abstrak gagal dimuat.'; return; }
+        const rows = response.data?.data?.data || [];
+        this.abstracts = rows.map(row => ({
+            id: row.id_abstract,
+            title: row.judul_abstrak,
+            area: row.scope,
+            status: row.status_abstrak === 'Diajukan' || row.status_abstrak === 'Revisi' ? 'awaiting' : 'reviewed',
+            statusLabel: row.status_abstrak,
+            date: row.tanggal_submit || ''
+        }));
+    },
     get filteredAbstracts() {
         return this.abstracts.filter(item => {
             const matchSearch = this.search === '' || 
@@ -66,7 +55,7 @@
                     {{ __('asic-reviewer.queue_title') ?? 'Abstrak Review Queue' }}
                 </h1>
                 <p class="text-xs sm:text-sm text-on-surface-variant mt-1">
-                    {{ __('asic-reviewer.queue_lead') ?? 'Illustrative review assignments; real records will come from the system database.' }}
+                    {{ __('asic-reviewer.queue_lead') ?? 'Daftar abstrak yang diajukan untuk ditinjau.' }}
                 </p>
             </div>
 
@@ -160,6 +149,8 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-surface-container-highest">
+                    <tr x-show="loading"><td colspan="5" class="p-8 text-center text-sm text-on-surface-variant">Memuat antrean abstrak…</td></tr>
+                    <tr x-show="loadError"><td colspan="5" x-text="loadError" class="p-8 text-center text-sm text-error" role="alert"></td></tr>
                     <template x-for="item in filteredAbstracts" :key="item.id">
                         <tr class="hover:bg-surface-container-low/50 transition">
                             <td class="py-4 px-6">
@@ -176,7 +167,7 @@
                                 </span>
                             </td>
                             <td class="py-4 px-6 text-right">
-                                <a :href="'{{ url('_fe/reviewer/abstracts') }}/' + item.id" 
+                                <a :href="'{{ url('/reviewer/abstracts') }}/' + item.id"
                                    class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#17261D] font-bold text-xs shadow-xs transition active:scale-95">
                                     <span class="material-symbols-outlined text-[16px]" x-text="item.status === 'reviewed' ? 'visibility' : 'rate_review'"></span>
                                     <span x-text="item.status === 'reviewed' ? '{{ __('asic-reviewer.btn_view_review') ?? 'Lihat Review' }}' : '{{ __('asic-reviewer.btn_review') ?? 'Tinjau' }}'"></span>
@@ -189,7 +180,7 @@
         </div>
 
         <!-- Empty State (When no abstracts match or list is empty) -->
-        <div x-show="filteredAbstracts.length === 0" class="p-12 text-center space-y-3" style="display: none;">
+        <div x-show="!loading && !loadError && filteredAbstracts.length === 0" class="p-12 text-center space-y-3" style="display: none;">
             <div class="w-14 h-14 rounded-2xl bg-surface-container-high text-on-surface-variant flex items-center justify-center mx-auto">
                 <span class="material-symbols-outlined text-[32px]">folder_off</span>
             </div>

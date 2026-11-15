@@ -112,10 +112,10 @@ class RecapAndExportTest extends TestCase
     public function test_invoice_and_payment_recap_amounts(): void
     {
         $inv = $this->as(Role::ROLE_BENDAHARA)->getJson('/api/recap/invoices')->assertOk()->json('data');
-        $this->assertSame(3, $inv['total']);
-        $this->assertSame('2900000.00', $inv['total_tagihan']); // 1,4jt + 0,5jt + 1jt
+        $this->assertSame(5, $inv['total']);
+        $this->assertSame('4800000.00', $inv['total_tagihan']); // invoice presenter diterbitkan sejak registrasi
         $byStatus = collect($inv['by_status'])->pluck('total_tagihan', 'key')->all();
-        $this->assertSame(['Menunggu Pembayaran' => '1000000.00', 'Menunggu Verifikasi' => '500000.00', 'Terverifikasi' => '1400000.00'], $byStatus);
+        $this->assertSame(['Menunggu Pembayaran' => '2900000.00', 'Menunggu Verifikasi' => '500000.00', 'Terverifikasi' => '1400000.00'], $byStatus);
 
         $pay = $this->as(Role::ROLE_BENDAHARA)->getJson('/api/recap/payments')->assertOk()->json('data');
         $this->assertSame(2, $pay['proofs_total']);
@@ -123,7 +123,7 @@ class RecapAndExportTest extends TestCase
         $this->assertSame(0, $pay['verified_invalid']);
         $this->assertSame(1, $pay['awaiting_verification']);
         $this->assertSame('1400000.00', $pay['amount_verified']);
-        $this->assertSame('1500000.00', $pay['amount_outstanding']);
+        $this->assertSame('3400000.00', $pay['amount_outstanding']);
 
         $period = $this->as(Role::ROLE_BENDAHARA)->getJson('/api/recap/payments?id_period='.$this->regular->id_period)->json('data');
         $this->assertSame(0, $period['proofs_total']);
@@ -209,14 +209,14 @@ class RecapAndExportTest extends TestCase
     public function test_payment_and_invoice_exports(): void
     {
         $pay = $this->sheetRows($this->as(Role::ROLE_BENDAHARA)->get('/api/exports/payments')->assertOk()->getContent());
-        $this->assertCount(4, $pay);
+        $this->assertCount(6, $pay);
         $verified = collect($pay)->firstWhere(3, 'Terverifikasi');
         $this->assertSame('1400000', $verified[4]);
         $this->assertSame('Valid', $verified[7]);
 
         $inv = $this->sheetRows($this->as(Role::ROLE_BENDAHARA)->get('/api/exports/invoices?status=Menunggu Pembayaran')->assertOk()->getContent());
-        $this->assertCount(2, $inv);
-        $this->assertSame('1000000', $inv[1][8]);
+        $this->assertCount(4, $inv);
+        $this->assertContains('1000000', array_column($inv, 8));
     }
 
     public function test_recap_export_has_multiple_sheets_and_requires_all_three_permissions(): void

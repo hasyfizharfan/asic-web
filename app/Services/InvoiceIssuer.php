@@ -23,7 +23,7 @@ class InvoiceIssuer
     public function issueFor(Registration $registration): array
     {
         return DB::transaction(function () use ($registration) {
-            $reg = Registration::with(['registrationAddOns.addOn', 'abstractSubmission'])
+            $reg = Registration::with(['registrationAddOns.addOn'])
                 ->whereKey($registration->getKey())->lockForUpdate()->firstOrFail();
 
             if ($existing = Invoice::where('id_registration', $reg->id_registration)->first()) {
@@ -32,10 +32,6 @@ class InvoiceIssuer
             if ($reg->registration_status !== 'Terdaftar') {
                 return $this->skipped('Registrasi tidak berstatus Terdaftar.');
             }
-            if ($reg->isPresenter() && $reg->abstractSubmission?->status_abstrak !== 'Diterima') {
-                return $this->skipped('Invoice Presenter baru terbit setelah abstrak Diterima.');
-            }
-
             $fee = RegistrationFee::where([
                 'id_event' => $reg->id_event,
                 'id_period' => $reg->id_period,

@@ -7,42 +7,64 @@
     'role' => 'participant',
     'roleName' => 'Registration',
     'nav' => [
-        ['label' => __('asic-nav.dashboard'), 'route' => 'participant.dashboard', 'icon' => 'space_dashboard'],
-        ['label' => __('asic-nav.payment'), 'route' => 'participant.payment.checkout', 'icon' => 'payments'],
-        ['label' => __('asic-nav.documents'), 'route' => 'participant.documents', 'icon' => 'folder'],
+        ['label' => __('asic-nav.dashboard'), 'route' => 'portal.participant.dashboard', 'icon' => 'space_dashboard'],
+        ['label' => __('asic-nav.payment'), 'route' => 'portal.participant.payment.checkout', 'icon' => 'payments'],
+        ['label' => __('asic-nav.documents'), 'route' => 'portal.participant.documents', 'icon' => 'folder'],
     ]
 ])
 
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6" x-data="{ 
-    participationType: '{{ $isListener ? 'listener' : 'oral' }}',
+<div class="max-w-4xl mx-auto space-y-6" x-data="{
+    participationType: '{{ $isListener ? 'Listener' : 'Oral Presenter' }}',
     nationality: 'domestic',
-    category: 'regular',
-    includeFieldTrip: false,
+    category: 'Regular',
+    attendanceMode: 'Luring',
+    publicationOption: 'Tidak',
+    events: [], fees: [], loading: true, loadError: '', fieldErrors: {},
+    idEvent: '', idPeriod: '',
     submitting: false,
+    async init() {
+        try {
+            const [events, fees] = await Promise.all([
+                window.asicApi.get('/api/public/events'),
+                window.asicApi.get('/api/public/registration-fees')
+            ]);
+            if (!events.ok || !fees.ok) throw new Error(events.error || fees.error || 'Data pendaftaran tidak dapat dimuat.');
+            this.events = events.data?.data?.data || events.data?.data || [];
+            this.fees = fees.data?.data || [];
+            this.idEvent = String(this.events[0]?.id_event || this.fees[0]?.id_event || '');
+            this.syncPeriod();
+            if (!this.events.length || !this.fees.length) this.loadError = 'Belum ada event atau tarif pendaftaran aktif.';
+        } catch (error) { this.loadError = error.message || 'Data pendaftaran gagal dimuat.'; }
+        finally { this.loading = false; }
+    },
+    get periods() { return [...new Map(this.fees.filter(f => String(f.id_event) === this.idEvent).map(f => [String(f.id_period), f.period])).values()]; },
+    syncPeriod() { this.idPeriod = String(this.periods[0]?.id_period || ''); },
+    get selectedFee() { return this.fees.find(f => String(f.id_event) === this.idEvent && String(f.id_period) === this.idPeriod && f.registration_type === this.category && f.attendance_mode === this.attendanceMode && f.tujuan_publikasi === this.publicationOption); },
     get calculatedFee() {
-        if (this.nationality === 'domestic') {
-            let base = this.participationType === 'listener' ? 750000 : (this.category === 'student' ? 1200000 : 1500000);
-            if (this.includeFieldTrip) base += 450000;
-            return 'IDR ' + base.toLocaleString('id-ID');
-        } else {
-            let base = this.participationType === 'listener' ? 80 : (this.category === 'student' ? 150 : 250);
-            if (this.includeFieldTrip) base += 40;
-            return 'USD ' + base;
-        }
+        return this.selectedFee ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(this.selectedFee.final_amount)) : 'Tarif tidak tersedia';
     },
     async handleSubmit(e) {
+        this.fieldErrors = {};
         this.submitting = true;
         const payload = {
+            id_event: Number(this.idEvent),
+            id_period: Number(this.idPeriod),
+            registration_type: this.category,
+            attendance_mode: this.attendanceMode,
             participation_type: this.participationType,
-            nationality: this.nationality,
-            category: this.category,
-            include_field_trip: this.includeFieldTrip,
-            estimated_fee: this.calculatedFee
+            publication_option: this.publicationOption
         };
-        const res = await window.asicApi.post('/api/participant/register', payload);
+        const res = await window.asicApi.post('/api/registrations', payload);
         this.submitting = false;
-        window.location.href = '{{ route('fe.participant.payment.checkout') }}';
+        if (!res.ok || res.status !== 201) {
+            this.fieldErrors = res.errors || {};
+            window.asicApi.showToast(res.error || 'Pendaftaran gagal. Periksa data lalu coba lagi.');
+            return;
+        }
+        const registrationId = res.data?.data?.id_registration;
+        if (registrationId) window.location.assign('{{ route('portal.participant.payment.checkout') }}?id_registration=' + encodeURIComponent(registrationId));
+        else window.asicApi.showToast('Pendaftaran tersimpan, tetapi data invoice belum tersedia. Buka halaman pembayaran dari dashboard.');
     }
 }">
     
@@ -59,16 +81,55 @@
     </x-layout.page-header>
 
     {{-- TODO(BE): action route('fe.participant.register.post') --}}
-    <form action="{{ route('fe.participant.payment.checkout') }}" method="GET" class="space-y-6" @submit.prevent="handleSubmit($event)">
+    <form action="#" method="POST" class="space-y-6" @submit.prevent="handleSubmit($event)">
         @csrf
+
+        <x-ui.card title="Kegiatan dan periode" icon="event">
+            <div x-show="loading" role="status" class="text-sm text-on-surface-variant">Memuat event dan tarif…</div>
+            <div x-show="loadError" x-text="loadError" role="alert" class="text-sm text-error"></div>
+            <div x-show="!loading && !loadError" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label class="text-xs font-semibold">Event
+                    <select x-model="idEvent" @change="syncPeriod()" class="mt-1 w-full rounded-xl border-surface-container-highest text-sm">
+                        <template x-for="event in events.filter(event => fees.some(fee => String(fee.id_event) === String(event.id_event)))" :key="event.id_event">
+                            <option :value="String(event.id_event)" x-text="event.nama_event"></option>
+                        </template>
+                    </select>
+                    <p x-show="fieldErrors.id_event" x-text="fieldErrors.id_event?.[0]" class="mt-1 text-error"></p>
+                </label>
+                <label class="text-xs font-semibold">Periode
+                    <select x-model="idPeriod" class="mt-1 w-full rounded-xl border-surface-container-highest text-sm">
+                        <template x-for="period in periods" :key="period.id_period">
+                            <option :value="String(period.id_period)" x-text="period.nama_periode"></option>
+                        </template>
+                    </select>
+                    <p x-show="fieldErrors.id_period" x-text="fieldErrors.id_period?.[0]" class="mt-1 text-error"></p>
+                </label>
+            </div>
+            <p x-show="!loading && !loadError && !selectedFee" class="mt-3 text-sm text-error">Tarif untuk kategori dan mode yang dipilih belum tersedia.</p>
+            <div class="mt-4 flex gap-4">
+                <label class="text-xs font-semibold">Mode kehadiran
+                    <select x-model="attendanceMode" class="mt-1 block rounded-xl border-surface-container-highest text-sm">
+                        <option value="Luring">Luring</option><option value="Daring">Daring</option>
+                    </select>
+                    <span x-show="fieldErrors.attendance_mode" x-text="fieldErrors.attendance_mode?.[0]" class="mt-1 block text-error"></span>
+                </label>
+                <label class="text-xs font-semibold">Tujuan publikasi
+                    <select x-model="publicationOption" class="mt-1 block rounded-xl border-surface-container-highest text-sm">
+                        <option value="Tidak">Tidak</option><option value="Prosiding">Prosiding</option><option value="Jurnal">Jurnal</option>
+                    </select>
+                    <span x-show="fieldErrors.publication_option" x-text="fieldErrors.publication_option?.[0]" class="mt-1 block text-error"></span>
+                </label>
+            </div>
+        </x-ui.card>
 
         <!-- Section 1: Participation Type -->
         <x-ui.card title="{{ __('asic-participant.ticket_type_legend') }}" icon="how_to_reg">
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <x-ui.radio-card name="participation_type" value="oral" title="Oral Presenter" description="Present in parallel technical session" price="From IDR 1.2M / USD 150" icon="record_voice_over" model="participationType" />
-                <x-ui.radio-card name="participation_type" value="poster" title="Poster Presenter" description="Display scientific poster board" price="From IDR 1.0M / USD 120" icon="aspect_ratio" model="participationType" />
-                <x-ui.radio-card name="participation_type" value="listener" title="Attendee / Listener" description="Access all sessions, kit & lunch" price="IDR 750K / USD 80" icon="hearing" model="participationType" />
+                <x-ui.radio-card name="participation_type" value="Oral Presenter" title="Oral Presenter" description="Present in parallel technical session" price="See active fee" icon="record_voice_over" model="participationType" />
+                <x-ui.radio-card name="participation_type" value="Poster Presenter" title="Poster Presenter" description="Display scientific poster board" price="See active fee" icon="aspect_ratio" model="participationType" />
+                <x-ui.radio-card name="participation_type" value="Listener" title="Attendee / Listener" description="Access all sessions, kit & lunch" price="See active fee" icon="hearing" model="participationType" />
             </div>
+            <p x-show="fieldErrors.participation_type" x-text="fieldErrors.participation_type?.[0]" class="mt-2 text-sm text-error"></p>
         </x-ui.card>
 
         <!-- Section 2: Category & Nationality -->
@@ -80,12 +141,12 @@
                         <label :class="nationality === 'domestic' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
                             <input type="radio" name="nationality" value="domestic" x-model="nationality" class="sr-only">
                             <span class="block text-xs font-bold text-on-surface">Indonesian (Domestic)</span>
-                            <span class="block text-[11px] text-on-surface-variant mt-0.5">Payment via IDR / QRIS</span>
+                            <span class="block text-[11px] text-on-surface-variant mt-0.5">Asal peserta untuk informasi</span>
                         </label>
                         <label :class="nationality === 'international' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
                             <input type="radio" name="nationality" value="international" x-model="nationality" class="sr-only">
                             <span class="block text-xs font-bold text-on-surface">International</span>
-                            <span class="block text-[11px] text-on-surface-variant mt-0.5">Payment via USD / PayPal</span>
+                            <span class="block text-[11px] text-on-surface-variant mt-0.5">Asal peserta untuk informasi</span>
                         </label>
                     </div>
                 </div>
@@ -93,17 +154,18 @@
                 <div>
                     <label class="block text-xs font-semibold text-on-surface mb-2">Participant Category</label>
                     <div class="grid grid-cols-2 gap-3">
-                        <label :class="category === 'student' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
-                            <input type="radio" name="category" value="student" x-model="category" class="sr-only">
+                        <label :class="category === 'Student' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
+                            <input type="radio" name="category" value="Student" x-model="category" class="sr-only">
                             <span class="block text-xs font-bold text-on-surface">Student (Undergrad/Postgrad)</span>
                             <span class="block text-[11px] text-on-surface-variant mt-0.5">Requires Student ID verification</span>
                         </label>
-                        <label :class="category === 'regular' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
-                            <input type="radio" name="category" value="regular" x-model="category" class="sr-only">
+                        <label :class="category === 'Regular' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
+                            <input type="radio" name="category" value="Regular" x-model="category" class="sr-only">
                             <span class="block text-xs font-bold text-on-surface">Regular / Academician</span>
                             <span class="block text-[11px] text-on-surface-variant mt-0.5">Lecturers, Researchers & General</span>
                         </label>
                     </div>
+                    <p x-show="fieldErrors.registration_type" x-text="fieldErrors.registration_type?.[0]" class="mt-2 text-sm text-error"></p>
                 </div>
             </div>
         </x-ui.card>
@@ -112,25 +174,28 @@
         <x-ui.card title="{{ __('asic-participant.personal_info') }}" icon="person">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="sm:col-span-2">
-                    <x-ui.input label="{{ __('asic-participant.full_name') }}" name="name" placeholder="e.g. Dr. Budi Santoso, M.Sc." iconLeft="person" required />
+                    <x-ui.input label="{{ __('asic-participant.full_name') }}" name="name" placeholder="e.g. Dr. Budi Santoso, M.Sc." iconLeft="person" />
                 </div>
-                <x-ui.input label="{{ __('asic-participant.email') }}" name="email" type="email" placeholder="budi@institution.ac.id" iconLeft="mail" required />
-                <x-ui.input label="{{ __('asic-participant.phone') }}" name="phone" placeholder="+62 812-3456-7890" iconLeft="call" required />
-                <x-ui.input label="{{ __('asic-participant.institution') }}" name="institution" placeholder="Universitas Andalas" iconLeft="school" required />
+                <x-ui.input label="{{ __('asic-participant.email') }}" name="email" type="email" placeholder="budi@institution.ac.id" iconLeft="mail" />
+                <x-ui.input label="{{ __('asic-participant.phone') }}" name="phone" placeholder="+62 812-3456-7890" iconLeft="call" />
+                <x-ui.input label="{{ __('asic-participant.institution') }}" name="institution" placeholder="Universitas Andalas" iconLeft="school" />
                 <x-ui.input label="{{ __('asic-participant.department') }}" name="department" placeholder="Department of Agronomy" iconLeft="business" />
-                <x-ui.input label="{{ __('asic-participant.city') }}" name="city" placeholder="Padang" iconLeft="location_city" required />
-                <x-ui.input label="{{ __('asic-participant.country') }}" name="country" placeholder="Indonesia" iconLeft="public" required />
+                <x-ui.input label="{{ __('asic-participant.city') }}" name="city" placeholder="Padang" iconLeft="location_city" />
+                <x-ui.input label="{{ __('asic-participant.country') }}" name="country" placeholder="Indonesia" iconLeft="public" />
             </div>
         </x-ui.card>
 
         <!-- Section 4: Abstract Submission (Visible only for Presenter) -->
-        <div x-show="participationType !== 'listener'" x-transition class="space-y-6">
+        <div x-show="false" class="rounded-xl border border-surface-container-highest bg-surface-container-low p-4 text-sm text-on-surface-variant">
+            Pengajuan abstrak dilakukan setelah invoice dan pembayaran diverifikasi pada halaman abstrak peserta.
+        </div>
+        <div x-show="false" class="space-y-6">
             <x-ui.card title="{{ __('asic-participant.abstract_info') }}" icon="description">
                 <div class="space-y-4">
-                    <x-ui.input label="{{ __('asic-participant.abstract_title') }}" name="abstract_title" placeholder="e.g. Assessment of Organic Fertilizer on Crop Yield..." required />
+                    <x-ui.input label="{{ __('asic-participant.abstract_title') }}" name="abstract_title" placeholder="e.g. Assessment of Organic Fertilizer on Crop Yield..." />
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <x-ui.select label="{{ __('asic-participant.topic') }}" name="topic" required iconLeft="category">
+                        <x-ui.select label="{{ __('asic-participant.topic') }}" name="topic" iconLeft="category">
                             <option value="sustainable_food">Sustainable Food Production</option>
                             <option value="agro_biodiversity">Agro-biodiversity & Climate Resilience</option>
                             <option value="food_security">Food Security & Nutrition</option>
@@ -138,17 +203,17 @@
                             <option value="policy_market">Markets, Policy & Rural Livelihoods</option>
                         </x-ui.select>
 
-                        <x-ui.select label="{{ __('asic-participant.presentation_mode') }}" name="presentation_mode" required iconLeft="co_present">
+                        <x-ui.select label="{{ __('asic-participant.presentation_mode') }}" name="presentation_mode" iconLeft="co_present">
                             <option value="onsite">{{ __('asic-participant.onsite') }}</option>
                             <option value="online">{{ __('asic-participant.online') }}</option>
                         </x-ui.select>
                     </div>
 
-                    <x-ui.input label="{{ __('asic-participant.authors') }}" name="authors" placeholder="e.g. Budi Santoso (1), Ahmad Fauzi (2)" hint="List all co-authors with institution numbers" required />
+                    <x-ui.input label="{{ __('asic-participant.authors') }}" name="authors" placeholder="e.g. Budi Santoso (1), Ahmad Fauzi (2)" hint="List all co-authors with institution numbers" />
 
-                    <x-ui.textarea label="{{ __('asic-participant.abstract_body') }}" name="abstract_body" placeholder="Provide background, methods, results, and conclusion (150–250 words)..." rows="5" maxlength="500" required />
+                    <x-ui.textarea label="{{ __('asic-participant.abstract_body') }}" name="abstract_body" placeholder="Provide background, methods, results, and conclusion (150–250 words)..." rows="5" maxlength="500" />
 
-                    <x-ui.input label="{{ __('asic-participant.keywords') }}" name="keywords" placeholder="biochar, cassava, food security, soil biology" required />
+                    <x-ui.input label="{{ __('asic-participant.keywords') }}" name="keywords" placeholder="biochar, cassava, food security, soil biology" />
 
                     <x-ui.file-upload label="{{ __('asic-participant.upload_abstract_doc') }}" name="abstract_file" accept=".docx,.pdf" maxSize="5 MB" hint="Optional manuscript document with figures/tables" />
                 </div>
@@ -156,13 +221,13 @@
         </div>
 
         <!-- Section 5: Listener Field Trip Option (Visible only for Listener) -->
-        <div x-show="participationType === 'listener'" x-transition>
+        <div x-show="participationType === 'Listener'" x-transition>
             <x-ui.card title="{{ __('asic-participant.field_trip_title') }}" icon="nature_people">
                 <div class="flex items-start gap-4 p-4 rounded-xl bg-surface-container-low border border-surface-container-highest">
-                    <input type="checkbox" id="field_trip" name="include_field_trip" x-model="includeFieldTrip" class="h-5 w-5 rounded border-outline/40 text-primary focus:ring-primary mt-0.5 cursor-pointer">
+                    <input type="checkbox" id="field_trip" name="include_field_trip" disabled class="h-5 w-5 rounded border-outline/40 text-primary mt-0.5 cursor-not-allowed">
                     <label for="field_trip" class="cursor-pointer">
-                        <span class="block text-sm font-bold text-on-surface">{{ __('asic-participant.field_trip_title') }}</span>
-                        <span class="block text-xs text-on-surface-variant mt-1 leading-relaxed">{{ __('asic-participant.field_trip_desc') }}</span>
+                        <span class="block text-sm font-bold text-on-surface">{{ __('asic-participant.field_trip_title') }} — belum tersedia</span>
+                        <span class="block text-xs text-on-surface-variant mt-1 leading-relaxed">Pilihan add-on belum disediakan oleh API saat ini.</span>
                         <span class="inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary-fixed text-primary font-mono">
                             {{ __('asic-participant.field_trip_fee') }}
                         </span>

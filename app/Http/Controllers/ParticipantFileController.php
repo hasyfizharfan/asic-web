@@ -12,7 +12,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class ParticipantFileController extends Controller
@@ -72,9 +71,7 @@ class ParticipantFileController extends Controller
                 'nama_file' => $file->nama_file,
                 'status_file' => $file->status_file,
                 'tanggal_upload' => $file->tanggal_upload,
-                'file_url' => Storage::disk('public')->exists($file->file_path)
-                    ? Storage::disk('public')->url($file->file_path)
-                    : null,
+                'file_url' => route('api.participant-files.download', $file->id_file),
             ];
         });
 
@@ -149,7 +146,7 @@ class ParticipantFileController extends Controller
         $file = $request->file('file');
 
         $originalName = $file->getClientOriginalName();
-        $filePath = $file->store('participant_files', 'public');
+        $filePath = $file->store('participant_files', 'local');
 
         $participantFile = ParticipantFile::create([
             'id_registration' => $registration->id_registration,
@@ -171,7 +168,7 @@ class ParticipantFileController extends Controller
                     'nama_file' => $participantFile->nama_file,
                     'status_file' => $participantFile->status_file,
                     'tanggal_upload' => $participantFile->tanggal_upload,
-                    'file_url' => Storage::disk('public')->url($filePath),
+                    'file_url' => route('api.participant-files.download', $participantFile->id_file),
                 ],
             ], Response::HTTP_CREATED);
         }
@@ -237,9 +234,7 @@ class ParticipantFileController extends Controller
                 'nama_file' => $participantFile->nama_file,
                 'status_file' => $participantFile->status_file,
                 'tanggal_upload' => $participantFile->tanggal_upload,
-                'file_url' => Storage::disk('public')->exists($participantFile->file_path)
-                    ? Storage::disk('public')->url($participantFile->file_path)
-                    : null,
+                'file_url' => route('api.participant-files.download', $participantFile->id_file),
             ],
         ], Response::HTTP_OK);
     }
@@ -272,7 +267,7 @@ class ParticipantFileController extends Controller
             new OA\Response(response: 404, description: 'Berkas tidak ditemukan'),
         ]
     )]
-    public function download(int $id_file): BinaryFileResponse|JsonResponse
+    public function download(int $id_file): mixed
     {
         $participantFile = ParticipantFile::with('registration.participant.userAccount')
             ->findOrFail($id_file);
@@ -287,14 +282,21 @@ class ParticipantFileController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        if (! Storage::disk('public')->exists($participantFile->file_path)) {
+        $privateDisk = Storage::disk('local');
+        $publicDisk = Storage::disk('public');
+        if (! $privateDisk->exists($participantFile->file_path) && $publicDisk->exists($participantFile->file_path)) {
+            $privateDisk->put($participantFile->file_path, $publicDisk->get($participantFile->file_path));
+            $publicDisk->delete($participantFile->file_path);
+        }
+
+        if (! $privateDisk->exists($participantFile->file_path)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Berkas tidak ditemukan pada server.',
             ], Response::HTTP_NOT_FOUND);
         }
 
-        return Storage::disk('public')->download(
+        return $privateDisk->download(
             $participantFile->file_path,
             $participantFile->nama_file
         );

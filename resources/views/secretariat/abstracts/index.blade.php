@@ -10,6 +10,13 @@
     drawerOpen: false,
     activeTab: 'all',
     searchQuery: '',
+    abstracts: [], loading: true, loadError: '',
+    async init() {
+        const response = await window.asicApi.get('/api/tim-abstrak/submissions');
+        this.loading = false;
+        if (!response.ok) { this.loadError = response.error || 'Daftar abstrak gagal dimuat.'; return; }
+        this.abstracts = response.data?.data?.data || [];
+    },
     selectedAbstract: {
         id: '#ABS-2027-0104',
         rawId: 'ABS-2027-0104',
@@ -289,6 +296,22 @@
     <div class="bg-surface-container-lowest rounded-xl shadow-xs border border-surface-container-high overflow-hidden flex flex-col">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
+                <thead><tr class="bg-surface-container-low text-on-surface-variant h-11 text-xs font-semibold uppercase tracking-wider border-b border-surface-container-high">
+                    <th class="px-4">ID</th><th class="px-4">Judul</th><th class="px-4">Scope</th><th class="px-4">Metode</th><th class="px-4">Tanggal</th><th class="px-4">Status</th><th class="px-4 text-right">Aksi</th>
+                </tr></thead>
+                <tbody class="divide-y divide-surface-container-high text-xs text-on-surface">
+                    <tr x-show="loading"><td colspan="7" class="p-8 text-center text-on-surface-variant">Memuat daftar abstrak…</td></tr>
+                    <tr x-show="loadError"><td colspan="7" x-text="loadError" role="alert" class="p-8 text-center text-error"></td></tr>
+                    <template x-for="item in abstracts" :key="item.id_abstract">
+                        <tr class="hover:bg-surface-container-low/60">
+                            <td class="p-4 font-mono" x-text="item.id_abstract"></td><td class="p-4 font-semibold" x-text="item.judul_abstrak"></td><td class="p-4" x-text="item.scope"></td><td class="p-4" x-text="item.metode_presentasi"></td><td class="p-4" x-text="item.tanggal_submit || '—'"></td><td class="p-4" x-text="item.status_abstrak"></td>
+                            <td class="p-4 text-right"><a :href="'{{ url('/secretariat/abstracts') }}/' + item.id_abstract" class="text-primary font-semibold">Detail</a></td>
+                        </tr>
+                    </template>
+                    <tr x-show="!loading && !loadError && abstracts.length === 0"><td colspan="7" class="p-8 text-center text-on-surface-variant">Belum ada abstrak.</td></tr>
+                </tbody>
+            </table>
+            <table class="w-full text-left border-collapse" x-show="false" aria-hidden="true">
                 <thead>
                     <tr class="bg-surface-container-low text-on-surface-variant h-11 text-xs font-semibold uppercase tracking-wider border-b border-surface-container-high">
                         <th class="px-4 w-[140px]">{{ __('asic-secretariat.abstracts.col_id') }}</th>
@@ -351,7 +374,7 @@
                             </span>
                         </td>
                         <td class="px-4 text-right whitespace-nowrap" @click.stop>
-                            <a href="{{ route('fe.secretariat.abstracts.show', 'ABS-2027-0104') }}" 
+                            <a href="#"
                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-primary hover:text-white text-primary text-xs transition font-semibold shadow-xs">
                                 <span>{{ __('asic-secretariat.abstracts.btn_review') }}</span>
                                 <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
@@ -409,7 +432,7 @@
                             </span>
                         </td>
                         <td class="px-4 text-right whitespace-nowrap" @click.stop>
-                            <a href="{{ route('fe.secretariat.abstracts.show', 'ABS-2027-0103') }}" 
+                            <a href="#"
                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-primary hover:text-white text-primary text-xs transition font-semibold shadow-xs">
                                 <span>{{ __('asic-secretariat.abstracts.btn_review') }}</span>
                                 <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
@@ -467,7 +490,7 @@
                             </span>
                         </td>
                         <td class="px-4 text-right whitespace-nowrap" @click.stop>
-                            <a href="{{ route('fe.secretariat.abstracts.show', 'ABS-2027-0102') }}" 
+                            <a href="#"
                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-primary hover:text-white text-primary text-xs transition font-semibold shadow-xs">
                                 <span>{{ __('asic-secretariat.abstracts.btn_review') }}</span>
                                 <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
@@ -525,7 +548,7 @@
                             </span>
                         </td>
                         <td class="px-4 text-right whitespace-nowrap" @click.stop>
-                            <a href="{{ route('fe.secretariat.abstracts.show', 'ABS-2027-0099') }}" 
+                            <a href="#"
                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-primary hover:text-white text-primary text-xs transition font-semibold shadow-xs">
                                 <span>{{ __('asic-secretariat.abstracts.btn_review') }}</span>
                                 <span class="material-symbols-outlined text-[15px]">arrow_forward</span>

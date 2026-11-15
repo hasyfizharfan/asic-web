@@ -157,7 +157,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/documents/{id_document}/download', [DocumentController::class, 'download'])
         ->whereNumber('id_document')->name('api.documents.download');
     Route::post('/tim-abstrak/submissions/{id_abstract}/issue-documents', [AbstractReviewController::class, 'issueDocuments'])
-        ->whereNumber('id_abstract')->middleware('permission:accept_reject')->name('api.tim-abstrak.submissions.issue-documents');
+        ->whereNumber('id_abstract')->middleware('permission:issue_documents')->name('api.tim-abstrak.submissions.issue-documents');
 
     // -----------------------------------------------------------------
     // TASK 5: BUKTI & VERIFIKASI PEMBAYARAN
