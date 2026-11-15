@@ -73,8 +73,9 @@
             </div>
 
             <!-- Form -->
-            <form action="{{ route('fe.participant.login') }}" method="POST" class="space-y-4">
+            <form action="{{ route('api.login') }}" method="POST" data-asic-login class="space-y-4">
                 @csrf
+                <p data-form-error role="alert" class="hidden text-xs font-semibold text-error"></p>
                 <x-ui.input label="{{ __('asic-auth.email_label') }}" 
                             name="email" 
                             type="email" 
@@ -107,7 +108,7 @@
         <!-- Footer link -->
         <div class="mt-8 pt-5 border-t border-surface-container-highest text-center text-xs text-on-surface-variant">
             <span>{{ __('asic-auth.no_account') }}</span>
-            <a href="{{ route('fe.participant.registration') }}" class="font-bold text-primary hover:underline ml-1">
+            <a href="{{ route('portal.landing') }}#fees" class="font-bold text-primary hover:underline ml-1">
                 {{ __('asic-auth.register_now') }}
             </a>
         </div>

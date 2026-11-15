@@ -32,6 +32,11 @@ class PermissionMatrix
             ['id' => 'upload_participant_files', 'title' => 'Upload participant files', 'tag' => 'Manuscripts', 'description' => 'Upload files for owned registrations or manage uploads with delegated access'],
             ['id' => 'manage_sessions', 'title' => 'Manage sessions', 'tag' => 'Schedule', 'description' => 'View and manage event sessions'],
             ['id' => 'manage_digital_signatures', 'title' => 'Manage digital signatures', 'tag' => 'Publishing', 'description' => 'View or manage role-based digital signatures and stamps'],
+            ['id' => 'access_participant_portal', 'title' => 'Open participant portal', 'tag' => 'Portal access', 'description' => 'Access the participant web portal'],
+            ['id' => 'access_secretariat_portal', 'title' => 'Open secretariat portal', 'tag' => 'Portal access', 'description' => 'Access the secretariat web portal'],
+            ['id' => 'access_treasurer_portal', 'title' => 'Open treasurer portal', 'tag' => 'Portal access', 'description' => 'Access the treasurer web portal'],
+            ['id' => 'access_reviewer_portal', 'title' => 'Open reviewer portal', 'tag' => 'Portal access', 'description' => 'Access the abstract reviewer web portal'],
+            ['id' => 'access_admin_portal', 'title' => 'Open admin portal', 'tag' => 'Portal access', 'description' => 'Access the administration web portal'],
         ];
     }
 
@@ -61,6 +66,11 @@ class PermissionMatrix
             'upload_participant_files' => [Role::ROLE_PESERTA => 'full_access', Role::ROLE_SEKRETARIAT => 'full_access', Role::ROLE_TIM_ABSTRAK => 'full_access', Role::ROLE_ADMIN => 'full_access'],
             'manage_sessions' => [Role::ROLE_PESERTA => 'view_only', Role::ROLE_SEKRETARIAT => 'full_access', Role::ROLE_BENDAHARA => 'view_only', Role::ROLE_TIM_ABSTRAK => 'view_only', Role::ROLE_ADMIN => 'full_access'],
             'manage_digital_signatures' => [Role::ROLE_PESERTA => 'view_only', Role::ROLE_SEKRETARIAT => 'full_access', Role::ROLE_BENDAHARA => 'view_only', Role::ROLE_TIM_ABSTRAK => 'view_only', Role::ROLE_ADMIN => 'full_access'],
+            'access_participant_portal' => [Role::ROLE_PESERTA => 'full_access'],
+            'access_secretariat_portal' => [Role::ROLE_SEKRETARIAT => 'full_access'],
+            'access_treasurer_portal' => [Role::ROLE_BENDAHARA => 'full_access'],
+            'access_reviewer_portal' => [Role::ROLE_TIM_ABSTRAK => 'full_access'],
+            'access_admin_portal' => [Role::ROLE_ADMIN => 'full_access'],
         ];
 
         $matrix = [];

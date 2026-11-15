@@ -54,7 +54,9 @@
                             <li><a href="#cfa" class="hover:text-white transition">{{ __('asic-landing.nav_cfa') }}</a></li>
                             <li><a href="#fees" class="hover:text-white transition">{{ __('asic-landing.nav_fees') }}</a></li>
                             <li><a href="#contact" class="hover:text-white transition">{{ __('asic-landing.nav_contact') }}</a></li>
-                            <li><a href="{{ route('fe.dev.ui') }}" class="text-[#F5C518] hover:underline font-mono">Component Gallery (_ui)</a></li>
+                            @if (app()->environment('local'))
+                                <li><a href="{{ url('/_fe/_ui') }}" class="text-[#F5C518] hover:underline font-mono">Component Gallery (_ui)</a></li>
+                            @endif
                         </ul>
                     </div>
 

@@ -21,14 +21,14 @@
     <!-- Top Integrated Navigation Bar (Matches Image 2 & Prototype w__landing.html exactly) -->
     <nav x-data="{ mobileOpen: false }" class="relative z-20 w-full px-6 lg:px-16 py-4 sm:py-5 flex items-center justify-between">
         <!-- Logo & Subtitle -->
-        <a href="{{ route('fe.home') }}" class="flex flex-col group select-none">
+        <a href="{{ route('portal.landing') }}" class="flex flex-col group select-none">
             <span class="text-2xl font-bold tracking-tight text-white font-display leading-none">ASIC 2027</span>
             <span class="text-[10px] text-white/75 tracking-[0.2em] font-semibold mt-1 uppercase">UNIVERSITAS ANDALAS</span>
         </a>
 
         <!-- Desktop Links with Proper Spacing (Beranda, Tentang, Pengiriman Abstrak, Biaya, Kontak) -->
         <div class="hidden md:flex items-center text-sm font-medium" style="gap: 28px;">
-            <a href="{{ route('fe.home') }}" class="text-white/85 hover:text-white transition px-1 py-1">{{ __('asic-landing.nav_home') }}</a>
+            <a href="{{ route('portal.landing') }}" class="text-white/85 hover:text-white transition px-1 py-1">{{ __('asic-landing.nav_home') }}</a>
             <a href="#about" class="text-white/85 hover:text-white transition px-1 py-1">{{ __('asic-landing.nav_about') }}</a>
             <a href="#cfa" class="text-white/85 hover:text-white transition px-1 py-1">{{ __('asic-landing.nav_cfa') }}</a>
             <a href="#fees" class="text-white/85 hover:text-white transition px-1 py-1">{{ __('asic-landing.nav_fees') }}</a>
@@ -38,21 +38,21 @@
         <!-- Right Side: Segmented Lang Pill [ID | EN] + Masuk / Login + [Daftar / Register] Button -->
         <div class="hidden md:flex items-center" style="gap: 20px;">
             <div class="flex items-center p-0.5 border border-white/25 rounded-xl bg-black/25 text-xs">
-                <a href="{{ route('fe.lang.switch', 'id') }}" 
+                <a href="{{ route('portal.language', 'id') }}"
                    class="px-2.5 py-1 rounded-lg font-bold transition {{ app()->getLocale() === 'id' ? 'bg-[#F5C518] text-[#17261D] shadow-xs' : 'text-white/80 hover:text-white' }}">
                     ID
                 </a>
-                <a href="{{ route('fe.lang.switch', 'en') }}" 
+                <a href="{{ route('portal.language', 'en') }}"
                    class="px-2.5 py-1 rounded-lg font-bold transition {{ app()->getLocale() === 'en' ? 'bg-[#F5C518] text-[#17261D] shadow-xs' : 'text-white/80 hover:text-white' }}">
                     EN
                 </a>
             </div>
 
-            <a href="{{ route('fe.participant.login') }}" class="text-sm font-semibold text-white/90 hover:text-white transition">
+            <a href="{{ route('login') }}" class="text-sm font-semibold text-white/90 hover:text-white transition">
                 {{ __('asic-landing.btn_login') }}
             </a>
 
-            <a href="{{ route('fe.participant.login') }}" class="px-5 py-2 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#17261D] font-bold text-sm shadow transition active:scale-95">
+            <a href="{{ route('auth.participant.login') }}" class="px-5 py-2 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#17261D] font-bold text-sm shadow transition active:scale-95">
                 {{ __('asic-landing.btn_register') }}
             </a>
         </div>
@@ -60,11 +60,11 @@
         <!-- Mobile Menu Trigger -->
         <div class="flex items-center gap-3 md:hidden">
             <div class="flex items-center p-0.5 border border-white/25 rounded-xl bg-black/25 text-xs">
-                <a href="{{ route('fe.lang.switch', 'id') }}" 
+                <a href="{{ route('portal.language', 'id') }}"
                    class="px-2 py-0.5 rounded-lg font-bold transition {{ app()->getLocale() === 'id' ? 'bg-[#F5C518] text-[#17261D]' : 'text-white/80' }}">
                     ID
                 </a>
-                <a href="{{ route('fe.lang.switch', 'en') }}" 
+                <a href="{{ route('portal.language', 'en') }}"
                    class="px-2 py-0.5 rounded-lg font-bold transition {{ app()->getLocale() === 'en' ? 'bg-[#F5C518] text-[#17261D]' : 'text-white/80' }}">
                     EN
                 </a>
@@ -80,16 +80,16 @@
              x-transition 
              class="absolute top-full left-4 right-4 mt-2 p-4 rounded-2xl bg-[#0F3D24] border border-white/20 shadow-2xl space-y-3 z-50 md:hidden"
              style="display: none;">
-            <a @click="mobileOpen = false" href="{{ route('fe.home') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10">{{ __('asic-landing.nav_home') }}</a>
+            <a @click="mobileOpen = false" href="{{ route('portal.landing') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10">{{ __('asic-landing.nav_home') }}</a>
             <a @click="mobileOpen = false" href="#about" class="block px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10">{{ __('asic-landing.nav_about') }}</a>
             <a @click="mobileOpen = false" href="#cfa" class="block px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10">{{ __('asic-landing.nav_cfa') }}</a>
             <a @click="mobileOpen = false" href="#fees" class="block px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10">{{ __('asic-landing.nav_fees') }}</a>
             <a @click="mobileOpen = false" href="#contact" class="block px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10">{{ __('asic-landing.nav_contact') }}</a>
             <div class="pt-2 border-t border-white/15 flex flex-col gap-2">
-                <a href="{{ route('fe.participant.login') }}" class="flex items-center justify-center px-4 py-2 rounded-lg border border-white/30 text-white font-semibold text-xs">
+                <a href="{{ route('login') }}" class="flex items-center justify-center px-4 py-2 rounded-lg border border-white/30 text-white font-semibold text-xs">
                     {{ __('asic-landing.btn_login') }}
                 </a>
-                <a href="{{ route('fe.participant.login') }}" class="flex items-center justify-center px-4 py-2 rounded-lg bg-[#F5C518] text-[#17261D] font-bold text-xs shadow">
+                <a href="{{ route('auth.participant.login') }}" class="flex items-center justify-center px-4 py-2 rounded-lg bg-[#F5C518] text-[#17261D] font-bold text-xs shadow">
                     {{ __('asic-landing.btn_register') }}
                 </a>
             </div>
@@ -118,9 +118,17 @@
             {{ __('asic-landing.hero_lead') }}
         </p>
 
+        @if ($event)
+            <p class="mb-5 max-w-2xl rounded-xl border border-white/20 bg-black/20 px-4 py-3 text-xs text-white/90">
+                <strong class="text-[#F5C518]">{{ $event->nama_event }}</strong>
+                · {{ \Illuminate\Support\Carbon::parse($event->tanggal_mulai)->format('d M Y') }} – {{ \Illuminate\Support\Carbon::parse($event->tanggal_selesai)->format('d M Y') }}
+                · {{ $event->lokasi }}
+            </p>
+        @endif
+
         <!-- CTA Buttons matching Image 2 & Prototype w__landing.html -->
         <div class="flex items-center gap-4 flex-wrap">
-            <a href="{{ route('fe.participant.login') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#0F3D24] font-bold text-sm sm:text-base shadow-xl active:scale-95 transition">
+            <a href="{{ route('auth.participant.login') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#0F3D24] font-bold text-sm sm:text-base shadow-xl active:scale-95 transition">
                 <span>{{ __('asic-landing.btn_register') }}</span>
             </a>
             <a href="#cfa" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/60 hover:border-white text-white font-semibold text-sm sm:text-base hover:bg-white/10 active:scale-95 transition">
@@ -220,7 +228,7 @@
         </div>
 
         <div class="mt-10">
-            <a href="{{ route('fe.participant.login') }}" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#0F3D24] font-bold text-base shadow hover:brightness-105 transition">
+            <a href="{{ route('auth.participant.login') }}" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#0F3D24] font-bold text-base shadow hover:brightness-105 transition">
                 <span>{{ __('asic-landing.btn_submit_abstract') }}</span>
                 <span class="material-symbols-outlined text-[18px]">upload_file</span>
             </a>

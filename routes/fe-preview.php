@@ -30,85 +30,6 @@ if (in_array(config('session.driver'), ['database', 'redis', 'memcached'])) {
     return;
 }
 
-// Temporary FE Auth Simulation Middlewares
-if (! class_exists('FeParticipantAuthMiddleware')) {
-    class FeParticipantAuthMiddleware
-    {
-        public function handle($request, Closure $next)
-        {
-            if ($request->has('type') && in_array($request->query('type'), ['oral', 'poster', 'listener', 'presenter'])) {
-                $mode = $request->query('type');
-                if ($mode === 'presenter') {
-                    $mode = 'oral';
-                }
-                session(['participant_type' => $mode]);
-                session()->save();
-            }
-            if (! session('logged_in_participant')) {
-                return redirect()->route('fe.participant.login');
-            }
-
-            return $next($request);
-        }
-    }
-}
-
-if (! class_exists('FeReviewerAuthMiddleware')) {
-    class FeReviewerAuthMiddleware
-    {
-        public function handle($request, Closure $next)
-        {
-            if (! session('logged_in_reviewer')) {
-                return redirect()->route('fe.reviewer.login');
-            }
-
-            return $next($request);
-        }
-    }
-}
-
-if (! class_exists('FeSecretariatAuthMiddleware')) {
-    class FeSecretariatAuthMiddleware
-    {
-        public function handle($request, Closure $next)
-        {
-            if (! session('logged_in_secretariat')) {
-                return redirect()->route('fe.secretariat.login');
-            }
-
-            return $next($request);
-        }
-    }
-}
-
-if (! class_exists('FeTreasurerAuthMiddleware')) {
-    class FeTreasurerAuthMiddleware
-    {
-        public function handle($request, Closure $next)
-        {
-            if (! session('logged_in_treasurer')) {
-                return redirect()->route('fe.treasurer.login');
-            }
-
-            return $next($request);
-        }
-    }
-}
-
-if (! class_exists('FeAdminAuthMiddleware')) {
-    class FeAdminAuthMiddleware
-    {
-        public function handle($request, Closure $next)
-        {
-            if (! session('logged_in_admin')) {
-                return redirect()->route('fe.admin.login');
-            }
-
-            return $next($request);
-        }
-    }
-}
-
 if (! class_exists('FeLocaleMiddleware')) {
     class FeLocaleMiddleware
     {
@@ -154,16 +75,13 @@ View::share('asic', [
 |--------------------------------------------------------------------------
 */
 View::composer(['participant.*', 'layouts.portal'], function ($view) {
-    if (request()->has('type') && in_array(request()->query('type'), ['oral', 'poster', 'listener', 'presenter'])) {
-        $mode = request()->query('type');
-        if ($mode === 'presenter') {
-            $mode = 'oral';
-        }
-        session(['participant_type' => $mode]);
-        session()->save();
+    $participantType = request()->query('type', 'oral');
+    if ($participantType === 'presenter') {
+        $participantType = 'oral';
     }
-
-    $participantType = session('participant_type', 'oral');
+    if (! in_array($participantType, ['oral', 'poster', 'listener'], true)) {
+        $participantType = 'oral';
+    }
     $isListener = ($participantType === 'listener');
 
     $participantNav = [
@@ -293,120 +211,14 @@ Route::prefix('_fe')->name('fe.')->middleware(FeLocaleMiddleware::class)->group(
 
     /*
     |--------------------------------------------------------------------------
-    | Auth Simulation Routes (Login / Logout)
-    |--------------------------------------------------------------------------
-    */
-    Route::match(['get', 'post'], '/participant/login', function () {
-        if (request()->isMethod('post') || request()->has('action')) {
-            session(['logged_in_participant' => true]);
-            if (request()->has('type') && in_array(request('type'), ['oral', 'poster', 'listener'])) {
-                session(['participant_type' => request('type')]);
-            }
-
-            return redirect()->route('fe.participant.dashboard');
-        }
-        if (session('logged_in_participant')) {
-            return redirect()->route('fe.participant.dashboard');
-        }
-
-        return view('auth.participant');
-    })->name('participant.login');
-
-    Route::get('/participant/logout', function () {
-        session()->forget('logged_in_participant');
-
-        return redirect()->route('fe.participant.login');
-    })->name('participant.logout');
-
-    Route::match(['get', 'post'], '/reviewer/login', function () {
-        if (request()->isMethod('post') || request()->has('action')) {
-            session(['logged_in_reviewer' => true]);
-
-            return redirect()->route('fe.reviewer.queue');
-        }
-        if (session('logged_in_reviewer')) {
-            return redirect()->route('fe.reviewer.queue');
-        }
-
-        return view('auth.reviewer');
-    })->name('reviewer.login');
-
-    Route::get('/reviewer/logout', function () {
-        session()->forget('logged_in_reviewer');
-
-        return redirect()->route('fe.reviewer.login');
-    })->name('reviewer.logout');
-
-    Route::match(['get', 'post'], '/secretariat/login', function () {
-        if (request()->isMethod('post') || request()->has('action')) {
-            session(['logged_in_secretariat' => true]);
-
-            return redirect()->route('fe.secretariat.abstracts.index');
-        }
-        if (session('logged_in_secretariat')) {
-            return redirect()->route('fe.secretariat.abstracts.index');
-        }
-
-        return view('auth.secretariat');
-    })->name('secretariat.login');
-
-    Route::get('/secretariat/logout', function () {
-        session()->forget('logged_in_secretariat');
-
-        return redirect()->route('fe.secretariat.login');
-    })->name('secretariat.logout');
-
-    Route::match(['get', 'post'], '/treasurer/login', function () {
-        if (request()->isMethod('post') || request()->has('action')) {
-            session(['logged_in_treasurer' => true]);
-
-            return redirect()->route('fe.treasurer.tariffs');
-        }
-        if (session('logged_in_treasurer')) {
-            return redirect()->route('fe.treasurer.tariffs');
-        }
-
-        return view('auth.treasurer');
-    })->name('treasurer.login');
-
-    Route::get('/treasurer/logout', function () {
-        session()->forget('logged_in_treasurer');
-
-        return redirect()->route('fe.treasurer.login');
-    })->name('treasurer.logout');
-
-    Route::match(['get', 'post'], '/admin/login', function () {
-        if (request()->isMethod('post') || request()->has('action')) {
-            session(['logged_in_admin' => true]);
-
-            return redirect()->route('fe.admin.overview');
-        }
-        if (session('logged_in_admin')) {
-            return redirect()->route('fe.admin.overview');
-        }
-
-        return view('auth.admin');
-    })->name('admin.login');
-
-    Route::get('/admin/logout', function () {
-        session()->forget('logged_in_admin');
-
-        return redirect()->route('fe.admin.login');
-    })->name('admin.logout');
-
-    /*
-    |--------------------------------------------------------------------------
     | Portal 1: Participant Routes (Fase 3)
     |--------------------------------------------------------------------------
     */
-    Route::prefix('participant')->name('participant.')->middleware(FeParticipantAuthMiddleware::class)->group(function () {
+    Route::prefix('participant')->name('participant.')->group(function () {
         Route::get('/switch-track/{type}', function ($type) {
-            if (in_array($type, ['oral', 'poster', 'listener'])) {
-                session(['participant_type' => $type]);
-                session()->save();
-            }
+            abort_unless(in_array($type, ['oral', 'poster', 'listener'], true), 404);
 
-            return redirect()->back();
+            return redirect()->route('fe.participant.dashboard', ['type' => $type]);
         })->name('switch-track');
 
         Route::get('/dashboard', function () {
@@ -469,7 +281,7 @@ Route::prefix('_fe')->name('fe.')->middleware(FeLocaleMiddleware::class)->group(
     | Portal: Reviewer Routes (Role Baru: Reviewer Abstrak)
     |--------------------------------------------------------------------------
     */
-    Route::prefix('reviewer')->name('reviewer.')->middleware(FeReviewerAuthMiddleware::class)->group(function () {
+    Route::prefix('reviewer')->name('reviewer.')->group(function () {
         Route::get('/queue', function () {
             return view('reviewer.queue');
         })->name('queue');
@@ -492,7 +304,7 @@ Route::prefix('_fe')->name('fe.')->middleware(FeLocaleMiddleware::class)->group(
     | Portal 2: Secretariat Routes (Fase 4)
     |--------------------------------------------------------------------------
     */
-    Route::prefix('secretariat')->name('secretariat.')->middleware(FeSecretariatAuthMiddleware::class)->group(function () {
+    Route::prefix('secretariat')->name('secretariat.')->group(function () {
         Route::get('/abstracts', function () {
             return view('secretariat.abstracts.index');
         })->name('abstracts.index');
@@ -527,7 +339,7 @@ Route::prefix('_fe')->name('fe.')->middleware(FeLocaleMiddleware::class)->group(
     | Portal 3: Treasurer Routes (Fase 5)
     |--------------------------------------------------------------------------
     */
-    Route::prefix('treasurer')->name('treasurer.')->middleware(FeTreasurerAuthMiddleware::class)->group(function () {
+    Route::prefix('treasurer')->name('treasurer.')->group(function () {
         Route::get('/tariffs', function () {
             return view('treasurer.tariffs');
         })->name('tariffs');
@@ -556,7 +368,7 @@ Route::prefix('_fe')->name('fe.')->middleware(FeLocaleMiddleware::class)->group(
     | Portal 4: Admin Routes (Fase 6)
     |--------------------------------------------------------------------------
     */
-    Route::prefix('admin')->name('admin.')->middleware(FeAdminAuthMiddleware::class)->group(function () {
+    Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/overview', function () {
             return view('admin.overview');
         })->name('overview');

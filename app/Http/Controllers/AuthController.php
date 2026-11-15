@@ -452,11 +452,12 @@ class AuthController extends Controller
         $roleName = $user->role?->nama_role;
 
         return match ($roleName) {
-            Role::ROLE_ADMIN => route('api.admin.roles-permissions.index'),
-            Role::ROLE_SEKRETARIAT => url('/secretariat/dashboard'),
-            Role::ROLE_BENDAHARA => url('/treasurer/dashboard'),
-            Role::ROLE_TIM_ABSTRAK => url('/abstract-team/dashboard'),
-            default => route('api.registrations.index'),
+            Role::ROLE_PESERTA => route('portal.participant.dashboard'),
+            Role::ROLE_SEKRETARIAT => route('portal.secretariat.dashboard'),
+            Role::ROLE_BENDAHARA => route('portal.treasurer.dashboard'),
+            Role::ROLE_TIM_ABSTRAK => route('portal.reviewer.dashboard'),
+            Role::ROLE_ADMIN => route('portal.admin.dashboard'),
+            default => route('login'),
         };
     }
 

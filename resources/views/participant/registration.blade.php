@@ -181,7 +181,7 @@
                 </div>
 
                 <div class="flex items-center gap-3 w-full sm:w-auto">
-                    <x-ui.button variant="outline" href="{{ route('fe.participant.login') }}">
+                    <x-ui.button variant="outline" href="{{ route('login') }}">
                         Cancel
                     </x-ui.button>
                     <x-ui.button type="submit" variant="primary" class="w-full sm:w-auto px-8" iconRight="arrow_forward" ::disabled="submitting">

@@ -17,14 +17,14 @@
 <body class="bg-[#F1F5EC] text-[#17261D] min-h-screen flex flex-col justify-between font-sans antialiased">
     <!-- Top Nav Minimal -->
     <header class="bg-[#0A2B19] text-white py-4 px-6 sm:px-12 flex items-center justify-between border-b border-white/10">
-        <a href="{{ route('fe.home') }}" class="flex items-center gap-3">
+        <a href="{{ route('portal.landing') }}" class="flex items-center gap-3">
             <img src="{{ asset('images/asic/logo.svg') }}" alt="ASIC Logo" class="w-8 h-8 rounded-md bg-white p-0.5 shadow-sm">
             <div>
                 <span class="block text-base font-bold tracking-tight text-white font-display">ASIC 2027</span>
                 <span class="block text-[10px] text-[#a7f4b6] font-semibold uppercase tracking-wider">Universitas Andalas</span>
             </div>
         </a>
-        <a href="{{ route('fe.home') }}" class="text-xs font-semibold text-white/80 hover:text-white transition">
+        <a href="{{ route('portal.landing') }}" class="text-xs font-semibold text-white/80 hover:text-white transition">
             {{ app()->getLocale() === 'id' ? '← Beranda' : '← Home' }}
         </a>
     </header>
@@ -45,7 +45,7 @@
             </div>
 
             <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-                <a href="{{ route('fe.home') }}" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#005226] hover:bg-[#1f6b3a] text-white font-bold text-sm shadow transition active:scale-95">
+                <a href="{{ route('portal.landing') }}" class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#005226] hover:bg-[#1f6b3a] text-white font-bold text-sm shadow transition active:scale-95">
                     {{ app()->getLocale() === 'id' ? 'Kembali ke Beranda' : 'Back to Home' }}
                 </a>
                 <button onclick="history.back()" class="w-full sm:w-auto px-6 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold text-sm transition">

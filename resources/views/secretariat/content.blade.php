@@ -153,7 +153,7 @@
                 <span class="material-symbols-outlined text-[18px]">add_circle</span>
                 <span>{{ __('asic-secretariat.content.btn_add_entry') }}</span>
             </button>
-            <a href="{{ route('fe.home') }}" target="_blank"
+            <a href="{{ route('portal.landing') }}" target="_blank"
                class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-surface-container-lowest text-on-surface text-xs font-semibold shadow-xs border border-surface-container-high hover:bg-surface-container transition">
                 <span class="material-symbols-outlined text-[18px]">open_in_new</span>
                 <span>{{ __('asic-secretariat.content.btn_view_site') }}</span>

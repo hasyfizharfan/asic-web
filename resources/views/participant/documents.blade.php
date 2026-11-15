@@ -1,5 +1,5 @@
 @php
-    $participantType = session('participant_type', 'oral');
+    $participantType = request()->query('type', 'oral');
     $isListener = ($participantType === 'listener');
     $isId = (app()->getLocale() === 'id');
 @endphp

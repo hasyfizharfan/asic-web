@@ -20,7 +20,7 @@
 <body class="bg-surface-container-low text-on-surface min-h-screen flex flex-col font-sans selection:bg-primary selection:text-white">
     <!-- Top header with Back and Lang Switcher -->
     <header class="w-full px-4 sm:px-8 py-4 flex items-center justify-between border-b border-surface-container-highest bg-surface-container-lowest">
-        <a href="{{ route('fe.home') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-container transition">
+        <a href="{{ route('portal.landing') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-container transition">
             <span class="material-symbols-outlined text-[20px]">arrow_back</span>
             <span>{{ __('asic-auth.back_to_home') ?? 'Back to ASIC 2027' }}</span>
         </a>

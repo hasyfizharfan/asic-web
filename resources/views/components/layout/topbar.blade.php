@@ -14,13 +14,7 @@
     ];
     $displayName = $userName ?? $defaultNames[$role] ?? 'User';
 
-    $logoutRoute = match($role) {
-        'reviewer' => route('fe.reviewer.logout'),
-        'secretariat' => route('fe.secretariat.logout'),
-        'treasurer' => route('fe.treasurer.logout'),
-        'admin' => route('fe.admin.logout'),
-        default => route('fe.participant.logout'),
-    };
+    $logoutRoute = route('api.logout');
 @endphp
 
 <header class="sticky top-0 z-20 h-16 bg-surface-container-lowest border-b border-surface-container-highest px-4 sm:px-6 flex items-center justify-between">
@@ -68,7 +62,7 @@
                     {{ __('asic-common.switch_portal') ?? 'Switch Portal / Role' }}
                 </div>
 
-                <a href="{{ route('fe.participant.dashboard') }}" 
+                <a href="{{ route('portal.participant.dashboard') }}"
                    class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition {{ $role === 'participant' ? 'bg-primary-fixed/40 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low' }}">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">person</span>
@@ -79,7 +73,7 @@
                     @endif
                 </a>
 
-                <a href="{{ route('fe.reviewer.queue') }}" 
+                <a href="{{ route('portal.reviewer.dashboard') }}"
                    class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition {{ $role === 'reviewer' ? 'bg-primary-fixed/40 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low' }}">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">rate_review</span>
@@ -90,7 +84,7 @@
                     @endif
                 </a>
 
-                <a href="{{ route('fe.secretariat.abstracts.index') }}" 
+                <a href="{{ route('portal.secretariat.dashboard') }}"
                    class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition {{ $role === 'secretariat' ? 'bg-primary-fixed/40 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low' }}">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">badge</span>
@@ -101,7 +95,7 @@
                     @endif
                 </a>
 
-                <a href="{{ route('fe.treasurer.tariffs') }}" 
+                <a href="{{ route('portal.treasurer.dashboard') }}"
                    class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition {{ $role === 'treasurer' ? 'bg-primary-fixed/40 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low' }}">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">payments</span>
@@ -112,7 +106,7 @@
                     @endif
                 </a>
 
-                <a href="{{ route('fe.admin.overview') }}" 
+                <a href="{{ route('portal.admin.dashboard') }}"
                    class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition {{ $role === 'admin' ? 'bg-primary-fixed/40 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low' }}">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
@@ -159,17 +153,17 @@
                 </div>
 
                 @if($role === 'participant')
-                    <a href="{{ route('fe.participant.profile') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
+                    <a href="{{ route('portal.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
                         <span class="material-symbols-outlined text-[18px] text-on-surface-variant">account_circle</span>
                         <span>{{ __('asic-nav.profile') ?? 'My Profile' }}</span>
                     </a>
-                    <a href="{{ route('fe.participant.notifications') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
+                    <a href="{{ route('portal.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
                         <span class="material-symbols-outlined text-[18px] text-on-surface-variant">notifications</span>
                         <span>{{ __('asic-nav.notifications') ?? 'Notifications' }}</span>
                     </a>
                     <div class="my-1 border-t border-surface-container-highest"></div>
                 @elseif($role === 'reviewer')
-                    <a href="{{ route('fe.reviewer.profile') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
+                    <a href="{{ route('portal.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
                         <span class="material-symbols-outlined text-[18px] text-on-surface-variant">account_circle</span>
                         <span>{{ __('asic-reviewer.profile_title') ?? 'Profil Reviewer' }}</span>
                     </a>
@@ -179,33 +173,36 @@
                 <div class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
                     {{ __('asic-common.quick_switch') ?? 'Quick Switch Portal' }}
                 </div>
-                <a href="{{ route('fe.participant.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
+                <a href="{{ route('portal.participant.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
                     <span class="material-symbols-outlined text-[16px] text-primary">person</span>
                     <span>Participant Portal</span>
                 </a>
-                <a href="{{ route('fe.reviewer.queue') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
+                <a href="{{ route('portal.reviewer.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
                     <span class="material-symbols-outlined text-[16px] text-primary">rate_review</span>
                     <span>Reviewer Portal</span>
                 </a>
-                <a href="{{ route('fe.secretariat.abstracts.index') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
+                <a href="{{ route('portal.secretariat.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
                     <span class="material-symbols-outlined text-[16px] text-primary">badge</span>
                     <span>Secretariat Portal</span>
                 </a>
-                <a href="{{ route('fe.treasurer.tariffs') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
+                <a href="{{ route('portal.treasurer.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
                     <span class="material-symbols-outlined text-[16px] text-primary">payments</span>
                     <span>Treasurer Portal</span>
                 </a>
-                <a href="{{ route('fe.admin.overview') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
+                <a href="{{ route('portal.admin.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
                     <span class="material-symbols-outlined text-[16px] text-primary">admin_panel_settings</span>
                     <span>Admin Portal</span>
                 </a>
 
                 <div class="my-1 border-t border-surface-container-highest"></div>
 
-                <a href="{{ $logoutRoute }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-error hover:bg-error-container/30 transition">
-                    <span class="material-symbols-outlined text-[18px]">logout</span>
-                    <span>{{ __('asic-nav.logout') ?? 'Sign Out' }}</span>
-                </a>
+                <form data-asic-logout action="{{ $logoutRoute }}" method="POST">
+                    @csrf
+                    <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 rounded-lg text-xs text-error hover:bg-error-container/30 transition">
+                        <span class="material-symbols-outlined text-[18px]">logout</span>
+                        <span>{{ __('asic-nav.logout') ?? 'Sign Out' }}</span>
+                    </button>
+                </form>
             </div>
         </div>
     </div>

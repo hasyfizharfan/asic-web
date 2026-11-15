@@ -25,60 +25,89 @@ if (window.Alpine && !window.Alpine.store('toast')) {
     });
 }
 
-// ASIC Frontend API Client Layer (Connecting Blade to Backend APIs)
+// Cookie-based SPA API client shared by all real portal pages.
 window.asicApi = {
-    csrfToken() {
-        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
-        return tokenMeta ? tokenMeta.getAttribute('content') : '';
+    xsrfCookie() {
+        const cookie = document.cookie.split('; ').find((item) => item.startsWith('XSRF-TOKEN='));
+        return cookie ? decodeURIComponent(cookie.substring('XSRF-TOKEN='.length)) : '';
     },
 
-    async request(endpoint, options = {}) {
-        const url = endpoint.startsWith('http') ? endpoint : (endpoint.startsWith('/') ? endpoint : '/' + endpoint);
+    async primeCsrf(force = false) {
+        if (!force && this.xsrfCookie()) return;
+
+        await fetch('/sanctum/csrf-cookie', {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { Accept: 'application/json' },
+        });
+    },
+
+    showToast(message, type = 'error') {
+        if (window.Alpine?.store('toast')) window.Alpine.store('toast').show(message, type);
+    },
+
+    async request(endpoint, options = {}, retried = false) {
+        const url = endpoint instanceof URL
+            ? endpoint.toString()
+            : (endpoint.startsWith('http') ? endpoint : (endpoint.startsWith('/') ? endpoint : `/${endpoint}`));
+        const method = (options.method || 'GET').toUpperCase();
+        const csrfRequired = !['GET', 'HEAD', 'OPTIONS'].includes(method);
+
+        if (csrfRequired) await this.primeCsrf();
+
         const headers = {
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': this.csrfToken(),
-            ...(options.headers || {})
+            ...(options.headers || {}),
         };
+        const xsrf = this.xsrfCookie();
+        if (csrfRequired && xsrf) headers['X-XSRF-TOKEN'] = xsrf;
 
-        if (options.body && !(options.body instanceof FormData)) {
+        let body = options.body;
+        if (body && !(body instanceof FormData) && typeof body !== 'string' && !(body instanceof Blob)) {
             headers['Content-Type'] = 'application/json';
-            options.body = JSON.stringify(options.body);
+            body = JSON.stringify(body);
         }
-
-        console.info(`[ASIC API Request] ${options.method || 'GET'} ${url}`, options.body ? options.body : '');
 
         try {
             const response = await fetch(url, {
                 ...options,
-                headers
+                method,
+                body,
+                credentials: 'same-origin',
+                headers,
             });
 
-            let data = null;
             const contentType = response.headers.get('content-type') || '';
-            if (contentType.includes('application/json')) {
-                data = await response.json();
-            } else {
-                data = await response.text();
+            const data = contentType.includes('application/json') ? await response.json() : await response.text();
+
+            if (response.status === 419 && csrfRequired && !retried) {
+                await this.primeCsrf(true);
+                return this.request(endpoint, options, true);
             }
 
-            console.info(`[ASIC API Response] ${response.status} from ${url}:`, data);
+            if (response.status === 401 && !window.location.pathname.endsWith('/login')) {
+                window.location.assign(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
+            }
+
+            if (response.status === 403) this.showToast(data?.message || 'Anda tidak memiliki akses ke halaman ini.');
+            if (response.status === 419) this.showToast('Sesi keamanan kedaluwarsa. Silakan muat ulang halaman.');
 
             return {
                 ok: response.ok,
                 status: response.status,
-                data: data,
-                error: response.ok ? null : (data?.message || `HTTP ${response.status}: Request failed`)
+                data,
+                errors: response.status === 422 ? (data?.errors || {}) : {},
+                error: response.ok ? null : (data?.message || `HTTP ${response.status}: Request failed`),
             };
-        } catch (err) {
-            console.warn(`[ASIC API Network/CORS] ${url}:`, err);
-            return {
-                ok: false,
-                status: 0,
-                data: null,
-                error: err.message || 'Network error / endpoint unavailable'
-            };
+        } catch (error) {
+            return { ok: false, status: 0, data: null, errors: {}, error: error.message || 'Network error' };
         }
+    },
+
+    csrfToken() {
+        const tokenMeta = document.querySelector('meta[name="csrf-token"]');
+        return tokenMeta ? tokenMeta.getAttribute('content') : '';
     },
 
     get(endpoint, params = {}) {
@@ -103,8 +132,81 @@ window.asicApi = {
 
     delete(endpoint) {
         return this.request(endpoint, { method: 'DELETE' });
-    }
+    },
+
+    upload(endpoint, formData) {
+        return this.request(endpoint, { method: 'POST', body: formData });
+    },
+
+    postForm(endpoint, formData) {
+        return this.upload(endpoint, formData);
+    },
 };
+
+function clearFormErrors(form) {
+    form.querySelectorAll('[data-asic-field-error]').forEach((node) => node.remove());
+    form.querySelectorAll('[name]').forEach((input) => input.classList.remove('border-error'));
+    const summary = form.querySelector('[data-form-error]');
+    if (summary) {
+        summary.textContent = '';
+        summary.classList.add('hidden');
+    }
+}
+
+function showFormErrors(form, result) {
+    const errors = result.errors || {};
+    Object.entries(errors).forEach(([field, messages]) => {
+        const input = form.querySelector(`[name="${CSS.escape(field)}"]`);
+        const wrapper = input?.closest('.space-y-1\\.5') || input?.parentElement?.parentElement;
+        if (!wrapper) return;
+
+        input.classList.add('border-error');
+        const message = document.createElement('p');
+        message.dataset.asicFieldError = 'true';
+        message.className = 'text-[11px] text-error font-medium';
+        message.textContent = Array.isArray(messages) ? messages[0] : String(messages);
+        wrapper.append(message);
+    });
+
+    const summary = form.querySelector('[data-form-error]');
+    if (summary && result.error) {
+        summary.textContent = result.error;
+        summary.classList.remove('hidden');
+    } else if (result.error) {
+        window.asicApi.showToast(result.error);
+    }
+}
+
+document.querySelectorAll('form[data-asic-login], form[data-asic-api-form]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        clearFormErrors(form);
+
+        const submit = form.querySelector('[type="submit"]');
+        if (submit) submit.disabled = true;
+
+        const payload = Object.fromEntries(new FormData(form).entries());
+        const result = await window.asicApi.post(form.action, payload);
+
+        if (submit) submit.disabled = false;
+        if (!result.ok) {
+            showFormErrors(form, result);
+            return;
+        }
+
+        window.asicApi.showToast(result.data?.message || 'Berhasil.', 'success');
+        const redirect = result.data?.data?.redirect_url || form.dataset.successRedirect || '/login';
+        window.location.assign(redirect);
+    });
+});
+
+document.querySelectorAll('form[data-asic-logout]').forEach((form) => {
+    form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const result = await window.asicApi.post(form.action, {});
+        if (result.ok) window.location.assign('/login');
+    });
+});
 
 // Start Alpine safely only if not already started
 if (!window._alpineStarted && window.Alpine) {

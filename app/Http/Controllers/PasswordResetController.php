@@ -113,8 +113,8 @@ class PasswordResetController extends Controller
             ]
         );
 
-        $frontendUrl = rtrim((string) config('app.frontend_url', env('FRONTEND_URL', '')), '/');
-        $resetUrl = $frontendUrl.'/password/reset?token='.urlencode($rawToken).'&email='.urlencode($email);
+        $appUrl = rtrim((string) config('app.url'), '/');
+        $resetUrl = $appUrl.'/password/reset/'.urlencode($rawToken).'?email='.urlencode($email);
         Mail::to($user->email)->send(new ResetPasswordMail($resetUrl, $this->tokenExpiresMinutes));
 
         if ($request->expectsJson()) {

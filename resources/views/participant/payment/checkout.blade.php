@@ -1,5 +1,5 @@
 @php
-    $participantType = session('participant_type', 'oral');
+    $participantType = request()->query('type', 'oral');
     $isListener = ($participantType === 'listener');
 
     $invoiceNo = $isListener ? '#INV-2027-0841-LIS' : '#INV-2027-0089-PRS';

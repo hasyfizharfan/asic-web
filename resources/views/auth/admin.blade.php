@@ -21,8 +21,9 @@
             </div>
 
             <!-- Form -->
-            <form action="{{ route('fe.admin.login') }}" method="POST" class="space-y-4">
+            <form action="{{ route('api.login') }}" method="POST" data-asic-login class="space-y-4">
                 @csrf
+                <p data-form-error role="alert" class="hidden text-xs font-semibold text-error"></p>
                 <x-ui.input label="{{ __('asic-auth.admin_email_label') }}" 
                             name="email" 
                             type="email" 

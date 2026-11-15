@@ -17,7 +17,7 @@
         <x-ui.button variant="secondary" iconLeft="science" @click="$store.toast.add('Test Toast from Gallery!', 'success')">
             Trigger Toast
         </x-ui.button>
-        <x-ui.button variant="primary" iconLeft="open_in_new" href="{{ route('fe.home') }}">
+        <x-ui.button variant="primary" iconLeft="open_in_new" href="{{ route('portal.landing') }}">
             View Landing
         </x-ui.button>
     </x-layout.page-header>

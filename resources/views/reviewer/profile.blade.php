@@ -47,7 +47,7 @@
             </div>
 
             <div class="pt-4 border-t border-surface-container-highest">
-                <a href="{{ route('fe.reviewer.logout') }}" 
+                <a href="{{ route('portal.dashboard') }}"
                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-error/40 text-error hover:bg-error-container text-xs font-bold transition">
                     <span class="material-symbols-outlined text-[16px]">logout</span>
                     <span>Keluar dari Akun</span>

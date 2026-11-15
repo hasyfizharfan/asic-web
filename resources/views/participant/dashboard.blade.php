@@ -1,5 +1,5 @@
 @php
-    $participantType = session('participant_type', 'oral');
+    $participantType = request()->query('type', 'oral');
     $isListener = ($participantType === 'listener');
     
     // Dummy participant data

@@ -14,13 +14,6 @@
     ];
     $portalSubtitle = $portalTitles[$role] ?? ucfirst($role) . ' Portal';
     
-    $logoutRoute = match($role) {
-        'reviewer' => route('fe.reviewer.logout'),
-        'secretariat' => route('fe.secretariat.logout'),
-        'treasurer' => route('fe.treasurer.logout'),
-        'admin' => route('fe.admin.logout'),
-        default => route('fe.participant.logout'),
-    };
 @endphp
 
 <!-- Mobile Backdrop -->
@@ -41,7 +34,7 @@
     
     <!-- Header Brand -->
     <div class="h-16 px-5 flex items-center justify-between border-b border-primary-container/60 shrink-0">
-        <a href="{{ route('fe.home') }}" class="flex items-center gap-3 group">
+        <a href="{{ route('portal.landing') }}" class="flex items-center gap-3 group">
             <img src="{{ asset('images/asic/logo.svg') }}" alt="Logo" class="w-8 h-8 rounded-md bg-white p-0.5 shadow-sm group-hover:scale-105 transition-transform">
             <div>
                 <span class="block text-base font-bold tracking-tight text-white font-display">ASIC 2027</span>
@@ -78,10 +71,13 @@
 
     <!-- Sidebar Footer / Logout -->
     <div class="p-3 border-t border-primary-container/60">
-        <a href="{{ $logoutRoute }}" class="flex items-center gap-3 px-3 py-2 text-xs text-secondary-fixed-dim hover:text-white hover:bg-primary-container/40 rounded-lg transition">
-            <span class="material-symbols-outlined text-[18px]">logout</span>
-            <span>{{ __('asic-nav.logout') ?? 'Sign Out' }}</span>
-        </a>
+        <form data-asic-logout action="{{ route('api.logout') }}" method="POST">
+            @csrf
+            <button type="submit" class="flex w-full items-center gap-3 px-3 py-2 text-xs text-secondary-fixed-dim hover:text-white hover:bg-primary-container/40 rounded-lg transition">
+                <span class="material-symbols-outlined text-[18px]">logout</span>
+                <span>{{ __('asic-nav.logout') ?? 'Sign Out' }}</span>
+            </button>
+        </form>
     </div>
 </aside>
 
