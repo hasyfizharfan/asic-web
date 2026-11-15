@@ -1,3 +1,4 @@
+
 <?php
 
 use Illuminate\Support\Facades\Route;
@@ -14,6 +15,7 @@ Route::get('/password/reset/{token}', function (string $token) {
     ]);
 })->name('password.reset');
 
+// Frontend Preview (local environment only)
 if (app()->environment('local') && file_exists(__DIR__.'/fe-preview.php')) {
     require __DIR__.'/fe-preview.php';
 }
