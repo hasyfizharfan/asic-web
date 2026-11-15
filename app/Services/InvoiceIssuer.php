@@ -71,7 +71,7 @@ class InvoiceIssuer
             $total = max(0.0, round(array_sum(array_column($items, 'subtotal')), 2));
 
             $template = $this->documents->resolveTemplate($reg->id_event, 'Invoice');
-            $nomor = $this->documents->nextNumber($template, 'Invoice');
+            $nomor = $this->documents->nextNumber($template, 'Invoice', $reg);
             $due = now()->addDays((int) config('asic.invoice_due_days', 7))->toDateString();
 
             $invoice = Invoice::create([

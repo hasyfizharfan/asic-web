@@ -45,8 +45,8 @@ class RecapAndExportTest extends TestCase
         $r1 = $this->registration('1');
         $a1 = $this->abstractFor($r1);
         $r2 = $this->registration('2', ['registration_type' => 'Student', 'attendance_mode' => 'Daring', 'participation_type' => 'Poster Presenter', 'publication_option' => 'Tidak']);
-        $a2 = $this->abstractFor($r2, ['metode_presentasi' => 'Poster', 'scope' => 'Soil Science']);
-        $this->abstractFor($this->registration('3'), ['scope' => 'Agronomy']);
+        $a2 = $this->abstractFor($r2, ['metode_presentasi' => 'Poster', 'scope' => 'Soil Management']);
+        $this->abstractFor($this->registration('3'), ['scope' => 'Crop Production']);
         $this->registration('4', ['registration_type' => 'Student', 'attendance_mode' => 'Daring', 'participation_type' => 'Listener', 'publication_option' => 'Tidak'], ['country' => 'Malaysia']);
         $this->registration('5', ['id_period' => $this->regular->id_period, 'participation_type' => 'Listener', 'publication_option' => 'Tidak']);
         $this->registration('6', ['registration_status' => 'Dibatalkan', 'participation_type' => 'Listener']);
@@ -102,7 +102,7 @@ class RecapAndExportTest extends TestCase
         $this->assertSame(3, $d['total']);
         $this->assertSame(['Diajukan' => 1, 'Diterima' => 1, 'Ditolak' => 1], $this->counts($d['by_status']));
         $this->assertSame(['Oral' => 2, 'Poster' => 1], $this->counts($d['by_presentation_method']));
-        $this->assertSame(['Agronomy' => 2, 'Soil Science' => 1], $this->counts($d['by_scope']));
+        $this->assertSame(['Crop Production' => 2, 'Soil Management' => 1], $this->counts($d['by_scope']));
         $this->assertEquals(['diterima' => 1, 'ditolak' => 1, 'menunggu_seleksi' => 1, 'acceptance_rate_percent' => 50], $d['selection']);
         $this->assertSame(2, $d['reviews_total']);
     }

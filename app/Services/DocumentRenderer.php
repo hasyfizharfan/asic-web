@@ -2,143 +2,136 @@
 
 namespace App\Services;
 
-use App\Support\Pdf\SimplePdf;
-use Carbon\Carbon;
+use App\Models\DigitalSignature;
+use App\Models\Role;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
+use Throwable;
 
 /**
- * Template dokumen tetap (LOA, Surat Penolakan, Invoice, Receipt).
- * Data peserta/abstrak/tagihan disisipkan secara dinamis dari $ctx.
- * Catatan: berkas template resmi dari client belum diterima; tata letak ini adalah
- * template bawaan yang dapat diganti tanpa mengubah alur penerbitan.
+ * Render dokumen (LoA, Surat Penolakan, Invoice, Receipt) mengikuti format template panitia
+ * (folder resources/views/documents). Tanda tangan + stempel diambil dari modul Tanda Tangan Digital:
+ * LoA & penolakan oleh Ketua (peran Admin), invoice & receipt oleh Bendahara.
  */
 class DocumentRenderer
 {
+    private const VIEWS = [
+        'LOA' => 'documents.loa',
+        'Penolakan' => 'documents.rejection',
+        'Invoice' => 'documents.invoice',
+        'Receipt' => 'documents.receipt',
+    ];
+
+    private const SIGNER = [
+        'LOA' => ['chair', Role::ROLE_ADMIN],
+        'Penolakan' => ['chair', Role::ROLE_ADMIN],
+        'Invoice' => ['treasurer', Role::ROLE_BENDAHARA],
+        'Receipt' => ['treasurer', Role::ROLE_BENDAHARA],
+    ];
+
     /**
      * @param  array<string, mixed>  $c
      */
     public function render(string $jenis, array $c): string
     {
-        return match ($jenis) {
-            'LOA' => $this->loa($c),
-            'Penolakan' => $this->rejection($c),
-            'Invoice' => $this->invoice($c),
-            'Receipt' => $this->receipt($c),
-            default => throw new InvalidArgumentException("Jenis dokumen '$jenis' tidak didukung."),
-        };
+        return Pdf::loadHTML($this->html($jenis, $c))->setPaper('a4')->output();
     }
 
+    /**
+     * HTML dokumen sebelum diubah ke PDF (dipakai juga untuk pratinjau/test).
+     *
+     * @param  array<string, mixed>  $c
+     */
+    public function html(string $jenis, array $c): string
+    {
+        $view = self::VIEWS[$jenis] ?? throw new InvalidArgumentException("Jenis dokumen '$jenis' tidak didukung.");
+        [$signerKey, $role] = self::SIGNER[$jenis];
+
+        return view($view, $c + [
+            'letterhead' => config('asic.letterhead'),
+            'logoLeft' => $this->publicImage(config('asic.letterhead.logo_left')),
+            'logoRight' => $this->publicImage(config('asic.letterhead.logo_right')),
+            'city' => config('asic.city', 'Padang'),
+            'payment' => config('asic.payment'),
+            'signer' => config("asic.signers.$signerKey") + $this->signatureImages($role),
+        ])->render();
+    }
+
+    /** Format rupiah seperti di template panitia: 1,000,000 */
     public static function money(mixed $value): string
     {
-        return 'Rp '.number_format((float) $value, 2, ',', '.');
+        return number_format((float) $value, 0, '.', ',');
     }
 
-    private function header(SimplePdf $pdf, string $title, array $c): void
+    /** Terbilang bahasa Inggris untuk receipt ("Five million rupiah"). */
+    public static function amountInWords(mixed $value): string
     {
-        $pdf->text('ASIC 2027 - Annual Scientific International Conference', 13, true, 'center')
-            ->text('Faculty of Agriculture, Universitas Andalas', 10, false, 'center')
-            ->space(4)->line()->space(6)
-            ->text($title, 15, true, 'center')->space(6)
-            ->text('No. / Number : '.$c['nomor'])
-            ->text('Tanggal / Date : '.Carbon::parse($c['tanggal'])->format('d F Y'))
-            ->space(8);
+        $n = (int) round((float) $value);
+        if ($n === 0) {
+            return 'Zero rupiah';
+        }
+        $ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
+            'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+        $tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+        $chunk = function (int $x) use ($ones, $tens): string {
+            $w = [];
+            if ($x >= 100) {
+                $w[] = $ones[intdiv($x, 100)].' hundred';
+                $x %= 100;
+            }
+            if ($x >= 20) {
+                $w[] = $tens[intdiv($x, 10)].($x % 10 ? '-'.$ones[$x % 10] : '');
+            } elseif ($x > 0) {
+                $w[] = $ones[$x];
+            }
+
+            return implode(' ', $w);
+        };
+        $parts = [];
+        foreach ([1_000_000_000 => 'billion', 1_000_000 => 'million', 1_000 => 'thousand', 1 => ''] as $size => $label) {
+            if ($n >= $size) {
+                $parts[] = trim($chunk(intdiv($n, $size)).' '.$label);
+                $n %= $size;
+            }
+        }
+
+        return ucfirst(implode(' ', $parts)).' rupiah';
     }
 
-    private function loa(array $c): string
+    /**
+     * @return array{ttd: ?string, stempel: ?string}
+     */
+    private function signatureImages(string $roleName): array
     {
-        $pdf = new SimplePdf;
-        $this->header($pdf, 'LETTER OF ACCEPTANCE', $c);
-        $pdf->text('To / Kepada Yth.', 11, true)
-            ->text($c['name'])
-            ->text(trim(($c['institution'] ?? '').' '.($c['country'] ? '('.$c['country'].')' : '')))
-            ->space(8)
-            ->text("Dear {$c['name']},")->space(4)
-            ->text("We are pleased to inform you that, after review by the Abstract Team, your abstract entitled:")->space(2)
-            ->text('"'.$c['abstract_title'].'"', 11, true, 'left', 14)->space(2)
-            ->text("has been ACCEPTED for {$c['presentation_method']} presentation at {$c['event_name']}"
-                .($c['event_dates'] ? ", held on {$c['event_dates']}" : '')
-                .($c['event_location'] ? " at {$c['event_location']}" : '').'.')
-            ->space(4);
-        if (! empty($c['review_notes'])) {
-            $pdf->text('Reviewer notes:', 11, true)->text($c['review_notes'], 11, false, 'left', 14)->space(4);
+        try {
+            $sig = DigitalSignature::whereHas('role', fn ($q) => $q->where('nama_role', $roleName))
+                ->orderByDesc('tanggal_upload')->first();
+        } catch (Throwable) {
+            $sig = null;
         }
-        if (! empty($c['invoice_nomor'])) {
-            $pdf->text("Your registration invoice ({$c['invoice_nomor']}) has been issued together with this letter. "
-                .'Payment must be completed before '.Carbon::parse($c['invoice_due'])->format('d F Y').'.')->space(4);
-        }
-        $pdf->text('We look forward to welcoming you.')->space(24)
-            ->text('Organizing Committee ASIC 2027', 11, true);
 
-        return $pdf->output();
+        return [
+            'ttd' => $this->publicImage($sig?->file_ttd),
+            'stempel' => $this->publicImage($sig?->file_stempel),
+        ];
     }
 
-    private function rejection(array $c): string
+    /** Gambar dari disk "public" sebagai data URI agar dompdf tidak perlu akses berkas/URL luar. */
+    private function publicImage(?string $path): ?string
     {
-        $pdf = new SimplePdf;
-        $this->header($pdf, 'LETTER OF REJECTION', $c);
-        $pdf->text('To / Kepada Yth.', 11, true)
-            ->text($c['name'])
-            ->text(trim(($c['institution'] ?? '').' '.($c['country'] ? '('.$c['country'].')' : '')))
-            ->space(8)
-            ->text("Dear {$c['name']},")->space(4)
-            ->text("Thank you for submitting your abstract to {$c['event_name']}. The abstract entitled:")->space(2)
-            ->text('"'.$c['abstract_title'].'"', 11, true, 'left', 14)->space(2)
-            ->text('was carefully reviewed by the Abstract Team. We regret to inform you that it has NOT been accepted for presentation.')
-            ->space(4);
-        if (! empty($c['review_notes'])) {
-            $pdf->text('Reviewer notes:', 11, true)->text($c['review_notes'], 11, false, 'left', 14)->space(4);
+        if (! $path) {
+            return null;
         }
-        $pdf->text('We appreciate your interest and hope to see your contribution at future events.')->space(24)
-            ->text('Organizing Committee ASIC 2027', 11, true);
+        try {
+            $disk = Storage::disk('public');
+            if (! $disk->exists($path)) {
+                return null;
+            }
 
-        return $pdf->output();
-    }
-
-    private function invoice(array $c): string
-    {
-        $pdf = new SimplePdf;
-        $this->header($pdf, 'INVOICE', $c);
-        $pdf->text('Ditagihkan kepada / Billed to', 11, true)
-            ->text($c['name'])->text($c['institution'] ?? '')
-            ->space(4)
-            ->text('Kegiatan / Event : '.$c['event_name'])
-            ->text('Kategori / Category : '.$c['registration_type'].' - '.$c['attendance_mode'].' - '.$c['participation_type'])
-            ->text('Jatuh tempo / Due date : '.Carbon::parse($c['invoice_due'])->format('d F Y'), 11, true)
-            ->space(8);
-
-        $rows = [];
-        foreach ($c['items'] as $item) {
-            $rows[] = [$item['jenis_biaya'], (string) $item['jumlah'], self::money($item['harga_satuan']), self::money($item['subtotal'])];
+            return 'data:'.($disk->mimeType($path) ?: 'image/png').';base64,'.base64_encode($disk->get($path));
+        } catch (Throwable) {
+            return null;
         }
-        $pdf->table(['Uraian / Item', 'Qty', 'Harga satuan', 'Subtotal'], $rows, [227, 40, 86, 86], ['left', 'right', 'right', 'right'])
-            ->space(6)
-            ->text('TOTAL TAGIHAN / TOTAL DUE : '.self::money($c['total']), 12, true, 'right')
-            ->space(10);
-        if (! empty($c['payment_qr_info'])) {
-            $pdf->text('Informasi pembayaran (QR) / Payment info : '.$c['payment_qr_info']);
-        }
-        $pdf->text('Unggah bukti pembayaran melalui website sebelum tanggal jatuh tempo.');
-
-        return $pdf->output();
-    }
-
-    private function receipt(array $c): string
-    {
-        $pdf = new SimplePdf;
-        $this->header($pdf, 'RECEIPT / KUITANSI', $c);
-        $pdf->text('Telah diterima dari / Received from : '.$c['name'])
-            ->text('Instansi / Institution : '.($c['institution'] ?? '-'))
-            ->space(4)
-            ->text('Untuk pembayaran / For payment of invoice : '.$c['invoice_nomor'])
-            ->text('Kegiatan / Event : '.$c['event_name'])
-            ->space(6)
-            ->text('Jumlah / Amount : '.self::money($c['amount']), 13, true)
-            ->space(4)
-            ->text('Tanggal verifikasi / Verified at : '.Carbon::parse($c['verified_at'])->format('d F Y H:i'))
-            ->text('Diverifikasi oleh / Verified by : Bendahara ASIC 2027')
-            ->space(24)
-            ->text('Treasurer ASIC 2027', 11, true);
-
-        return $pdf->output();
     }
 }

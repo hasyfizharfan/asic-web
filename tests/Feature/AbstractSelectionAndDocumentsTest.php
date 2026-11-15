@@ -179,6 +179,18 @@ class AbstractSelectionAndDocumentsTest extends TestCase
         $numbers = IssuedDocument::where('jenis_dokumen', 'LOA')->pluck('nomor_dokumen');
         $this->assertCount(3, $numbers);
         $this->assertCount(3, $numbers->unique());
+        $this->assertEqualsCanonicalizing(['001/CP/4th ASIC/2027', '002/CP/4th ASIC/2027', '003/CP/4th ASIC/2027'], $numbers->all());
+    }
+
+    public function test_document_numbers_follow_committee_format(): void
+    {
+        $this->fee();
+        $this->review($this->abstractFor($this->registration('1'), ['scope' => 'SM'])->id_abstract)->assertOk();
+        $this->review($this->abstractFor($this->registration('2'))->id_abstract, 'Ditolak')->assertOk();
+
+        $this->assertSame('001/SM/4th ASIC/2027', IssuedDocument::where('jenis_dokumen', 'LOA')->value('nomor_dokumen'));
+        $this->assertSame('001/4th ASIC/2027', IssuedDocument::where('jenis_dokumen', 'Penolakan')->value('nomor_dokumen'));
+        $this->assertSame('001/INV/4th ASIC/2027', IssuedDocument::where('jenis_dokumen', 'Invoice')->value('nomor_dokumen'));
     }
 
     // ------------------------------------------------------ download & otorisasi
@@ -238,6 +250,6 @@ class AbstractSelectionAndDocumentsTest extends TestCase
 
     private function pdfText(IssuedDocument $d): string
     {
-        return Storage::disk('local')->get($d->file_document);
+        return (new \Smalot\PdfParser\Parser)->parseContent(Storage::disk('local')->get($d->file_document))->getText();
     }
 }

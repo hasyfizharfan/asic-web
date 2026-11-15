@@ -212,7 +212,7 @@ class InvoiceAndPaymentTest extends TestCase
 
         $this->as(Role::ROLE_BENDAHARA)->postJson("/api/payment-proofs/{$proof->id_payment_proof}/verify", ['hasil_verifikasi' => 'Valid'])
             ->assertOk()->assertJsonPath('data.status_pembayaran', 'Terverifikasi')
-            ->assertJsonPath('data.receipt.nomor_dokumen', fn ($n) => str_starts_with($n, 'RCP/'))
+            ->assertJsonPath('data.receipt.nomor_dokumen', '001/L/4th ASIC/2027')
             ->assertJsonPath('data.nominal_matches_invoice', true);
 
         $this->assertSame('Terverifikasi', $inv->fresh()->status_pembayaran);
@@ -222,7 +222,9 @@ class InvoiceAndPaymentTest extends TestCase
 
         $receipt = IssuedDocument::where('jenis_dokumen', 'Receipt')->firstOrFail();
         $this->assertSame($inv->id_registration, $receipt->id_registration);
-        $this->assertStringContainsString('500.000,00', Storage::disk('local')->get($receipt->file_document));
+        $text = (new \Smalot\PdfParser\Parser)->parseContent(Storage::disk('local')->get($receipt->file_document))->getText();
+        $this->assertStringContainsString('500,000', $text);
+        $this->assertStringContainsString('Five hundred thousand rupiah', $text);
         $this->as(Role::ROLE_PESERTA, '1')->get("/api/documents/{$receipt->id_document}/download")->assertOk();
     }
 

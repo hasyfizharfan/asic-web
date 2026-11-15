@@ -165,6 +165,7 @@ class PaymentVerificationController extends Controller
                     'invoice_nomor' => $invoice->nomor_invoice,
                     'amount' => $invoice->total_tagihan,
                     'verified_at' => $verification->tanggal_verifikasi,
+                    'items' => $invoice->invoiceDetails()->get(['jenis_biaya', 'deskripsi', 'jumlah', 'harga_satuan', 'subtotal'])->toArray(),
                 ]);
             } else {
                 $invoice->update(['status_pembayaran' => 'Ditolak']);

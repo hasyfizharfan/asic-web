@@ -16,8 +16,7 @@ use Database\Seeders\RoleSeeder;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Fixture bersama untuk feature test. Project belum memasang Sanctum, sehingga guard `sanctum`
- * didefinisikan lokal pada test (tanpa mengubah konfigurasi autentikasi global).
+ * Fixture bersama untuk feature test. Memakai guard `sanctum` asli (laravel/sanctum sudah terpasang).
  */
 trait BuildsAsicFixtures
 {
@@ -27,10 +26,6 @@ trait BuildsAsicFixtures
 
     protected function bootAsic(): void
     {
-        config([
-            'auth.guards.sanctum' => ['driver' => 'session', 'provider' => 'user_account'],
-            'auth.providers.user_account' => ['driver' => 'eloquent', 'model' => UserAccount::class],
-        ]);
         Storage::fake('local');
         Storage::fake('public');
         $this->seed([RoleSeeder::class, RolePermissionSeeder::class]);
@@ -85,7 +80,7 @@ trait BuildsAsicFixtures
     protected function abstractFor(Registration $r, array $o = []): AbstractSubmission
     {
         return AbstractSubmission::create($o + [
-            'id_registration' => $r->id_registration, 'judul_abstrak' => 'Smart Irrigation for Paddy', 'scope' => 'Agronomy',
+            'id_registration' => $r->id_registration, 'judul_abstrak' => 'Smart Irrigation for Paddy', 'scope' => 'Crop Production',
             'metode_presentasi' => 'Oral', 'status_abstrak' => 'Diajukan',
         ]);
     }
