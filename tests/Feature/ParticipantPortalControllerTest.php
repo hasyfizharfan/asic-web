@@ -86,4 +86,15 @@ class ParticipantPortalControllerTest extends TestCase
         $this->actingAs($this->user(Role::ROLE_SEKRETARIAT), 'sanctum')
             ->putJson('/api/me/profile', ['first_name' => 'No Access'])->assertForbidden();
     }
+
+    public function test_participant_can_open_account_registration_and_event_registration_uses_public_fee_data(): void
+    {
+        $fee = $this->fee();
+        $this->get(route('auth.participant.register'))->assertOk()->assertSee(route('api.register'));
+        $this->get(route('portal.landing'))->assertOk()->assertSee(route('auth.participant.register'));
+        $this->getJson('/api/public/registration-fees')->assertOk()->assertJsonFragment(['id_fee' => $fee->id_fee]);
+
+        $this->as(Role::ROLE_PESERTA)->get(route('portal.participant.registration'))
+            ->assertOk()->assertSee('/api/public/registration-fees');
+    }
 }

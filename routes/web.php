@@ -18,6 +18,7 @@ Route::get('/lang/{locale}', function (string $locale) {
 
 Route::get('/login', [AuthPageController::class, 'login'])->name('login');
 Route::get('/participant/login', [AuthPageController::class, 'login'])->defaults('portal', 'participant')->name('auth.participant.login');
+Route::get('/participant/register', [AuthPageController::class, 'registerParticipant'])->name('auth.participant.register');
 Route::get('/secretariat/login', [AuthPageController::class, 'login'])->defaults('portal', 'secretariat')->name('auth.secretariat.login');
 Route::get('/treasurer/login', [AuthPageController::class, 'login'])->defaults('portal', 'treasurer')->name('auth.treasurer.login');
 Route::get('/reviewer/login', [AuthPageController::class, 'login'])->defaults('portal', 'reviewer')->name('auth.reviewer.login');

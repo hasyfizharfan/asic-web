@@ -22,16 +22,34 @@
                 window.asicApi.get('/api/public/registration-fees')
             ]);
             if (!events.ok || !fees.ok) throw new Error(events.error || fees.error || 'Data pendaftaran tidak dapat dimuat.');
-            this.events = events.data?.data?.data || events.data?.data || [];
-            this.fees = fees.data?.data || [];
-            this.idEvent = String(this.events[0]?.id_event || this.fees[0]?.id_event || '');
+            const eventData = events.data?.data;
+            const feeData = fees.data?.data;
+            this.events = Array.isArray(eventData) ? eventData : (eventData?.data || []);
+            this.fees = Array.isArray(feeData) ? feeData : (feeData?.data || []);
+            this.idEvent = String(this.fees[0]?.id_event || this.events[0]?.id_event || '');
             this.syncPeriod();
             if (!this.events.length || !this.fees.length) this.loadError = 'Belum ada event atau tarif pendaftaran aktif.';
         } catch (error) { this.loadError = error.message || 'Data pendaftaran gagal dimuat.'; }
         finally { this.loading = false; }
     },
     get periods() { return [...new Map(this.fees.filter(f => String(f.id_event) === this.idEvent).map(f => [String(f.id_period), f.period])).values()]; },
-    syncPeriod() { this.idPeriod = String(this.periods[0]?.id_period || ''); },
+    syncPeriod() {
+        const firstFee = this.fees.find(f => String(f.id_event) === this.idEvent);
+        this.idPeriod = String(firstFee?.id_period || this.periods[0]?.id_period || '');
+        if (firstFee) {
+            this.category = firstFee.registration_type;
+            this.attendanceMode = firstFee.attendance_mode;
+            this.publicationOption = firstFee.tujuan_publikasi;
+        }
+    },
+    syncFeeOptions() {
+        const fee = this.fees.find(f => String(f.id_event) === this.idEvent && String(f.id_period) === this.idPeriod);
+        if (fee) {
+            this.category = fee.registration_type;
+            this.attendanceMode = fee.attendance_mode;
+            this.publicationOption = fee.tujuan_publikasi;
+        }
+    },
     get selectedFee() { return this.fees.find(f => String(f.id_event) === this.idEvent && String(f.id_period) === this.idPeriod && f.registration_type === this.category && f.attendance_mode === this.attendanceMode && f.tujuan_publikasi === this.publicationOption); },
     get calculatedFee() {
         return this.selectedFee ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(this.selectedFee.final_amount)) : 'Tarif tidak tersedia';
@@ -88,7 +106,7 @@
                     <p x-show="fieldErrors.id_event" x-text="fieldErrors.id_event?.[0]" class="mt-1 text-error"></p>
                 </label>
                 <label class="text-xs font-semibold">Periode
-                    <select x-model="idPeriod" class="mt-1 w-full rounded-xl border-surface-container-highest text-sm">
+                    <select x-model="idPeriod" @change="syncFeeOptions()" class="mt-1 w-full rounded-xl border-surface-container-highest text-sm">
                         <template x-for="period in periods" :key="period.id_period">
                             <option :value="String(period.id_period)" x-text="period.nama_periode"></option>
                         </template>
@@ -144,7 +162,7 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-on-surface mb-2">Participant Category</label>
-                    <div class="grid grid-cols-2 gap-3">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                         <label :class="category === 'Student' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
                             <input type="radio" name="category" value="Student" x-model="category" class="sr-only">
                             <span class="block text-xs font-bold text-on-surface">Student (Undergrad/Postgrad)</span>
@@ -154,6 +172,11 @@
                             <input type="radio" name="category" value="Regular" x-model="category" class="sr-only">
                             <span class="block text-xs font-bold text-on-surface">Regular / Academician</span>
                             <span class="block text-[11px] text-on-surface-variant mt-0.5">Lecturers, Researchers & General</span>
+                        </label>
+                        <label :class="category === 'Committee' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
+                            <input type="radio" name="category" value="Committee" x-model="category" class="sr-only">
+                            <span class="block text-xs font-bold text-on-surface">Committee</span>
+                            <span class="block text-[11px] text-on-surface-variant mt-0.5">Organizing committee</span>
                         </label>
                     </div>
                     <p x-show="fieldErrors.registration_type" x-text="fieldErrors.registration_type?.[0]" class="mt-2 text-sm text-error"></p>
@@ -240,7 +263,7 @@
                     <x-ui.button variant="outline" href="{{ route('login') }}">
                         Cancel
                     </x-ui.button>
-                    <x-ui.button type="submit" variant="primary" class="w-full sm:w-auto px-8" iconRight="arrow_forward" ::disabled="submitting">
+                    <x-ui.button type="submit" variant="primary" class="w-full sm:w-auto px-8" iconRight="arrow_forward" ::disabled="submitting || !selectedFee || loading || !!loadError">
                         <span x-text="submitting ? 'Processing...' : 'Proceed to Checkout'">Proceed to Checkout</span>
                     </x-ui.button>
                 </div>

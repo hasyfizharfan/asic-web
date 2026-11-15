@@ -27,6 +27,15 @@ class AuthPageController extends Controller
         return view('auth.'.self::PORTAL_VIEWS[$portal], ['asic' => $this->asicDetails()]);
     }
 
+    public function registerParticipant(): View|RedirectResponse
+    {
+        if (auth()->check()) {
+            return redirect()->to($this->redirectForRole(auth()->user()->role?->nama_role));
+        }
+
+        return view('auth.participant-register', ['asic' => $this->asicDetails()]);
+    }
+
     public function passwordReset(string $token): View
     {
         return view('auth.password-reset', [

@@ -108,7 +108,7 @@
         <!-- Footer link -->
         <div class="mt-8 pt-5 border-t border-surface-container-highest text-center text-xs text-on-surface-variant">
             <span>{{ __('asic-auth.no_account') }}</span>
-            <a href="{{ route('portal.landing') }}#fees" class="font-bold text-primary hover:underline ml-1">
+            <a href="{{ route('auth.participant.register') }}" class="font-bold text-primary hover:underline ml-1">
                 {{ __('asic-auth.register_now') }}
             </a>
         </div>

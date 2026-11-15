@@ -52,7 +52,7 @@
                 {{ __('asic-landing.btn_login') }}
             </a>
 
-            <a href="{{ route('auth.participant.login') }}" class="px-5 py-2 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#17261D] font-bold text-sm shadow transition active:scale-95">
+            <a href="{{ route('auth.participant.register') }}" class="px-5 py-2 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#17261D] font-bold text-sm shadow transition active:scale-95">
                 {{ __('asic-landing.btn_register') }}
             </a>
         </div>
@@ -89,7 +89,7 @@
                 <a href="{{ route('login') }}" class="flex items-center justify-center px-4 py-2 rounded-lg border border-white/30 text-white font-semibold text-xs">
                     {{ __('asic-landing.btn_login') }}
                 </a>
-                <a href="{{ route('auth.participant.login') }}" class="flex items-center justify-center px-4 py-2 rounded-lg bg-[#F5C518] text-[#17261D] font-bold text-xs shadow">
+                <a href="{{ route('auth.participant.register') }}" class="flex items-center justify-center px-4 py-2 rounded-lg bg-[#F5C518] text-[#17261D] font-bold text-xs shadow">
                     {{ __('asic-landing.btn_register') }}
                 </a>
             </div>
@@ -128,7 +128,7 @@
 
         <!-- CTA Buttons matching Image 2 & Prototype w__landing.html -->
         <div class="flex items-center gap-4 flex-wrap">
-            <a href="{{ route('auth.participant.login') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#0F3D24] font-bold text-sm sm:text-base shadow-xl active:scale-95 transition">
+            <a href="{{ route('auth.participant.register') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#0F3D24] font-bold text-sm sm:text-base shadow-xl active:scale-95 transition">
                 <span>{{ __('asic-landing.btn_register') }}</span>
             </a>
             <a href="#cfa" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/60 hover:border-white text-white font-semibold text-sm sm:text-base hover:bg-white/10 active:scale-95 transition">
@@ -264,7 +264,7 @@
         </div>
 
         <div class="mt-10">
-            <a href="{{ route('auth.participant.login') }}" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#0F3D24] font-bold text-base shadow hover:brightness-105 transition">
+            <a href="{{ route('auth.participant.register') }}" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#0F3D24] font-bold text-base shadow hover:brightness-105 transition">
                 <span>{{ __('asic-landing.btn_submit_abstract') }}</span>
                 <span class="material-symbols-outlined text-[18px]">upload_file</span>
             </a>
