@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
+use App\Models\Participant;
 use App\Models\Registration;
 use App\Models\Role;
 use App\Models\UserAccount;
