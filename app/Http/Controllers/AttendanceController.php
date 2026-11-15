@@ -4,14 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAttendanceRequest;
 use App\Models\Attendance;
-use App\Models\Event;
 use App\Models\EventSession;
+use App\Models\Participant;
 use App\Models\Registration;
 use App\Models\UserAccount;
 use App\Support\PermissionMatrix;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,14 +73,21 @@ class AttendanceController extends Controller
         /** @var UserAccount $user */
         $user = Auth::user();
 
-        if (! $registration->isLuring()) {
-            return response()->json(['success' => false, 'message' => 'Check-in di lokasi hanya berlaku untuk peserta Luring.'], Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
         if (! $registration->invoice || $registration->invoice->status_pembayaran !== 'Terverifikasi') {
             return response()->json([
                 'success' => false,
                 'message' => 'Presensi ditolak: invoice belum tersedia atau status pembayaran belum Terverifikasi.',
             ], Response::HTTP_FORBIDDEN);
+        }
+
+        if ($registration->id_event !== $session->id_event) {
+            return response()->json(['success' => false, 'message' => 'Pendaftaran peserta tidak terkait dengan sesi ini.'], Response::HTTP_FORBIDDEN);
+        }
+        if ($request->filled('qr_token') && ! hash_equals((string) $session->qr_token, (string) $request->input('qr_token'))) {
+            return response()->json(['success' => false, 'message' => 'Token QR tidak cocok dengan sesi ini.'], Response::HTTP_FORBIDDEN);
+        }
+        if (! $this->isSessionOpen($session)) {
+            return response()->json(['success' => false, 'message' => 'Presensi hanya dapat dilakukan selama jadwal sesi berlangsung.'], Response::HTTP_FORBIDDEN);
         }
 
         $attendance = Attendance::firstOrNew([
@@ -119,6 +128,19 @@ class AttendanceController extends Controller
         ], Response::HTTP_OK);
     }
 
+    #[OA\Get(
+        path: '/api/registrations/{id_registration}/attendance-qr',
+        summary: 'Buat atau Tampilkan Token QR Kehadiran Pendaftaran',
+        description: 'Mengembalikan token QR milik pendaftaran peserta Luring atau Daring dengan pembayaran terverifikasi.',
+        tags: ['Kehadiran'],
+        security: [['sanctumAuth' => []]],
+        parameters: [new OA\Parameter(name: 'id_registration', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [
+            new OA\Response(response: 200, description: 'Token QR pendaftaran tersedia'),
+            new OA\Response(response: 403, description: 'Akses ditolak atau pembayaran belum terverifikasi'),
+            new OA\Response(response: 404, description: 'Pendaftaran tidak ditemukan'),
+        ]
+    )]
     public function attendanceQr(int $id_registration): JsonResponse
     {
         $registration = Registration::with(['participant', 'invoice'])->findOrFail($id_registration);
@@ -127,8 +149,8 @@ class AttendanceController extends Controller
         $canManageAttendance = app(PermissionMatrix::class)->allows($user, 'scan_attendance_qr');
         abort_unless($isOwner || $canManageAttendance, Response::HTTP_FORBIDDEN);
 
-        if (! $registration->isLuring() || ! $registration->invoice || $registration->invoice->status_pembayaran !== 'Terverifikasi') {
-            return response()->json(['success' => false, 'message' => 'QR kehadiran hanya tersedia bagi peserta Luring dengan pembayaran Terverifikasi.'], Response::HTTP_FORBIDDEN);
+        if (! $registration->invoice || $registration->invoice->status_pembayaran !== 'Terverifikasi') {
+            return response()->json(['success' => false, 'message' => 'QR kehadiran hanya tersedia bagi peserta dengan pembayaran Terverifikasi.'], Response::HTTP_FORBIDDEN);
         }
 
         if (! $registration->qr_attendance_token) {
@@ -141,8 +163,8 @@ class AttendanceController extends Controller
 
     #[OA\Post(
         path: '/api/sessions/{id_session}/attendance/scan',
-        summary: 'Pindai QR Kehadiran Peserta Luring',
-        description: 'Check-in Sekretariat untuk peserta Luring dengan pembayaran Terverifikasi.',
+        summary: 'Pindai QR Kehadiran Peserta',
+        description: 'Check-in panitia bagi peserta Daring maupun Luring dengan pembayaran Terverifikasi.',
         tags: ['Kehadiran'],
         security: [['sanctumAuth' => []]],
         parameters: [new OA\Parameter(name: 'id_session', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
@@ -157,16 +179,95 @@ class AttendanceController extends Controller
         return $this->checkInRegistration($registration, $id_session);
     }
 
+    #[OA\Post(
+        path: '/api/attendance/scan',
+        summary: 'Submit Token QR Sesi oleh Peserta',
+        description: 'Mencatat kehadiran peserta yang sedang login dengan token QR sesi konferensi yang aktif.',
+        tags: ['Kehadiran'],
+        security: [['sanctumAuth' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['qr_token'],
+                properties: [new OA\Property(property: 'qr_token', type: 'string', maxLength: 100, example: 'ASIC-SESSION-1-ABCD123456')]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Kehadiran peserta berhasil dicatat'),
+            new OA\Response(response: 403, description: 'Token, kepemilikan pendaftaran, pembayaran, atau jadwal sesi tidak memenuhi syarat'),
+            new OA\Response(response: 409, description: 'Peserta sudah tercatat hadir pada sesi ini'),
+            new OA\Response(response: 422, description: 'Token QR tidak valid'),
+        ]
+    )]
+    public function submitSessionQr(Request $request): JsonResponse
+    {
+        $validated = $request->validate(['qr_token' => ['required', 'string', 'max:100']]);
+        $session = EventSession::with('event')->where('qr_token', $validated['qr_token'])->first();
+        if (! $session) {
+            return response()->json(['success' => false, 'message' => 'Token QR sesi tidak valid.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+        if (! $this->isSessionOpen($session)) {
+            return response()->json(['success' => false, 'message' => 'Sesi belum dimulai atau sudah berakhir.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $participant = Participant::where('id_user', Auth::id())->first();
+        if (! $participant) {
+            return response()->json(['success' => false, 'message' => 'Akun ini tidak memiliki profil peserta.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $registration = Registration::with('invoice')
+            ->where('id_participant', $participant->id_participant)
+            ->where('id_event', $session->id_event)
+            ->where('registration_status', 'Terdaftar')
+            ->orderByDesc('registration_date')
+            ->first();
+        if (! $registration || ! $registration->invoice || $registration->invoice->status_pembayaran !== 'Terverifikasi') {
+            return response()->json(['success' => false, 'message' => 'Pendaftaran aktif dengan pembayaran terverifikasi tidak ditemukan untuk sesi ini.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $attendance = DB::transaction(function () use ($registration, $session): ?Attendance {
+            Registration::whereKey($registration->id_registration)->lockForUpdate()->firstOrFail();
+
+            if (Attendance::where('id_registration', $registration->id_registration)
+                ->where('id_session', $session->id_session)->exists()) {
+                return null;
+            }
+
+            return $this->saveAttendance($registration, $session);
+        });
+
+        if (! $attendance) {
+            return response()->json(['success' => false, 'message' => 'Kehadiran Anda pada sesi ini sudah tercatat.'], Response::HTTP_CONFLICT);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Kehadiran sesi berhasil dicatat.',
+            'data' => $attendance,
+        ], Response::HTTP_OK);
+    }
+
     private function checkInRegistration(Registration $registration, int $id_session): JsonResponse
     {
-        if (! $registration->isLuring() || ! $registration->invoice || $registration->invoice->status_pembayaran !== 'Terverifikasi') {
-            return response()->json(['success' => false, 'message' => 'QR tidak memenuhi syarat: peserta harus Luring dan pembayaran Terverifikasi.'], Response::HTTP_FORBIDDEN);
+        $registration->loadMissing('invoice');
+        if (! $registration->invoice || $registration->invoice->status_pembayaran !== 'Terverifikasi') {
+            return response()->json(['success' => false, 'message' => 'QR tidak memenuhi syarat: pembayaran harus Terverifikasi.'], Response::HTTP_FORBIDDEN);
         }
-        $session = EventSession::findOrFail($id_session);
-        $event = Event::findOrFail($session->id_event);
-        if (now()->toDateString() !== $event->tanggal_mulai) {
-            return response()->json(['success' => false, 'message' => 'Registrasi ulang hanya tersedia pada hari pertama kegiatan.'], Response::HTTP_FORBIDDEN);
+        $session = EventSession::with('event')->findOrFail($id_session);
+        if ($registration->id_event !== $session->id_event) {
+            return response()->json(['success' => false, 'message' => 'Pendaftaran peserta tidak terkait dengan sesi ini.'], Response::HTTP_FORBIDDEN);
         }
+        if (! $this->isSessionOpen($session)) {
+            return response()->json(['success' => false, 'message' => 'Presensi hanya dapat dilakukan selama jadwal sesi berlangsung.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $attendance = $this->saveAttendance($registration, $session);
+
+        return response()->json(['success' => true, 'message' => 'Check-in QR peserta berhasil dicatat.', 'data' => $attendance], Response::HTTP_OK);
+    }
+
+    private function saveAttendance(Registration $registration, EventSession $session): Attendance
+    {
         $attendance = Attendance::firstOrNew(['id_registration' => $registration->id_registration, 'id_session' => $session->id_session]);
         $attendance->status_kehadiran = 'Hadir';
         $attendance->status_presentasi = $attendance->status_presentasi ?: 'Belum';
@@ -174,7 +275,27 @@ class AttendanceController extends Controller
         $attendance->tanggal_check_in = now();
         $attendance->save();
 
-        return response()->json(['success' => true, 'message' => 'Check-in QR peserta berhasil dicatat.', 'data' => $attendance], Response::HTTP_OK);
+        return $attendance;
+    }
+
+    private function isSessionOpen(EventSession $session): bool
+    {
+        $now = now();
+        $start = $session->waktu;
+
+        if ($session->waktu_selesai) {
+            return $start && $now->betweenIncluded($start, $session->waktu_selesai);
+        }
+
+        $event = $session->event;
+        if (! $event?->tanggal_mulai || ! $event?->tanggal_selesai) {
+            return false;
+        }
+
+        return $now->betweenIncluded(
+            Carbon::parse($event->tanggal_mulai)->startOfDay(),
+            Carbon::parse($event->tanggal_selesai)->endOfDay()
+        );
     }
 
     /**

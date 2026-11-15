@@ -1,6 +1,9 @@
 <?php
 
 return [
+    // Password akun admin awal; wajib diisi eksplisit sebelum AdminUserSeeder dijalankan.
+    'admin_default_password' => env('ADMIN_DEFAULT_PASSWORD'),
+
     // Lama jatuh tempo invoice (hari) sejak terbit — PRD §6: 1 minggu.
     'invoice_due_days' => 7,
 

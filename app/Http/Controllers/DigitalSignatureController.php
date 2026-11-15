@@ -37,6 +37,10 @@ class DigitalSignatureController extends Controller
     public function index(): JsonResponse
     {
         $signatures = DigitalSignature::with('role')->get();
+        $signatures->each(function (DigitalSignature $signature): void {
+            $signature->privateFilePath('file_ttd');
+            $signature->privateFilePath('file_stempel');
+        });
 
         return response()->json([
             'success' => true,
@@ -100,6 +104,41 @@ class DigitalSignatureController extends Controller
         ], Response::HTTP_OK);
     }
 
+    #[OA\Get(
+        path: '/api/digital-signatures/role/{id_role}/files/{file_type}',
+        summary: 'Sajikan Berkas Tanda Tangan atau Stempel',
+        description: 'Menyajikan gambar privat bagi pengguna yang memiliki izin melihat tanda tangan digital.',
+        tags: ['Tanda Tangan Digital'],
+        security: [['sanctumAuth' => []]],
+        parameters: [
+            new OA\Parameter(name: 'id_role', in: 'path', required: true, schema: new OA\Schema(type: 'integer')),
+            new OA\Parameter(name: 'file_type', in: 'path', required: true, schema: new OA\Schema(type: 'string', enum: ['ttd', 'stempel'])),
+        ],
+        responses: [
+            new OA\Response(response: 200, description: 'Gambar tanda tangan atau stempel'),
+            new OA\Response(response: 404, description: 'Berkas tidak ditemukan'),
+            new OA\Response(response: 403, description: 'Akses ditolak'),
+        ]
+    )]
+    public function file(int $id_role, string $file_type): Response
+    {
+        abort_unless(in_array($file_type, ['ttd', 'stempel'], true), Response::HTTP_NOT_FOUND);
+
+        $signature = DigitalSignature::where('id_role', $id_role)
+            ->latest('tanggal_upload')
+            ->firstOrFail();
+        $attribute = $file_type === 'ttd' ? 'file_ttd' : 'file_stempel';
+        $path = $signature->privateFilePath($attribute);
+        abort_unless($path, Response::HTTP_NOT_FOUND);
+
+        $disk = Storage::disk('local');
+
+        return $disk->response($path, basename($path), [
+            'Content-Type' => $disk->mimeType($path) ?: 'application/octet-stream',
+            'Cache-Control' => 'private, no-store',
+        ]);
+    }
+
     /**
      * Mengunggah atau memperbarui tanda tangan dan stempel digital berbasis peran (Poin 6).
      */
@@ -146,24 +185,28 @@ class DigitalSignatureController extends Controller
 
         $targetRole = Role::findOrFail($targetRoleId);
 
-        $validated = $request->validated();
-
         $ttdFile = $request->file('file_ttd');
-        $ttdPath = $ttdFile->store('signatures/ttd', 'public');
+        $ttdPath = $ttdFile->store('signatures/ttd', 'local');
 
         $stempelPath = null;
         if ($request->hasFile('file_stempel')) {
             $stempelFile = $request->file('file_stempel');
-            $stempelPath = $stempelFile->store('signatures/stempel', 'public');
+            $stempelPath = $stempelFile->store('signatures/stempel', 'local');
         }
 
         $existing = DigitalSignature::where('id_role', $targetRoleId)->first();
         if ($existing) {
             if ($existing->file_ttd) {
+                $existing->privateFilePath('file_ttd');
                 Storage::disk('public')->delete($existing->file_ttd);
+                Storage::disk('local')->delete($existing->file_ttd);
+            }
+            if ($existing->file_stempel) {
+                $existing->privateFilePath('file_stempel');
             }
             if ($existing->file_stempel && $stempelPath) {
                 Storage::disk('public')->delete($existing->file_stempel);
+                Storage::disk('local')->delete($existing->file_stempel);
             }
         }
 
@@ -180,8 +223,8 @@ class DigitalSignatureController extends Controller
             'success' => true,
             'message' => "Tanda tangan dan stempel digital untuk peran '{$targetRole->nama_role}' berhasil disimpan.",
             'data' => $signature,
-            'ttd_url' => Storage::disk('public')->url($ttdPath),
-            'stempel_url' => $signature->file_stempel ? Storage::disk('public')->url($signature->file_stempel) : null,
+            'ttd_url' => $signature->ttd_url,
+            'stempel_url' => $signature->stempel_url,
         ], Response::HTTP_OK);
     }
 }

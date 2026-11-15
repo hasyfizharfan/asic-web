@@ -112,9 +112,24 @@ class DocumentRenderer
         }
 
         return [
-            'ttd' => $this->publicImage($sig?->file_ttd),
-            'stempel' => $this->publicImage($sig?->file_stempel),
+            'ttd' => $this->privateSignatureImage($sig, 'file_ttd'),
+            'stempel' => $this->privateSignatureImage($sig, 'file_stempel'),
         ];
+    }
+
+    private function privateSignatureImage(?DigitalSignature $signature, string $attribute): ?string
+    {
+        if (! $signature || ! ($path = $signature->privateFilePath($attribute))) {
+            return null;
+        }
+
+        try {
+            $disk = Storage::disk('local');
+
+            return 'data:'.($disk->mimeType($path) ?: 'image/png').';base64,'.base64_encode($disk->get($path));
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     /** Gambar dari disk "public" sebagai data URI agar dompdf tidak perlu akses berkas/URL luar. */

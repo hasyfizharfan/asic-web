@@ -85,11 +85,9 @@ class DigitalSignature extends Model
      */
     public function getTtdUrlAttribute(): ?string
     {
-        if ($this->file_ttd && Storage::disk('public')->exists($this->file_ttd)) {
-            return Storage::disk('public')->url($this->file_ttd);
-        }
-
-        return null;
+        return $this->privateFilePath('file_ttd')
+            ? route('api.digital-signatures.files', ['id_role' => $this->id_role, 'file_type' => 'ttd'])
+            : null;
     }
 
     /**
@@ -97,11 +95,43 @@ class DigitalSignature extends Model
      */
     public function getStempelUrlAttribute(): ?string
     {
-        if ($this->file_stempel && Storage::disk('public')->exists($this->file_stempel)) {
-            return Storage::disk('public')->url($this->file_stempel);
+        return $this->privateFilePath('file_stempel')
+            ? route('api.digital-signatures.files', ['id_role' => $this->id_role, 'file_type' => 'stempel'])
+            : null;
+    }
+
+    /**
+     * Return a private-disk file path, migrating any legacy public-disk file on read.
+     */
+    public function privateFilePath(string $attribute): ?string
+    {
+        if (! in_array($attribute, ['file_ttd', 'file_stempel'], true)) {
+            throw new \InvalidArgumentException('Jenis berkas tanda tangan tidak valid.');
         }
 
-        return null;
+        $path = $this->getAttribute($attribute);
+        if (! is_string($path) || $path === '') {
+            return null;
+        }
+
+        $private = Storage::disk('local');
+        if ($private->exists($path)) {
+            Storage::disk('public')->delete($path);
+
+            return $path;
+        }
+
+        $public = Storage::disk('public');
+        if (! $public->exists($path)) {
+            return null;
+        }
+
+        if (! $private->put($path, $public->get($path))) {
+            return null;
+        }
+
+        $public->delete($path);
+
+        return $path;
     }
 }
-

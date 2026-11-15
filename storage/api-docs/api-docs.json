@@ -428,6 +428,39 @@
                 ]
             }
         },
+        "/api/tim-abstrak/submissions/{id_abstract}/issue-documents": {
+            "post": {
+                "tags": [
+                    "Review Abstrak"
+                ],
+                "summary": "Terbitkan Ulang/Susulan Dokumen Hasil Seleksi",
+                "description": "Mengeksekusi ulang penerbitan LOA/surat penolakan/invoice bagi abstrak yang sudah diputuskan. Tidak membuat dokumen ganda.",
+                "operationId": "5a4a763fdb1d920319b9399df2299709",
+                "parameters": [
+                    {
+                        "name": "id_abstract",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dokumen diproses"
+                    },
+                    "409": {
+                        "description": "Abstrak belum diputuskan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
         "/api/admin/roles-permissions": {
             "get": {
                 "tags": [
@@ -1385,13 +1418,49 @@
                 ]
             }
         },
+        "/api/registrations/{id_registration}/attendance-qr": {
+            "get": {
+                "tags": [
+                    "Kehadiran"
+                ],
+                "summary": "Buat atau Tampilkan Token QR Kehadiran Pendaftaran",
+                "description": "Mengembalikan token QR milik pendaftaran peserta Luring atau Daring dengan pembayaran terverifikasi.",
+                "operationId": "19ff936acdafb279466614c286cb8de8",
+                "parameters": [
+                    {
+                        "name": "id_registration",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Token QR pendaftaran tersedia"
+                    },
+                    "403": {
+                        "description": "Akses ditolak atau pembayaran belum terverifikasi"
+                    },
+                    "404": {
+                        "description": "Pendaftaran tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
         "/api/sessions/{id_session}/attendance/scan": {
             "post": {
                 "tags": [
                     "Kehadiran"
                 ],
-                "summary": "Pindai QR Kehadiran Peserta Luring",
-                "description": "Check-in Sekretariat untuk peserta Luring dengan pembayaran Terverifikasi.",
+                "summary": "Pindai QR Kehadiran Peserta",
+                "description": "Check-in panitia bagi peserta Daring maupun Luring dengan pembayaran Terverifikasi.",
                 "operationId": "f39b0683972e871291af6a958b2f7a9b",
                 "parameters": [
                     {
@@ -1427,6 +1496,55 @@
                     },
                     "403": {
                         "description": "Akses atau syarat peserta ditolak"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/attendance/scan": {
+            "post": {
+                "tags": [
+                    "Kehadiran"
+                ],
+                "summary": "Submit Token QR Sesi oleh Peserta",
+                "description": "Mencatat kehadiran peserta yang sedang login dengan token QR sesi konferensi yang aktif.",
+                "operationId": "ec040fa7a968960f666b038c5883894c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "qr_token"
+                                ],
+                                "properties": {
+                                    "qr_token": {
+                                        "type": "string",
+                                        "example": "ASIC-SESSION-1-ABCD123456",
+                                        "maxLength": 100
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Kehadiran peserta berhasil dicatat"
+                    },
+                    "403": {
+                        "description": "Token, kepemilikan pendaftaran, pembayaran, atau jadwal sesi tidak memenuhi syarat"
+                    },
+                    "409": {
+                        "description": "Peserta sudah tercatat hadir pada sesi ini"
+                    },
+                    "422": {
+                        "description": "Token QR tidak valid"
                     }
                 },
                 "security": [
@@ -2047,6 +2165,121 @@
                     },
                     "404": {
                         "description": "Berkas belum diunggah untuk peran ini"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/digital-signatures/role/{id_role}/files/{file_type}": {
+            "get": {
+                "tags": [
+                    "Tanda Tangan Digital"
+                ],
+                "summary": "Sajikan Berkas Tanda Tangan atau Stempel",
+                "description": "Menyajikan gambar privat bagi pengguna yang memiliki izin melihat tanda tangan digital.",
+                "operationId": "743fd86aa727cd0c7aa327839c1be45a",
+                "parameters": [
+                    {
+                        "name": "id_role",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "file_type",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "ttd",
+                                "stempel"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Gambar tanda tangan atau stempel"
+                    },
+                    "404": {
+                        "description": "Berkas tidak ditemukan"
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/registrations/{id_registration}/documents": {
+            "get": {
+                "tags": [
+                    "Dokumen"
+                ],
+                "summary": "Daftar Dokumen Terbit (LOA, Penolakan, Invoice, Receipt)",
+                "operationId": "0a1c5e34126522b3f9118eb6a2932ec4",
+                "parameters": [
+                    {
+                        "name": "id_registration",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "403": {
+                        "description": "Bukan pemilik/tanpa izin"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/documents/{id_document}/download": {
+            "get": {
+                "tags": [
+                    "Dokumen"
+                ],
+                "summary": "Unduh Dokumen PDF (berotorisasi)",
+                "operationId": "19014ba6188b7de2e63889946a30188c",
+                "parameters": [
+                    {
+                        "name": "id_document",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berkas PDF"
+                    },
+                    "403": {
+                        "description": "Ditolak"
+                    },
+                    "404": {
+                        "description": "Tidak ditemukan"
                     }
                 },
                 "security": [
@@ -2888,6 +3121,177 @@
                 }
             }
         },
+        "/api/payments": {
+            "get": {
+                "tags": [
+                    "Verifikasi Pembayaran"
+                ],
+                "summary": "Daftar Pembayaran (default: Menunggu Verifikasi)",
+                "operationId": "a1274e00d605b19b678620b5789331f3",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Menunggu Verifikasi"
+                        }
+                    },
+                    {
+                        "name": "id_event",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/payments/{id_invoice}": {
+            "get": {
+                "tags": [
+                    "Verifikasi Pembayaran"
+                ],
+                "summary": "Detail Pembayaran, Bukti, dan Riwayat Verifikasi",
+                "operationId": "0c333dd6210c16dca66c79c87bbfd3f8",
+                "parameters": [
+                    {
+                        "name": "id_invoice",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "404": {
+                        "description": "Tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/payment-proofs/{id_payment_proof}/file": {
+            "get": {
+                "tags": [
+                    "Verifikasi Pembayaran"
+                ],
+                "summary": "Lihat Berkas Bukti Pembayaran",
+                "operationId": "27ca14a25b840600e6f3f6fc82e24f73",
+                "parameters": [
+                    {
+                        "name": "id_payment_proof",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berkas"
+                    },
+                    "404": {
+                        "description": "Tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/payment-proofs/{id_payment_proof}/verify": {
+            "post": {
+                "tags": [
+                    "Verifikasi Pembayaran"
+                ],
+                "summary": "Verifikasi atau Tolak Bukti Pembayaran",
+                "description": "Valid → invoice Terverifikasi + receipt terbit. Tidak Valid → invoice Ditolak + alasan disimpan. Satu bukti hanya dapat diverifikasi sekali.",
+                "operationId": "50c23a25cf6601ae4db611f5ed2760ce",
+                "parameters": [
+                    {
+                        "name": "id_payment_proof",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "hasil_verifikasi"
+                                ],
+                                "properties": {
+                                    "hasil_verifikasi": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Valid",
+                                            "Tidak Valid"
+                                        ]
+                                    },
+                                    "alasan_penolakan": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Terverifikasi/ditolak"
+                    },
+                    "409": {
+                        "description": "Sudah diverifikasi / status tidak sesuai"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
         "/api/registrations": {
             "get": {
                 "tags": [
@@ -3112,6 +3516,328 @@
                     }
                 ]
             }
+        },
+        "/api/registration-fees": {
+            "get": {
+                "tags": [
+                    "Tarif Pendaftaran"
+                ],
+                "summary": "Daftar Tarif Pendaftaran",
+                "description": "Daftar tarif terpaginasi dengan filter event, periode, kategori peserta, mode kehadiran, dan tujuan publikasi (butuh izin manage_tariffs minimal view_only).",
+                "operationId": "806e6d294d4f289d1ea847d7f4d8959f",
+                "parameters": [
+                    {
+                        "name": "id_event",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "id_period",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "registration_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Student",
+                                "Regular",
+                                "Committee"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "attendance_mode",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Daring",
+                                "Luring"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "tujuan_publikasi",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Prosiding",
+                                "Jurnal",
+                                "Tidak"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar tarif berhasil dimuat"
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tarif Pendaftaran"
+                ],
+                "summary": "Tambah Tarif Pendaftaran",
+                "operationId": "4f47bcc88903c50fe8becae6becfe1c2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_event",
+                                    "id_period",
+                                    "registration_type",
+                                    "attendance_mode",
+                                    "tujuan_publikasi",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "id_event": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "id_period": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "registration_type": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Student",
+                                            "Regular",
+                                            "Committee"
+                                        ]
+                                    },
+                                    "attendance_mode": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Daring",
+                                            "Luring"
+                                        ]
+                                    },
+                                    "tujuan_publikasi": {
+                                        "type": "string",
+                                        "enum": [
+                                            "Prosiding",
+                                            "Jurnal",
+                                            "Tidak"
+                                        ]
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "example": 1500000
+                                    },
+                                    "discount": {
+                                        "type": "number",
+                                        "example": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Tarif berhasil dibuat"
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    },
+                    "422": {
+                        "description": "Validasi gagal / kombinasi duplikat"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/public/registration-fees": {
+            "get": {
+                "tags": [
+                    "Tarif Pendaftaran"
+                ],
+                "summary": "Daftar Tarif Publik (Read-only)",
+                "description": "Tarif yang tampil kepada calon peserta: hanya event berstatus Aktif dan periode berstatus Aktif. Tanpa autentikasi.",
+                "operationId": "6cb34fb96eac4a06b3757bc623730372",
+                "parameters": [
+                    {
+                        "name": "id_event",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "registration_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "attendance_mode",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "tujuan_publikasi",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar tarif publik berhasil dimuat"
+                    }
+                }
+            }
+        },
+        "/api/registration-fees/{id_fee}": {
+            "get": {
+                "tags": [
+                    "Tarif Pendaftaran"
+                ],
+                "summary": "Detail Tarif Pendaftaran",
+                "operationId": "8fc05237d893ea3cc6410a006bc6659a",
+                "parameters": [
+                    {
+                        "name": "id_fee",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail tarif berhasil dimuat"
+                    },
+                    "404": {
+                        "description": "Tarif tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Tarif Pendaftaran"
+                ],
+                "summary": "Hapus Tarif Pendaftaran",
+                "description": "Ditolak (409) bila tarif sudah dipakai invoice.",
+                "operationId": "c2868ea25eee6933e079a6741faeb00a",
+                "parameters": [
+                    {
+                        "name": "id_fee",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tarif berhasil dihapus"
+                    },
+                    "404": {
+                        "description": "Tarif tidak ditemukan"
+                    },
+                    "409": {
+                        "description": "Tarif sudah dipakai invoice"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Tarif Pendaftaran"
+                ],
+                "summary": "Ubah Tarif Pendaftaran",
+                "description": "Update parsial. Jika tarif sudah dipakai invoice, field identitas/nominal tidak dapat diubah (409).",
+                "operationId": "76fda9f9a6866545cacfb4a5740a8bba",
+                "parameters": [
+                    {
+                        "name": "id_fee",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tarif berhasil diperbarui"
+                    },
+                    "404": {
+                        "description": "Tarif tidak ditemukan"
+                    },
+                    "409": {
+                        "description": "Tarif sudah dipakai invoice"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -3172,6 +3898,18 @@
         {
             "name": "Admin - Hak Akses",
             "description": "Endpoint Pengaturan Matriks Peran dan Izin Akses (RBAC)"
+        },
+        {
+            "name": "Dokumen",
+            "description": "Dokumen"
+        },
+        {
+            "name": "Verifikasi Pembayaran",
+            "description": "Verifikasi Pembayaran"
+        },
+        {
+            "name": "Tarif Pendaftaran",
+            "description": "Tarif Pendaftaran"
         }
     ]
 }

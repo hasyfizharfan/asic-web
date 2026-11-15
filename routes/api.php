@@ -117,6 +117,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::post('/sessions/{id_session}/attendance/scan', [AttendanceController::class, 'scanParticipantQr'])->name('api.sessions.attendance.scan');
         Route::patch('/attendance/{id_attendance}/presentation', [AttendanceController::class, 'updatePresentationStatus'])->name('api.attendance.presentation');
     });
+    Route::post('/attendance/scan', [AttendanceController::class, 'submitSessionQr'])
+        ->name('api.attendance.scan-self');
 
     // -----------------------------------------------------------------
     // MODUL M-06 & REVISI 2: INVOICE, KEDALUWARSA & PERPANJANGAN
@@ -238,6 +240,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/digital-signatures/role/{id_role}', [DigitalSignatureController::class, 'showByRole'])
         ->middleware('permission:manage_digital_signatures,view_only')
         ->name('api.digital-signatures.by-role');
+    Route::get('/digital-signatures/role/{id_role}/files/{file_type}', [DigitalSignatureController::class, 'file'])
+        ->whereIn('file_type', ['ttd', 'stempel'])
+        ->middleware('permission:manage_digital_signatures,view_only')
+        ->name('api.digital-signatures.files');
     Route::post('/digital-signatures', [DigitalSignatureController::class, 'store'])
         ->middleware('permission:manage_digital_signatures')
         ->name('api.digital-signatures.store');
