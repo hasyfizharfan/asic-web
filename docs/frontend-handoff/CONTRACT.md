@@ -102,5 +102,5 @@ Status API dibungkus sebagai `{success, message?, data}`. Untuk daftar berhalama
 
 - `admin.users` memakai `GET/POST /api/admin/users`, `GET/PUT/DELETE /api/admin/users/{id_user}`, `PATCH /api/admin/users/{id_user}/toggle-status`, `POST /api/admin/users/batch-action`, dan `GET /api/admin/users/export-csv`. Reset password admin dan pengiriman undangan tetap belum tersedia.
 - `secretariat.announcements` memakai CRUD `/api/content/announcements` dan `/api/content/communication-channels`. Penyimpanan pengumuman tidak mengirim email/WhatsApp karena gateway broadcast belum tersedia.
-- Editor `secretariat.content` untuk event, speaker, dan jadwal masih belum terhubung penuh; endpoint CRUD tersedia dan pekerjaan UI tercatat di `REMAINING.md`.
+- `secretariat.content` memakai CRUD `/api/content/events`, `/api/content/speakers`, dan `/api/content/schedules`; bentuk payload mengikuti controller masing-masing. Editor saat ini mengelola teks/fakta tanpa unggah foto speaker.
 
