@@ -38,13 +38,14 @@ class AppServiceProvider extends ServiceProvider
             $view->with(['participantNav' => $nav, 'nav' => $nav]);
         });
         View::composer('reviewer.*', function ($view): void {
+            $user = auth()->user();
+            $nav = collect(config('portal-nav.reviewer', []))
+                ->filter(fn (array $item) => app(PermissionMatrix::class)->allows($user, $item['permission'], 'view_only'))
+                ->map(fn (array $item) => [...$item, 'label' => __($item['label'])])->values()->all();
             $view->with([
                 'role' => 'reviewer',
                 'roleName' => __('asic-reviewer.portal_title') ?? 'Abstract Reviewer',
-                'nav' => [
-                    ['label' => __('asic-reviewer.queue_title') ?? 'Review Queue', 'route' => 'portal.reviewer.queue', 'icon' => 'rate_review'],
-                    ['label' => __('asic-reviewer.profile_title') ?? 'Profile', 'route' => 'portal.reviewer.profile', 'icon' => 'account_circle'],
-                ],
+                'nav' => $nav,
             ]);
         });
         View::composer('secretariat.*', function ($view): void {

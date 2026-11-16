@@ -19,7 +19,7 @@ class PermissionMatrix
             ['id' => 'submit_abstract', 'title' => 'Submit abstract', 'tag' => 'Manuscripts', 'description' => 'Submit or update an abstract for an owned registration'],
             ['id' => 'view_abstracts', 'title' => 'View abstracts', 'tag' => 'Manuscripts', 'description' => 'View submitted abstracts subject to registration ownership'],
             ['id' => 'review_abstracts', 'title' => 'Review abstracts', 'tag' => 'Peer Review', 'description' => 'View the abstract review queue and review history'],
-            ['id' => 'accept_reject', 'title' => 'Accept/Reject', 'tag' => 'Decisions', 'description' => 'Record abstract acceptance, rejection, or revision decisions'],
+            ['id' => 'accept_reject', 'title' => 'Accept/Reject', 'tag' => 'Decisions', 'description' => 'Record final abstract acceptance or rejection decisions'],
             ['id' => 'issue_documents', 'title' => 'Issue selection documents', 'tag' => 'Publishing', 'description' => 'Issue approved LoA and selection documents after a review decision'],
             ['id' => 'pay_registration', 'title' => 'Pay registration', 'tag' => 'Treasury', 'description' => 'Create registrations and view owned invoices'],
             ['id' => 'verify_payment', 'title' => 'Verify payment', 'tag' => 'Treasury', 'description' => 'View and manage invoice payment status'],

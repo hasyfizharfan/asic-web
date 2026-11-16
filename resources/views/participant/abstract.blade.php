@@ -52,7 +52,7 @@
             <p x-show="fieldErrors.judul_abstrak" x-text="fieldErrors.judul_abstrak?.[0]" class="text-sm text-error"></p>
             <label class="block text-sm font-semibold">Bidang
                 <select name="scope" required class="mt-1 block w-full rounded-xl border-surface-container-highest">
-                    <option value="">Pilih bidang</option><option value="CP">Crop Production</option><option value="PB">Plant Breeding</option><option value="PP">Plant Protection</option><option value="SM">Soil Management</option><option value="SE">Socio-Economic</option><option value="OT">Other</option>
+                    <option value="">Pilih bidang</option>@foreach(config('abstract-scopes', []) as $code => $label)<option value="{{ $code }}">{{ $label }}</option>@endforeach
                 </select>
             </label>
             <p x-show="fieldErrors.scope" x-text="fieldErrors.scope?.[0]" class="text-sm text-error"></p>

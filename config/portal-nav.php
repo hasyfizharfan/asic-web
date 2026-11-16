@@ -28,6 +28,7 @@ return [
         ['label' => 'asic-nav.refund_requests', 'route' => 'portal.treasurer.refunds', 'icon' => 'currency_exchange', 'permission' => 'verify_payment'],
     ],
     'reviewer' => [
+        ['label' => 'asic-nav.dashboard', 'route' => 'portal.reviewer.dashboard', 'icon' => 'space_dashboard', 'permission' => 'access_reviewer_portal'],
         ['label' => 'asic-reviewer.queue_title', 'route' => 'portal.reviewer.queue', 'icon' => 'rate_review', 'permission' => 'review_abstracts'],
         ['label' => 'asic-reviewer.profile_title', 'route' => 'portal.reviewer.profile', 'icon' => 'account_circle', 'permission' => 'review_abstracts'],
     ],

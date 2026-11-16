@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthPageController;
-use App\Http\Controllers\PortalController;
 use App\Http\Controllers\Portal\ParticipantController;
+use App\Http\Controllers\Portal\ReviewerController;
 use App\Http\Controllers\Portal\TreasurerController;
+use App\Http\Controllers\PortalController;
 use App\Http\Controllers\PublicPortalController;
 use Illuminate\Support\Facades\Route;
 
@@ -68,11 +69,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
     });
 
     Route::prefix('reviewer')->name('portal.reviewer.')->middleware('permission:access_reviewer_portal')->group(function (): void {
-        Route::get('/', fn () => redirect()->route('portal.reviewer.dashboard'));
-        Route::get('/dashboard', [PortalController::class, 'dashboard'])->name('dashboard');
-        Route::view('/queue', 'reviewer.queue')->name('queue');
-        Route::get('/abstracts/{id}', fn (int $id) => view('reviewer.detail', ['id' => $id]))->whereNumber('id')->name('abstracts.show');
-        Route::view('/profile', 'reviewer.profile')->name('profile');
+        Route::get('/', [ReviewerController::class, 'dashboard']);
+        Route::get('/dashboard', [ReviewerController::class, 'dashboard'])->name('dashboard');
+        Route::get('/queue', [ReviewerController::class, 'queue'])->name('queue');
+        Route::get('/abstracts/{id}', [ReviewerController::class, 'show'])->whereNumber('id')->name('abstracts.show');
+        Route::get('/profile', [ReviewerController::class, 'profile'])->name('profile');
     });
 
     Route::prefix('admin')->name('portal.admin.')->middleware('permission:access_admin_portal')->group(function (): void {

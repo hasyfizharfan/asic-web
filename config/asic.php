@@ -7,6 +7,9 @@ return [
     // Lama jatuh tempo invoice (hari) sejak terbit — PRD §6: 1 minggu.
     'invoice_due_days' => 7,
 
+    // Aktif karena respons API reviewer menyamarkan seluruh identitas penulis.
+    'blind_review_active' => true,
+
     // Path/URL gambar QR pembayaran statis dari panitia (KF-23). Diisi lewat .env.
     'payment_qr_info' => env('ASIC_PAYMENT_QR_INFO'),
 

@@ -12,22 +12,21 @@
     recommendation: '', comments: '', isSubmitted: false,
     abstractData: null, loading: true, loadError: '',
     showConfirmModal: false,
-    errorMessage: '', fieldErrors: {},
+    errorMessage: '', fieldErrors: {}, warnings: [],
     submitting: false,
 
-    async init() {
+    async init() { await this.loadDetail(); },
+
+    async loadDetail() {
+        this.loading = true;
         const response = await window.asicApi.get('/api/tim-abstrak/submissions/{{ $abstractId }}');
         this.loading = false;
         if (!response.ok) { this.loadError = response.error || 'Detail abstrak gagal dimuat.'; return; }
         this.abstractData = response.data?.data;
-        this.isSubmitted = !['Diajukan', 'Revisi'].includes(this.abstractData?.status_abstrak);
+        this.isSubmitted = this.abstractData?.status_abstrak !== 'Diajukan';
         const latest = this.abstractData?.reviews?.at(-1);
         this.recommendation = latest?.hasil_review === 'Ditolak' ? 'reject' : (latest ? 'accept' : '');
         this.comments = latest?.catatan_review || '';
-    },
-
-    async saveDraft() {
-        $store.toast.add('Penyimpanan draft review belum tersedia.', 'error');
     },
 
     attemptSubmit() {
@@ -38,7 +37,7 @@
             return;
         }
         if (this.recommendation === 'reject' && (!this.comments || this.comments.trim().length < 15)) {
-            this.errorMessage = '{{ app()->getLocale() === 'id' ? 'Catatan reviewer wajib diisi (minimal 15 karakter) jika meminta revisi atau menolak.' : 'Comments are required (min 15 characters) when requesting revision or rejecting.' }}';
+            this.errorMessage = '{{ app()->getLocale() === 'id' ? 'Catatan reviewer wajib diisi minimal 15 karakter jika menolak.' : 'Comments of at least 15 characters are required when rejecting.' }}';
             return;
         }
         this.showConfirmModal = true;
@@ -57,11 +56,13 @@
         this.submitting = false;
 
         if (res.ok) {
-            this.isSubmitted = true;
-            $store.toast.add('{{ app()->getLocale() === 'id' ? 'Review berhasil dikirim via API ke sekretariat!' : 'Review submitted successfully via API to secretariat!' }}', 'success');
+            this.warnings = res.data?.data?.warnings || [];
+            $store.toast.add(res.data?.message || 'Keputusan review tersimpan.', 'success');
+            await this.loadDetail();
         } else {
             this.fieldErrors = res.errors || {};
-            this.errorMessage = res.error || 'Review gagal dikirim.';
+            this.errorMessage = res.status === 409 ? 'Abstrak sudah diputuskan. Status terbaru dimuat ulang.' : (res.status === 422 ? (res.error || 'Data keputusan tidak valid; periksa catatan review.') : (res.error || 'Review gagal dikirim.'));
+            if (res.status === 409 || res.status === 422) await this.loadDetail();
             $store.toast.add(this.errorMessage, 'error');
         }
     }
@@ -75,7 +76,7 @@
             <span>{{ __('asic-reviewer.btn_back') ?? '← Kembali to Assigned Abstracts' }}</span>
         </a>
 
-        @if($blindReview ?? true)
+        @if($blindReview ?? false)
             <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-fixed text-primary text-xs font-bold">
                 <span class="material-symbols-outlined text-[18px]">visibility_off</span>
                 <span>{{ __('asic-reviewer.blind_review_notice') ?? 'Double-Blind Review: Author identity and institution are concealed.' }}</span>
@@ -104,6 +105,8 @@
                     <span>{{ __('asic-reviewer.research_area') ?? 'Area' }}: <strong class="text-on-surface" x-text="abstractData?.scope"></strong></span>
                     <span>•</span>
                     <span>Format: <strong class="text-on-surface" x-text="abstractData?.metode_presentasi"></strong></span>
+                    <span>•</span><span>Tanggal submit: <strong class="text-on-surface" x-text="abstractData?.tanggal_submit || '—'"></strong></span>
+                    <span>•</span><span>Status: <strong class="text-on-surface" x-text="abstractData?.status_abstrak"></strong></span>
                 </div>
             </div>
 
@@ -125,13 +128,22 @@
 
             <!-- Download Manuscript Button -->
             <div class="pt-4 border-t border-surface-container-highest">
-                <a :href="abstractData ? '/api/registrations/' + abstractData.id_registration + '/abstract/download' : '#'"
+                <a :href="abstractData ? '/api/tim-abstrak/submissions/{{ $abstractId }}/file' : '#'"
                    :aria-disabled="!abstractData"
                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-primary text-primary hover:bg-primary hover:text-white text-xs font-bold transition shadow-xs active:scale-95">
                     <span class="material-symbols-outlined text-[18px]">download</span>
                     <span>{{ __('asic-reviewer.btn_download_file') ?? 'Unduh Berkas Abstrak (PDF)' }}</span>
                 </a>
             </div>
+        </div>
+
+        <div class="lg:col-span-7 bg-surface-container-lowest p-6 rounded-2xl border border-surface-container-highest shadow-xs space-y-3">
+            <h2 class="text-sm font-bold text-on-surface uppercase tracking-wider">Riwayat Review</h2>
+            <template x-for="review in (abstractData?.reviews || [])" :key="review.id_review">
+                <div class="rounded-xl bg-surface-container-low p-4 space-y-1"><div class="flex justify-between gap-3 text-xs"><strong x-text="review.hasil_review"></strong><time class="text-on-surface-variant" x-text="review.tanggal_review || '—'"></time></div><p class="text-sm text-on-surface-variant whitespace-pre-line" x-text="review.catatan_review || 'Tanpa catatan'"></p></div>
+            </template>
+            <p x-show="abstractData && !abstractData.reviews?.length" class="text-sm text-on-surface-variant">Belum ada riwayat review.</p>
+            <div x-show="warnings.length" class="rounded-xl bg-[#fff3c4] text-[#745b00] p-4"><p class="font-bold text-xs">Peringatan tindak lanjut</p><template x-for="(warning, index) in warnings" :key="index"><p class="text-xs mt-1" x-text="warning"></p></template></div>
         </div>
 
         <!-- Right Card (Review Form - 5 cols) -->
@@ -189,16 +201,15 @@
                               class="w-full p-3.5 rounded-xl border border-outline-variant bg-surface-container-lowest text-xs text-on-surface leading-relaxed focus:ring-2 focus:ring-primary outline-none disabled:bg-surface-container-high disabled:cursor-not-allowed"></textarea>
                     <p x-show="fieldErrors.catatan_review" x-text="fieldErrors.catatan_review?.[0]" class="text-[11px] text-error"></p>
                     <p class="text-[11px] text-on-surface-variant">
-                        {{ __('asic-reviewer.comments_required_help') ?? 'Detailed comments are required when requesting revision or rejecting.' }}
+                        {{ __('asic-reviewer.comments_required_help') ?? 'Catatan minimal 15 karakter wajib untuk keputusan Ditolak.' }}
                     </p>
                 </div>
 
                 <!-- Form Action Buttons -->
                 <div class="pt-2 flex flex-col sm:flex-row items-center gap-3" x-show="!isSubmitted">
-                    <button type="button" 
-                            @click="saveDraft"
-                            class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-surface-container-highest bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold transition shadow-xs active:scale-95">
-                        {{ __('asic-reviewer.btn_save_draft') ?? 'Simpan Draft' }}
+                    <button type="button" disabled
+                            class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-surface-container-highest bg-surface-container-high text-on-surface-variant text-xs font-bold opacity-60 cursor-not-allowed">
+                        Belum tersedia
                     </button>
 
                     <button type="submit" 
@@ -241,7 +252,7 @@
             </div>
 
             <p class="text-xs text-on-surface-variant leading-relaxed">
-                {{ __('asic-reviewer.confirm_desc') ?? 'Apakah Anda yakin ingin mengirimkan review ini? Setelah dikirim, keputusan review akan dicatat dan diteruskan ke sekretariat.' }}
+                {{ __('asic-reviewer.confirm_desc') ?? 'Keputusan ini final dan tidak dapat diubah. Setelah dikirim, sistem memproses dokumen keputusan dan invoice (jika diterima), serta mengirim email terkait.' }}
             </p>
 
             <div class="p-3 rounded-xl bg-surface-container-low border border-surface-container-highest text-xs space-y-1">

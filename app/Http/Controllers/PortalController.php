@@ -8,12 +8,13 @@ use App\Models\Registration;
 use App\Models\Role;
 use App\Models\UserAccount;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class PortalController extends Controller
 {
-    public function dashboard(Request $request): View
+    public function dashboard(Request $request): View|RedirectResponse
     {
         /** @var UserAccount $user */
         $user = $request->user();
@@ -27,6 +28,10 @@ class PortalController extends Controller
             Role::ROLE_ADMIN => 'admin',
             default => abort(403),
         };
+
+        if ($role === 'reviewer') {
+            return redirect()->route('portal.reviewer.dashboard');
+        }
 
         $registrations = Registration::query()
             ->with(['participant.userAccount', 'event', 'abstractSubmission', 'invoice'])

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\ReviewAbstractRequest;
+use App\Http\Resources\AbstractSubmissionResource;
 use App\Models\AbstractReview;
 use App\Models\AbstractSubmission;
+use App\Models\Role;
 use App\Models\UserAccount;
 use App\Services\AbstractDecisionProcessor;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -32,7 +35,7 @@ class AbstractReviewController extends Controller
                 name: 'status_abstrak',
                 in: 'query',
                 required: false,
-                description: 'Filter berdasarkan status abstrak (Diajukan, Diterima, Ditolak, Revisi)',
+                description: 'Filter berdasarkan status abstrak (Diajukan, Diterima, Ditolak)',
                 schema: new OA\Schema(type: 'string', example: 'Diajukan')
             ),
             new OA\Parameter(
@@ -60,11 +63,17 @@ class AbstractReviewController extends Controller
     )]
     public function index(Request $request): JsonResponse
     {
-        $query = AbstractSubmission::with([
-            'registration.participant.userAccount',
-            'registration.event',
-            'latestReview.reviewer',
-        ])->orderBy('tanggal_submit', 'desc');
+        $user = $request->user();
+        $isReviewer = $user?->role?->nama_role === Role::ROLE_TIM_ABSTRAK;
+        $query = AbstractSubmission::query();
+        if ($isReviewer) {
+            $query->with(['registration', 'reviews' => fn ($q) => $q->orderBy('tanggal_review')]);
+        } else {
+            $query->with(['registration.participant.userAccount', 'latestReview.reviewer']);
+        }
+        if ($user?->role?->nama_role === Role::ROLE_PESERTA) {
+            $query->whereHas('registration', fn ($q) => $q->where('id_participant', $user->participant?->id_participant ?? 0));
+        }
 
         if ($request->filled('status_abstrak')) {
             $query->where('status_abstrak', $request->string('status_abstrak'));
@@ -78,13 +87,39 @@ class AbstractReviewController extends Controller
             $query->whereHas('registration', fn ($q) => $q->where('id_event', $request->integer('id_event')));
         }
 
+        if ($request->filled('search')) {
+            $search = trim((string) $request->query('search'));
+            $query->where(function ($q) use ($search): void {
+                $q->where('judul_abstrak', 'like', '%'.$search.'%');
+                if (ctype_digit($search)) {
+                    $q->orWhere('id_abstract', (int) $search);
+                }
+            });
+        }
+
+        if ($isReviewer && $request->has('reviewed_by_me')) {
+            $reviewed = filter_var($request->query('reviewed_by_me'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($reviewed !== null) {
+                $query->{$reviewed ? 'whereHas' : 'whereDoesntHave'}('reviews', fn ($q) => $q->where('id_reviewer', $user->id_user));
+            }
+        }
+
         $submissions = $query->orderByDesc('tanggal_submit')
             ->paginate(min(max($request->integer('per_page', 15), 1), 100));
+
+        $page = $submissions->toArray();
+        $page['data'] = collect($submissions->items())->map(fn ($item) => (new AbstractSubmissionResource($item))->resolve($request));
+        $stats = $isReviewer ? [
+            'total' => AbstractSubmission::count(),
+            'pending' => AbstractSubmission::where('status_abstrak', 'Diajukan')->count(),
+            'reviewed_by_me' => AbstractSubmission::whereHas('reviews', fn ($q) => $q->where('id_reviewer', $user->id_user))->distinct('id_abstract')->count('id_abstract'),
+        ] : null;
 
         return response()->json([
             'success' => true,
             'message' => 'Daftar naskah abstrak masuk berhasil dimuat.',
-            'data' => $submissions,
+            'data' => $page,
+            ...($isReviewer ? ['stats' => $stats, 'scopes' => config('abstract-scopes', [])] : []),
         ], Response::HTTP_OK);
     }
 
@@ -94,7 +129,7 @@ class AbstractReviewController extends Controller
     #[OA\Get(
         path: '/api/tim-abstrak/submissions/{id_abstract}',
         summary: 'Detail Naskah Abstrak dan Riwayat Review',
-        description: 'Mendapatkan informasi detail naskah abstrak, data peserta author, dan seluruh riwayat review yang pernah dilakukan.',
+        description: 'Mendapatkan metadata abstrak dan seluruh riwayat keputusan review sesuai hak akses pengguna.',
         tags: ['Review Abstrak'],
         security: [['sanctumAuth' => []]],
         parameters: [
@@ -114,7 +149,6 @@ class AbstractReviewController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'data', type: 'object'),
-                        new OA\Property(property: 'file_url', type: 'string', nullable: true),
                     ]
                 )
             ),
@@ -122,23 +156,35 @@ class AbstractReviewController extends Controller
             new OA\Response(response: 404, description: 'Naskah abstrak tidak ditemukan'),
         ]
     )]
-    public function show(int $id_abstract): JsonResponse
+    public function show(Request $request, int $id_abstract): JsonResponse
     {
-        $abstract = AbstractSubmission::with([
-            'registration.participant.userAccount',
-            'registration.event',
-            'reviews.reviewer',
-        ])->findOrFail($id_abstract);
-
-        $fileUrl = $abstract->file_abstrak && Storage::disk('public')->exists($abstract->file_abstrak)
-            ? Storage::disk('public')->url($abstract->file_abstrak)
-            : null;
+        $isReviewer = $request->user()?->role?->nama_role === Role::ROLE_TIM_ABSTRAK;
+        $query = AbstractSubmission::with(['registration.event', 'reviews' => fn ($q) => $q->orderBy('tanggal_review')]);
+        if (! $isReviewer) {
+            $query->with(['registration.participant.userAccount', 'latestReview.reviewer']);
+        }
+        $abstract = $query->findOrFail($id_abstract);
+        if ($request->user()?->role?->nama_role === Role::ROLE_PESERTA) {
+            abort_unless($abstract->registration?->id_participant === $request->user()->participant?->id_participant, Response::HTTP_FORBIDDEN);
+        }
 
         return response()->json([
             'success' => true,
-            'data' => $abstract,
-            'file_url' => $fileUrl,
+            'data' => (new AbstractSubmissionResource($abstract))->resolve($request),
         ], Response::HTTP_OK);
+    }
+
+    public function download(Request $request, int $id_abstract)
+    {
+        $abstract = AbstractSubmission::with('registration')->findOrFail($id_abstract);
+        if ($request->user()?->role?->nama_role === Role::ROLE_PESERTA) {
+            abort_unless($abstract->registration?->id_participant === $request->user()->participant?->id_participant, Response::HTTP_FORBIDDEN);
+        }
+        abort_unless($abstract->file_abstrak && Storage::disk('public')->exists($abstract->file_abstrak), Response::HTTP_NOT_FOUND);
+        $extension = Str::lower(pathinfo($abstract->file_abstrak, PATHINFO_EXTENSION));
+        abort_unless(in_array($extension, ['pdf', 'doc', 'docx'], true), Response::HTTP_NOT_FOUND);
+
+        return Storage::disk('public')->download($abstract->file_abstrak, 'abstract-'.$abstract->id_abstract.'.'.$extension);
     }
 
     /**
@@ -147,7 +193,7 @@ class AbstractReviewController extends Controller
     #[OA\Post(
         path: '/api/tim-abstrak/submissions/{id_abstract}/review',
         summary: 'Kirim Keputusan Review Abstrak',
-        description: 'Menyimpan penilaian seleksi abstrak (Diterima, Ditolak, Revisi) beserta catatan evaluasi reviewer.',
+        description: 'Menyimpan keputusan final seleksi abstrak (Diterima atau Ditolak) beserta catatan evaluasi reviewer.',
         tags: ['Review Abstrak'],
         security: [['sanctumAuth' => []]],
         parameters: [
@@ -164,7 +210,7 @@ class AbstractReviewController extends Controller
             content: new OA\JsonContent(
                 required: ['hasil_review'],
                 properties: [
-                    new OA\Property(property: 'hasil_review', type: 'string', enum: ['Diterima', 'Ditolak', 'Revisi'], example: 'Diterima'),
+                    new OA\Property(property: 'hasil_review', type: 'string', enum: ['Diterima', 'Ditolak'], example: 'Diterima'),
                     new OA\Property(property: 'catatan_review', type: 'string', example: 'Abstrak memenuhi kriteria konferensi. Silakan persiapkan slide presentasi.'),
                 ]
             )

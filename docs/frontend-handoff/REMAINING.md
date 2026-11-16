@@ -14,7 +14,8 @@ Fitur berikut belum boleh menampilkan keberhasilan atau mengubah state seolah-ol
 | Sertifikat | Belum tersedia. |
 | Archive | Belum tersedia. |
 | CRUD template dokumen | Belum tersedia. |
-| Assignment reviewer | Belum tersedia. |
+| Assignment reviewer | Belum tersedia; antrean reviewer menampilkan semua abstrak yang memenuhi filter dan belum ada penugasan individual. |
+| Status Revisi | Belum tersedia; keputusan final hanya Diterima atau Ditolak. |
 | Mata uang USD pada tarif bendahara | Skema `registration_fee` hanya memiliki kolom `amount` dan `discount` tanpa kode mata uang. UI saat ini menampilkan nominal sebagai IDR; dukungan USD memerlukan perubahan skema dan aturan invoice. |
 | Landing sections selain event/speaker/schedule/tarif aktif | Masih memakai konten presentasi statis. |
 | Pemindaian kamera QR dan pembentukan gambar QR | Check-in menerima token melalui input manual/pemindai keyboard; kamera dan gambar QR belum disediakan. |

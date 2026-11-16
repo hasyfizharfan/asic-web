@@ -54,7 +54,7 @@ class RecapAndExportTest extends TestCase
         $this->registration('6', ['registration_status' => 'Dibatalkan', 'participation_type' => 'Listener']);
 
         $this->as(Role::ROLE_TIM_ABSTRAK)->postJson("/api/tim-abstrak/submissions/{$a1->id_abstract}/review", ['hasil_review' => 'Diterima'])->assertOk();
-        $this->as(Role::ROLE_TIM_ABSTRAK)->postJson("/api/tim-abstrak/submissions/{$a2->id_abstract}/review", ['hasil_review' => 'Ditolak'])->assertOk();
+        $this->as(Role::ROLE_TIM_ABSTRAK)->postJson("/api/tim-abstrak/submissions/{$a2->id_abstract}/review", ['hasil_review' => 'Ditolak', 'catatan_review' => 'Tidak sesuai dengan ruang lingkup konferensi.'])->assertOk();
 
         $inv1 = Invoice::where('id_registration', $r1->id_registration)->firstOrFail();
         $this->as(Role::ROLE_PESERTA, '1')->postJson("/api/invoices/{$inv1->id_invoice}/payment-proofs", ['file_bukti' => UploadedFile::fake()->image('a.jpg'), 'nominal_transfer' => 1400000])->assertCreated();

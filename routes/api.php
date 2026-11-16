@@ -15,8 +15,8 @@ use App\Http\Controllers\EventScheduleController;
 use App\Http\Controllers\EventSessionController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InvoiceController;
-use App\Http\Controllers\ParticipantFileController;
 use App\Http\Controllers\MyProfileController;
+use App\Http\Controllers\ParticipantFileController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentProofController;
 use App\Http\Controllers\PaymentVerificationController;
@@ -53,7 +53,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
     Route::get('/me', [AuthController::class, 'me'])->name('api.me');
     Route::put('/me/profile', [MyProfileController::class, 'update'])->middleware('permission:access_participant_portal')->name('api.me.profile.update');
-    Route::put('/me/password', [MyProfileController::class, 'updatePassword'])->middleware('permission:access_participant_portal')->name('api.me.password.update');
+    Route::put('/me/password', [MyProfileController::class, 'updatePassword'])->name('api.me.password.update');
 
     // -----------------------------------------------------------------
     // MODUL M-03: PENDAFTARAN PESERTA & ADD-ON (KF-10)
@@ -259,10 +259,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->middleware('permission:review_abstracts,view_only')
             ->name('submissions.index');
         Route::get('/submissions/{id_abstract}', [AbstractReviewController::class, 'show'])
-            ->middleware('permission:review_abstracts,view_only')
+            ->whereNumber('id_abstract')->middleware('permission:review_abstracts,view_only')
             ->name('submissions.show');
+        Route::get('/submissions/{id_abstract}/file', [AbstractReviewController::class, 'download'])
+            ->whereNumber('id_abstract')->middleware('permission:review_abstracts,view_only')->name('submissions.file');
         Route::post('/submissions/{id_abstract}/review', [AbstractReviewController::class, 'review'])
-            ->middleware('permission:accept_reject')
+            ->whereNumber('id_abstract')->middleware('permission:accept_reject')
             ->name('submissions.review');
     });
 

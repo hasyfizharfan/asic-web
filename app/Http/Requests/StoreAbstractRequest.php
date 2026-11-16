@@ -24,7 +24,7 @@ class StoreAbstractRequest extends FormRequest
     {
         return [
             'judul_abstrak' => ['required', 'string', 'max:255'],
-            'scope' => ['required', 'string', 'in:CP,PB,PP,SM,SE,OT'],
+            'scope' => ['required', 'string', 'in:'.implode(',', array_keys(config('abstract-scopes', [])))],
             'metode_presentasi' => ['required', 'in:Oral,Poster'],
             'file_abstrak' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
         ];
