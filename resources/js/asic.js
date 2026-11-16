@@ -55,6 +55,9 @@ window.asicQr = {
     },
 };
 
+/** Teks UI untuk JavaScript disuntikkan dari layout (window.asicI18n, lang/{id,en}/asic-common.php 'js'). */
+const asicT = (key, fallback = '') => (window.asicI18n && window.asicI18n[key]) || fallback || key;
+
 window.asicApi = {
     xsrfCookie() {
         const cookie = document.cookie.split('; ').find((item) => item.startsWith('XSRF-TOKEN='));
@@ -119,18 +122,18 @@ window.asicApi = {
                 window.location.assign(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
             }
 
-            if (response.status === 403) this.showToast(data?.message || 'Anda tidak memiliki akses ke halaman ini.');
-            if (response.status === 419) this.showToast('Sesi keamanan kedaluwarsa. Silakan muat ulang halaman.');
+            if (response.status === 403) this.showToast(data?.message || asicT('forbidden'));
+            if (response.status === 419) this.showToast(asicT('session_expired'));
 
             return {
                 ok: response.ok,
                 status: response.status,
                 data,
                 errors: response.status === 422 ? (data?.errors || {}) : {},
-                error: response.ok ? null : (data?.message || `HTTP ${response.status}: Request failed`),
+                error: response.ok ? null : (data?.message || asicT('request_failed').replace(':status', response.status)),
             };
         } catch (error) {
-            return { ok: false, status: 0, data: null, errors: {}, error: error.message || 'Network error' };
+            return { ok: false, status: 0, data: null, errors: {}, error: error.message || asicT('network_error') };
         }
     },
 
@@ -230,7 +233,7 @@ document.querySelectorAll('form[data-asic-login], form[data-asic-api-form]').for
             return;
         }
 
-        window.asicApi.showToast(result.data?.message || 'Berhasil.', 'success');
+        window.asicApi.showToast(result.data?.message || asicT('success'), 'success');
         const redirect = result.data?.data?.redirect_url || form.dataset.successRedirect || '/login';
         window.location.assign(redirect);
     });

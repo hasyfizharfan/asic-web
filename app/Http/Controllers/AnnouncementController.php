@@ -56,7 +56,7 @@ class AnnouncementController extends Controller
     {
         $a = Announcement::with('author:id_user,email')->find($id_announcement);
 
-        return $a ? $this->ok('Detail pengumuman berhasil dimuat.', $a) : $this->fail('Pengumuman tidak ditemukan.', Response::HTTP_NOT_FOUND);
+        return $a ? $this->ok(__('asic-api.messages.detail_pengumuman_berhasil_dimuat'), $a) : $this->fail(__('asic-api.messages.pengumuman_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
     }
 
     public function store(Request $request): JsonResponse
@@ -66,29 +66,29 @@ class AnnouncementController extends Controller
         $data = $this->normalize($request->validate($this->rules(false)));
         $data['id_author'] = $user->id_user;
 
-        return $this->ok('Pengumuman berhasil dibuat.', Announcement::create($data)->fresh(), Response::HTTP_CREATED);
+        return $this->ok(__('asic-api.messages.pengumuman_berhasil_dibuat'), Announcement::create($data)->fresh(), Response::HTTP_CREATED);
     }
 
     public function update(Request $request, int $id_announcement): JsonResponse
     {
         $a = Announcement::find($id_announcement);
         if (! $a) {
-            return $this->fail('Pengumuman tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.pengumuman_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
         $a->update($this->normalize($request->validate($this->rules(true)), $a));
 
-        return $this->ok('Pengumuman berhasil diperbarui.', $a->fresh());
+        return $this->ok(__('asic-api.messages.pengumuman_berhasil_diperbarui'), $a->fresh());
     }
 
     public function destroy(int $id_announcement): JsonResponse
     {
         $a = Announcement::find($id_announcement);
         if (! $a) {
-            return $this->fail('Pengumuman tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.pengumuman_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
         $a->delete();
 
-        return $this->ok('Pengumuman berhasil dihapus.');
+        return $this->ok(__('asic-api.messages.pengumuman_berhasil_dihapus'));
     }
 
     /** Untuk peserta/pengguna login: hanya yang terpublikasi dan sudah tiba waktunya. */

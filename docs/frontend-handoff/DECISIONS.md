@@ -151,3 +151,18 @@ Dijalankan pada branch `feat/fe-be-integration`, dari HEAD awal `4d96ac4` (`dev`
 - `/admin/archive` menampilkan edisi Selesai/Arsip dengan angka nyata (registrasi, presenter, abstrak diterima, peserta hadir) dan aksi Arsipkan (konfirmasi) lewat `PATCH /api/content/events/{id}`; status Arsip hanya dari Selesai (422), dicatat di audit.
 - Publik: `GET /api/public/archive` (q, year, per_page), `/api/public/archive/{id}`, halaman `/archive` dan `/archive/{id}` tanpa data pribadi (hanya agregat jumlah peserta).
 - Ditunda: prosiding/DOI/manifest (tidak ada skema) dan seminar lain Fakultas Pertanian (opsional di PRD) — keduanya tampil "Belum tersedia".
+
+## Tahap H (lanjutan) — KF-31 multibahasa
+
+### Apa yang nyata
+- `App\Http\Middleware\SetLocale` (grup web dan api): `session('locale')` (hanya `id`/`en`) → `config('app.locale')`; juga `Carbon::setLocale`. Pilihan `/lang/{locale}` kini persisten di request berikutnya; locale lain 404. Untuk API, sesi tersedia bila request berasal dari domain stateful Sanctum (browser same-origin).
+- Bahasa bawaan aplikasi `id` (`APP_LOCALE=id`, fallback `en`) karena pengguna utama panitia dan peserta Indonesia. Semua layout memakai `<html lang>` dari locale aktif; pemilih bahasa ada di layout publik (hero/topnav), auth, dan portal (topbar).
+- `lang/id/validation.php`, `auth.php`, `passwords.php`, `pagination.php` ditulis manual (tanpa paket baru); `lang/en` dipublikasikan dari framework. Pesan validasi bawaan Laravel mengikuti locale.
+- 124 pesan literal Indonesia di controller dipindah ke `lang/{id,en}/asic-api.php` (`messages.*`) dan dipakai lewat `__()`; pesan "Portal ASIC 2026" diperbaiki tanpa tahun.
+- Teks di `resources/js/asic.js` disuntikkan dari layout (`window.asicI18n`, `asic-common.js`). View baru/ditulis ulang di tahap H–J memakai lang file (registrasi ulang, tarif, notifikasi, QR kehadiran, sertifikat, template, arsip, pengelola konten, halaman publik).
+- Test: paritas kunci rekursif id/en untuk setiap file lang, persistensi locale, locale tidak valid 404, pesan API mengikuti locale, dan daftar frasa tetap yang sudah dipindahkan.
+
+### Belum selesai (tidak diklaim "seluruh halaman")
+- **View lama yang masih memuat teks tetap** (hasil audit heuristik, mencakup juga positif palsu seperti nama kelas): secretariat/content (bagian event/pembicara/jadwal), admin/users, admin/permissions, admin/overview, admin/signatures, admin/settings, reviewer/detail, reviewer/queue, reviewer/profile, reviewer/dashboard, secretariat/announcements, secretariat/recap, secretariat/abstracts/index & show, secretariat/attendance, secretariat/dashboard, participant/registration, participant/abstract, participant/payment/checkout & status, participant/full-paper, participant/profile, participant/dashboard, participant/documents, participant/refund, treasurer/payments/index & show, treasurer/dashboard, treasurer/receipts/preview, treasurer/refunds, portals/dashboard, components/layout/topbar & sidebar (sebagian), auth/reviewer, auth/participant-register (sebagian), public/landing (bagian lama), halaman error asic/errors/*, emails/reset-password. Alasan: volume besar (± 40 view) dan di luar waktu tahap ini; perlu dikerjakan per portal tanpa mengubah logika.
+- **Pesan kustom di Form Request** (± 17 file, mis. `RegisterRequest`, `StoreRegistrationRequest`, `ResetPasswordRequest`) masih berbahasa Indonesia sehingga tidak berubah saat locale `en`. 7 pesan controller berbentuk string interpolasi (kutip ganda) juga belum dipindah.
+- Format tanggal di view lama belum seluruhnya memakai helper terpusat; nominal uang sudah lewat `App\Support\Currency::format`/`window.asicMoney`.

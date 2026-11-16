@@ -65,7 +65,7 @@ class InvoiceController extends Controller
         if (! $isOwner && ! $canViewAll) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk melihat invoice ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_melihat_invoic'),
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -136,7 +136,7 @@ class InvoiceController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Batas waktu jatuh tempo invoice berhasil diperpanjang.',
+            'message' => __('asic-api.messages.batas_waktu_jatuh_tempo_invoice_berhasil_diperpanj'),
             'data' => [
                 'id_invoice' => $invoice->id_invoice,
                 'nomor_invoice' => $invoice->nomor_invoice,
@@ -188,7 +188,7 @@ class InvoiceController extends Controller
         if ($invoice->status_pembayaran === 'Terverifikasi') {
             return response()->json([
                 'success' => false,
-                'message' => 'Invoice yang telah terverifikasi tidak dapat diubah menjadi kedaluwarsa.',
+                'message' => __('asic-api.messages.invoice_yang_telah_terverifikasi_tidak_dapat_diuba'),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -198,7 +198,7 @@ class InvoiceController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Status invoice berhasil diperbarui menjadi Kedaluwarsa.',
+            'message' => __('asic-api.messages.status_invoice_berhasil_diperbarui_menjadi_kedaluw'),
             'data' => $invoice,
         ], Response::HTTP_OK);
     }

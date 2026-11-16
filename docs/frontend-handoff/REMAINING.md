@@ -38,3 +38,4 @@ Untuk fitur baru, tambahkan kontrak backend (Form Request, middleware `permissio
 - Tanda tangan digital tersedia melalui `/api/digital-signatures` dan dibatasi capability `manage_digital_signatures`; unggah privat hanya muncul untuk level `full_access`.
 | Prosiding/DOI/manifest arsip | Belum tersedia (tidak ada skema). |
 | Seminar lain Fakultas Pertanian di arsip | Belum tersedia (opsional di PRD). |
+| Multibahasa view lama & pesan Form Request | Sebagian. Infrastruktur, pesan controller, JS, dan view tahap H–J sudah dua bahasa; daftar view lama dan Form Request yang belum ada di DECISIONS.md (Tahap H lanjutan). |

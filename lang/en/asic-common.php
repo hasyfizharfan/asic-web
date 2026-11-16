@@ -23,4 +23,11 @@ return [
     'warning' => 'Warning',
     'info' => 'Information',
     'demo_notice' => 'Frontend Prototype Simulation Mode',
+    'js' => [
+        'forbidden' => 'You do not have access to this page.',
+        'session_expired' => 'Your security session has expired. Please reload the page.',
+        'request_failed' => 'The request failed (HTTP :status).',
+        'network_error' => 'Connection problem. Check your network and try again.',
+        'success' => 'Done.',
+    ],
 ];

@@ -146,7 +146,7 @@ class RegistrationController extends Controller
         if (! $isOwner && ! $canManageAll) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk melihat data pendaftaran ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_melihat_data_p'),
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -231,7 +231,7 @@ class RegistrationController extends Controller
         ) {
             return response()->json([
                 'success' => false,
-                'message' => 'Periode pendaftaran yang dipilih sudah ditutup atau tidak aktif.',
+                'message' => __('asic-api.messages.periode_pendaftaran_yang_dipilih_sudah_ditutup_ata'),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -243,7 +243,7 @@ class RegistrationController extends Controller
         if ($existing) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda sudah terdaftar pada kegiatan seminar ini.',
+                'message' => __('asic-api.messages.anda_sudah_terdaftar_pada_kegiatan_seminar_ini'),
                 'data' => $existing,
             ], Response::HTTP_CONFLICT);
         }
@@ -286,7 +286,7 @@ class RegistrationController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Pendaftaran kegiatan seminar berhasil disimpan.',
+                'message' => __('asic-api.messages.pendaftaran_kegiatan_seminar_berhasil_disimpan'),
                 'data' => $registration,
             ], Response::HTTP_CREATED);
         }

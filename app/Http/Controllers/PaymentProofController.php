@@ -41,10 +41,10 @@ class PaymentProofController extends Controller
         $outcome = DB::transaction(function () use ($id_invoice, $user, $request, $input) {
             $invoice = Invoice::with(['registration.participant', 'registration.abstractSubmission'])->lockForUpdate()->find($id_invoice);
             if (! $invoice) {
-                return ['error' => Response::HTTP_NOT_FOUND, 'message' => 'Invoice tidak ditemukan.'];
+                return ['error' => Response::HTTP_NOT_FOUND, 'message' => __('asic-api.messages.invoice_tidak_ditemukan')];
             }
             if ($invoice->registration?->participant?->id_user !== $user->id_user) {
-                return ['error' => Response::HTTP_FORBIDDEN, 'message' => 'Anda bukan pemilik invoice ini.'];
+                return ['error' => Response::HTTP_FORBIDDEN, 'message' => __('asic-api.messages.anda_bukan_pemilik_invoice_ini')];
             }
             // KF-20: presenter membayar setelah abstrak diterima (invoice lama yang terbit dini tidak dihapus).
             if ($invoice->registration?->isPresenter() && $invoice->registration->abstractSubmission?->status_abstrak !== 'Diterima') {
@@ -55,7 +55,7 @@ class PaymentProofController extends Controller
             }
             $due = $invoice->tanggal_jatuh_tempo_baru ?? $invoice->tanggal_jatuh_tempo;
             if ($due && Carbon::parse($due)->endOfDay()->isPast()) {
-                return ['error' => Response::HTTP_UNPROCESSABLE_ENTITY, 'message' => 'Batas waktu pembayaran invoice sudah terlewat.'];
+                return ['error' => Response::HTTP_UNPROCESSABLE_ENTITY, 'message' => __('asic-api.messages.batas_waktu_pembayaran_invoice_sudah_terlewat')];
             }
 
             $path = $request->file('file_bukti')->store('payment-proofs/'.$invoice->id_invoice, 'local');
@@ -77,7 +77,7 @@ class PaymentProofController extends Controller
 
         Log::info('payment.proof_uploaded', ['id_invoice' => $outcome['invoice']->id_invoice, 'id_payment_proof' => $outcome['proof']->id_payment_proof]);
 
-        return $this->ok('Bukti pembayaran berhasil diunggah dan menunggu verifikasi.', [
+        return $this->ok(__('asic-api.messages.bukti_pembayaran_berhasil_diunggah_dan_menunggu_ve'), [
             'id_payment_proof' => $outcome['proof']->id_payment_proof,
             'status_pembayaran' => $outcome['invoice']->status_pembayaran,
         ], Response::HTTP_CREATED);

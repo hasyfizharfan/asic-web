@@ -43,40 +43,40 @@ class CommunicationChannelController extends Controller
     {
         $c = CommunicationChannel::find($id_channel);
 
-        return $c ? $this->ok('Detail kanal berhasil dimuat.', $c) : $this->fail('Kanal tidak ditemukan.', Response::HTTP_NOT_FOUND);
+        return $c ? $this->ok(__('asic-api.messages.detail_kanal_berhasil_dimuat'), $c) : $this->fail(__('asic-api.messages.kanal_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
     }
 
     public function store(Request $request): JsonResponse
     {
-        return $this->ok('Kanal komunikasi berhasil ditambahkan.', CommunicationChannel::create($request->validate($this->rules(false)))->fresh(), Response::HTTP_CREATED);
+        return $this->ok(__('asic-api.messages.kanal_komunikasi_berhasil_ditambahkan'), CommunicationChannel::create($request->validate($this->rules(false)))->fresh(), Response::HTTP_CREATED);
     }
 
     public function update(Request $request, int $id_channel): JsonResponse
     {
         $c = CommunicationChannel::find($id_channel);
         if (! $c) {
-            return $this->fail('Kanal tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.kanal_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
         $c->update($request->validate($this->rules(true)));
 
-        return $this->ok('Kanal komunikasi berhasil diperbarui.', $c->fresh());
+        return $this->ok(__('asic-api.messages.kanal_komunikasi_berhasil_diperbarui'), $c->fresh());
     }
 
     public function destroy(int $id_channel): JsonResponse
     {
         $c = CommunicationChannel::find($id_channel);
         if (! $c) {
-            return $this->fail('Kanal tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.kanal_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
         $c->delete();
 
-        return $this->ok('Kanal komunikasi berhasil dihapus.');
+        return $this->ok(__('asic-api.messages.kanal_komunikasi_berhasil_dihapus'));
     }
 
     /** Untuk peserta/panitia yang login: hanya kanal Aktif. */
     public function visibleIndex(Request $request): JsonResponse
     {
-        return $this->ok('Daftar kanal komunikasi berhasil dimuat.', CommunicationChannel::where('status', 'Aktif')
+        return $this->ok(__('asic-api.messages.daftar_kanal_komunikasi_berhasil_dimuat'), CommunicationChannel::where('status', 'Aktif')
             ->when($request->filled('id_event'), fn ($q) => $q->where('id_event', $request->integer('id_event')))
             ->orderBy('id_channel')->get(['id_channel', 'id_event', 'nama_kanal', 'jenis_kanal', 'url']));
     }

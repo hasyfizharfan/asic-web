@@ -14,6 +14,7 @@
     
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/asic/logo.svg') }}">
     <style>::-webkit-scrollbar{display:none !important;width:0px !important;}*{scrollbar-width:none !important;-ms-overflow-style:none !important;}</style>
+    @include('partials.asic-i18n')
     @vite(['resources/css/asic.css', 'resources/js/asic.js'])
     @stack('styles')
 </head>

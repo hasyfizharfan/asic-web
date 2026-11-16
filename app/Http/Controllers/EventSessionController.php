@@ -141,7 +141,7 @@ class EventSessionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Sesi acara berhasil dibuat dengan QR Code sesi terlampir.',
+            'message' => __('asic-api.messages.sesi_acara_berhasil_dibuat_dengan_qr_code_sesi_ter'),
             'data' => $session,
             'qr_image_url' => Storage::disk('public')->url($qrRelativePath),
         ], Response::HTTP_CREATED);

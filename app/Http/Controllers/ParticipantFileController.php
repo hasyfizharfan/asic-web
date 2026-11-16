@@ -59,7 +59,7 @@ class ParticipantFileController extends Controller
         if (! $this->canAccessRegistrationFiles($registration, $user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk memantau berkas pendaftaran ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_memantau_berka'),
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -138,7 +138,7 @@ class ParticipantFileController extends Controller
         if (! $this->canAccessRegistrationFiles($registration, $user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk mengunggah berkas pada pendaftaran ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_mengunggah_ber'),
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -221,7 +221,7 @@ class ParticipantFileController extends Controller
         if (! $participantFile->registration || ! $this->canAccessRegistrationFiles($participantFile->registration, $user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk melihat berkas ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_melihat_berkas'),
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -278,7 +278,7 @@ class ParticipantFileController extends Controller
         if (! $participantFile->registration || ! $this->canAccessRegistrationFiles($participantFile->registration, $user)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk mengunduh berkas ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_mengunduh_berk'),
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -292,7 +292,7 @@ class ParticipantFileController extends Controller
         if (! $privateDisk->exists($participantFile->file_path)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Berkas tidak ditemukan pada server.',
+                'message' => __('asic-api.messages.berkas_tidak_ditemukan_pada_server'),
             ], Response::HTTP_NOT_FOUND);
         }
 

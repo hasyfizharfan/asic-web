@@ -23,4 +23,11 @@ return [
     'warning' => 'Peringatan',
     'info' => 'Informasi',
     'demo_notice' => 'Mode Simulasi Prototipe Frontend',
+    'js' => [
+        'forbidden' => 'Anda tidak memiliki akses ke halaman ini.',
+        'session_expired' => 'Sesi keamanan kedaluwarsa. Silakan muat ulang halaman.',
+        'request_failed' => 'Permintaan gagal (HTTP :status).',
+        'network_error' => 'Koneksi bermasalah. Periksa jaringan lalu coba lagi.',
+        'success' => 'Berhasil.',
+    ],
 ];

@@ -80,3 +80,7 @@ Tarif memiliki mata uang (`IDR` atau `USD`). Peserta dengan negara Indonesia dit
 - Konten publik (ruang lingkup, tanggal penting, FAQ, kontak, galeri, paket sponsor, syarat & privasi) diisi lewat `/secretariat/content` atau `/admin/content` dan baru tampil setelah berstatus Dipublikasikan. Seeder tidak mengisi konten ini.
 - `ASIC_CONTACT_EMAIL` (opsional) menerima pemberitahuan permintaan sponsorship/exhibition.
 - Ekstensi PHP `gd` disarankan agar foto diencode ulang (membuang metadata EXIF).
+
+## Bahasa
+
+- Bahasa bawaan `APP_LOCALE=id` (fallback `en`). Pengguna mengganti bahasa lewat tombol ID/EN (`/lang/{id|en}`); pilihan tersimpan di sesi.

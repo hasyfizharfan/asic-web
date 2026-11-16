@@ -92,7 +92,7 @@ class DigitalSignatureController extends Controller
         if (! $signature) {
             return response()->json([
                 'success' => false,
-                'message' => 'Berkas tanda tangan digital dan stempel untuk peran ini belum diunggah.',
+                'message' => __('asic-api.messages.berkas_tanda_tangan_digital_dan_stempel_untuk_pera'),
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -191,7 +191,7 @@ class DigitalSignatureController extends Controller
         if ($actor?->role?->nama_role !== Role::ROLE_ADMIN && $actor?->id_role !== $targetRole->id_role) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda hanya dapat mengunggah tanda tangan untuk peran Anda sendiri.',
+                'message' => __('asic-api.messages.anda_hanya_dapat_mengunggah_tanda_tangan_untuk_per'),
             ], Response::HTTP_FORBIDDEN);
         }
 

@@ -80,7 +80,7 @@ class RegistrationFeeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Daftar tarif pendaftaran berhasil dimuat.',
+            'message' => __('asic-api.messages.daftar_tarif_pendaftaran_berhasil_dimuat'),
             'data' => RegistrationFeeResource::collection($fees),
         ], Response::HTTP_OK);
     }
@@ -106,7 +106,7 @@ class RegistrationFeeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Detail tarif berhasil dimuat.',
+            'message' => __('asic-api.messages.detail_tarif_berhasil_dimuat'),
             'data' => new RegistrationFeeResource($fee),
         ], Response::HTTP_OK);
     }
@@ -145,7 +145,7 @@ class RegistrationFeeController extends Controller
         } catch (QueryException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tarif gagal disimpan karena pelanggaran integritas data.',
+                'message' => __('asic-api.messages.tarif_gagal_disimpan_karena_pelanggaran_integritas'),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -153,7 +153,7 @@ class RegistrationFeeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tarif pendaftaran berhasil ditambahkan.',
+            'message' => __('asic-api.messages.tarif_pendaftaran_berhasil_ditambahkan'),
             'data' => new RegistrationFeeResource($fee),
         ], Response::HTTP_CREATED);
     }
@@ -193,7 +193,7 @@ class RegistrationFeeController extends Controller
             if ($lockedChanges !== []) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tarif sudah digunakan oleh invoice sehingga tidak dapat diubah. Buat tarif baru untuk perubahan nominal atau kombinasi.',
+                    'message' => __('asic-api.messages.tarif_sudah_digunakan_oleh_invoice_sehingga_tidak_2'),
                     'locked_fields' => $lockedChanges,
                 ], Response::HTTP_CONFLICT);
             }
@@ -204,7 +204,7 @@ class RegistrationFeeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tarif pendaftaran berhasil diperbarui.',
+            'message' => __('asic-api.messages.tarif_pendaftaran_berhasil_diperbarui'),
             'data' => new RegistrationFeeResource($fee),
         ], Response::HTTP_OK);
     }
@@ -232,7 +232,7 @@ class RegistrationFeeController extends Controller
 
         $conflict = response()->json([
             'success' => false,
-            'message' => 'Tarif sudah digunakan oleh invoice sehingga tidak dapat dihapus.',
+            'message' => __('asic-api.messages.tarif_sudah_digunakan_oleh_invoice_sehingga_tidak'),
         ], Response::HTTP_CONFLICT);
 
         if ($fee->isUsedByInvoice()) {
@@ -248,7 +248,7 @@ class RegistrationFeeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tarif pendaftaran berhasil dihapus.',
+            'message' => __('asic-api.messages.tarif_pendaftaran_berhasil_dihapus'),
         ], Response::HTTP_OK);
     }
 
@@ -289,7 +289,7 @@ class RegistrationFeeController extends Controller
     {
         return response()->json([
             'success' => false,
-            'message' => 'Tarif pendaftaran tidak ditemukan.',
+            'message' => __('asic-api.messages.tarif_pendaftaran_tidak_ditemukan'),
         ], Response::HTTP_NOT_FOUND);
     }
 }

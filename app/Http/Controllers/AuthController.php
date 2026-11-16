@@ -138,7 +138,7 @@ class AuthController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Akun delegasi berhasil dibuat. Tautan aktivasi instan telah dikirimkan ke alamat email institusi Anda.',
+                'message' => __('asic-api.messages.akun_delegasi_berhasil_dibuat_tautan_aktivasi_inst'),
                 'activation_link_required' => true,
                 'data' => [
                     'id_user' => $user->id_user,
@@ -210,7 +210,7 @@ class AuthController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Email / Username atau kata sandi yang Anda masukkan salah.',
+                    'message' => __('asic-api.messages.email_username_atau_kata_sandi_yang_anda_masukkan'),
                 ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
@@ -224,7 +224,7 @@ class AuthController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Akun Anda berstatus Nonaktif. Silakan hubungi Administrator.',
+                    'message' => __('asic-api.messages.akun_anda_berstatus_nonaktif_silakan_hubungi_admin'),
                 ], Response::HTTP_FORBIDDEN);
             }
 
@@ -244,7 +244,7 @@ class AuthController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Login berhasil. Selamat datang di Portal ASIC 2026.',
+                'message' => __('asic-api.messages.login_berhasil_selamat_datang_di_portal_asic_2026'),
                 'data' => [
                     'id_user' => $user->id_user,
                     'email' => $user->email,
@@ -318,7 +318,7 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Instruksi bantuan pencarian username / email berhasil diproses.',
+            'message' => __('asic-api.messages.instruksi_bantuan_pencarian_username_email_berhasi'),
             'count' => $users->count(),
             'hint' => 'Silakan hubungi sekretariat via asic@agr.unand.ac.id jika akun Anda belum ditemukan.',
         ], Response::HTTP_OK);
@@ -357,7 +357,7 @@ class AuthController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Logout berhasil.',
+                'message' => __('asic-api.messages.logout_berhasil'),
             ], Response::HTTP_OK);
         }
 

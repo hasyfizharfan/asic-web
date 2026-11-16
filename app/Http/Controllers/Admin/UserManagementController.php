@@ -116,7 +116,7 @@ class UserManagementController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Data User & Role Management berhasil dimuat.',
+                'message' => __('asic-api.messages.data_user_role_management_berhasil_dimuat'),
                 'summary' => $summary,
                 'governance_matrix' => $governanceMatrix,
                 'available_roles' => $roles,
@@ -258,7 +258,7 @@ class UserManagementController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Akun pengguna / staf berhasil dibuat dan undangan telah dikirimkan.',
+                'message' => __('asic-api.messages.akun_pengguna_staf_berhasil_dibuat_dan_undangan_te'),
                 'data' => new UserManagementResource($user),
             ], Response::HTTP_CREATED);
         }
@@ -446,7 +446,7 @@ class UserManagementController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Data akun pengguna berhasil diperbarui.',
+                'message' => __('asic-api.messages.data_akun_pengguna_berhasil_diperbarui'),
                 'data' => new UserManagementResource($user),
             ], Response::HTTP_OK);
         }
@@ -509,7 +509,7 @@ class UserManagementController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Akun pengguna berhasil dihapus.',
+                'message' => __('asic-api.messages.akun_pengguna_berhasil_dihapus'),
             ], Response::HTTP_OK);
         }
 
@@ -630,13 +630,13 @@ class UserManagementController extends Controller
         $adminRoleId = Role::where('nama_role', Role::ROLE_ADMIN)->value('id_role');
         $selfIncluded = in_array((int) Auth::id(), $ids, true);
         if ($selfIncluded && in_array($action, ['deactivate', 'delete'], true)) {
-            return response()->json(['success' => false, 'message' => 'Akun Admin tidak dapat menonaktifkan atau menghapus akunnya sendiri.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.akun_admin_tidak_dapat_menonaktifkan_atau_menghapu')], Response::HTTP_FORBIDDEN);
         }
         if ($selfIncluded && $action === 'change_role' && (int) $validated['id_role'] !== (int) $adminRoleId) {
-            return response()->json(['success' => false, 'message' => 'Akun Admin tidak dapat menurunkan perannya sendiri.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.akun_admin_tidak_dapat_menurunkan_perannya_sendiri')], Response::HTTP_FORBIDDEN);
         }
         if ($this->wouldRemoveLastActiveAdmin($ids, $action, $validated['id_role'] ?? null)) {
-            return response()->json(['success' => false, 'message' => 'Sistem harus memiliki setidaknya satu Admin aktif.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.sistem_harus_memiliki_setidaknya_satu_admin_aktif')], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         $affectedCount = 0;
 

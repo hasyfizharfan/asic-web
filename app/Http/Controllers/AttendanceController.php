@@ -76,18 +76,18 @@ class AttendanceController extends Controller
         if (! $registration->invoice || $registration->invoice->status_pembayaran !== 'Terverifikasi') {
             return response()->json([
                 'success' => false,
-                'message' => 'Presensi ditolak: invoice belum tersedia atau status pembayaran belum Terverifikasi.',
+                'message' => __('asic-api.messages.presensi_ditolak_invoice_belum_tersedia_atau_statu'),
             ], Response::HTTP_FORBIDDEN);
         }
 
         if ($registration->id_event !== $session->id_event) {
-            return response()->json(['success' => false, 'message' => 'Pendaftaran peserta tidak terkait dengan sesi ini.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.pendaftaran_peserta_tidak_terkait_dengan_sesi_ini')], Response::HTTP_FORBIDDEN);
         }
         if ($request->filled('qr_token') && ! hash_equals((string) $session->qr_token, (string) $request->input('qr_token'))) {
-            return response()->json(['success' => false, 'message' => 'Token QR tidak cocok dengan sesi ini.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.token_qr_tidak_cocok_dengan_sesi_ini')], Response::HTTP_FORBIDDEN);
         }
         if (! $this->isSessionOpen($session)) {
-            return response()->json(['success' => false, 'message' => 'Presensi hanya dapat dilakukan selama jadwal sesi berlangsung.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.presensi_hanya_dapat_dilakukan_selama_jadwal_sesi')], Response::HTTP_FORBIDDEN);
         }
 
         $attendance = Attendance::firstOrNew([
@@ -216,15 +216,15 @@ class AttendanceController extends Controller
         $validated = $request->validate(['qr_token' => ['required', 'string', 'max:100']]);
         $session = EventSession::with('event')->where('qr_token', $validated['qr_token'])->first();
         if (! $session) {
-            return response()->json(['success' => false, 'message' => 'Token QR sesi tidak valid.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.token_qr_sesi_tidak_valid')], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
         if (! $this->isSessionOpen($session)) {
-            return response()->json(['success' => false, 'message' => 'Sesi belum dimulai atau sudah berakhir.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.sesi_belum_dimulai_atau_sudah_berakhir')], Response::HTTP_FORBIDDEN);
         }
 
         $participant = Participant::where('id_user', Auth::id())->first();
         if (! $participant) {
-            return response()->json(['success' => false, 'message' => 'Akun ini tidak memiliki profil peserta.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.akun_ini_tidak_memiliki_profil_peserta')], Response::HTTP_FORBIDDEN);
         }
 
         $registration = Registration::with('invoice')
@@ -234,7 +234,7 @@ class AttendanceController extends Controller
             ->orderByDesc('registration_date')
             ->first();
         if (! $registration || ! $registration->invoice || $registration->invoice->status_pembayaran !== 'Terverifikasi') {
-            return response()->json(['success' => false, 'message' => 'Pendaftaran aktif dengan pembayaran terverifikasi tidak ditemukan untuk sesi ini.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.pendaftaran_aktif_dengan_pembayaran_terverifikasi')], Response::HTTP_FORBIDDEN);
         }
 
         $attendance = DB::transaction(function () use ($registration, $session): ?Attendance {
@@ -249,12 +249,12 @@ class AttendanceController extends Controller
         });
 
         if (! $attendance) {
-            return response()->json(['success' => false, 'message' => 'Kehadiran Anda pada sesi ini sudah tercatat.'], Response::HTTP_CONFLICT);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.kehadiran_anda_pada_sesi_ini_sudah_tercatat')], Response::HTTP_CONFLICT);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Kehadiran sesi berhasil dicatat.',
+            'message' => __('asic-api.messages.kehadiran_sesi_berhasil_dicatat'),
             'data' => $attendance,
         ], Response::HTTP_OK);
     }
@@ -263,19 +263,19 @@ class AttendanceController extends Controller
     {
         $registration->loadMissing('invoice');
         if (! $registration->invoice || $registration->invoice->status_pembayaran !== 'Terverifikasi') {
-            return response()->json(['success' => false, 'message' => 'QR tidak memenuhi syarat: pembayaran harus Terverifikasi.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.qr_tidak_memenuhi_syarat_pembayaran_harus_terverif')], Response::HTTP_FORBIDDEN);
         }
         $session = EventSession::with('event')->findOrFail($id_session);
         if ($registration->id_event !== $session->id_event) {
-            return response()->json(['success' => false, 'message' => 'Pendaftaran peserta tidak terkait dengan sesi ini.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.pendaftaran_peserta_tidak_terkait_dengan_sesi_ini')], Response::HTTP_FORBIDDEN);
         }
         if (! $this->isSessionOpen($session)) {
-            return response()->json(['success' => false, 'message' => 'Presensi hanya dapat dilakukan selama jadwal sesi berlangsung.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.presensi_hanya_dapat_dilakukan_selama_jadwal_sesi')], Response::HTTP_FORBIDDEN);
         }
 
         $attendance = $this->saveAttendance($registration, $session);
 
-        return response()->json(['success' => true, 'message' => 'Check-in QR peserta berhasil dicatat.', 'data' => $attendance], Response::HTTP_OK);
+        return response()->json(['success' => true, 'message' => __('asic-api.messages.check_in_qr_peserta_berhasil_dicatat'), 'data' => $attendance], Response::HTTP_OK);
     }
 
     private function saveAttendance(Registration $registration, EventSession $session): Attendance
@@ -369,7 +369,7 @@ class AttendanceController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Status presentasi peserta berhasil diperbarui.',
+            'message' => __('asic-api.messages.status_presentasi_peserta_berhasil_diperbarui'),
             'data' => [
                 'id_attendance' => $attendance->id_attendance,
                 'id_registration' => $attendance->id_registration,
@@ -426,7 +426,7 @@ class AttendanceController extends Controller
         if (! $isOwner && ! $canManageAttendance && ! $canVerifyPayments) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk melihat data presensi ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_melihat_data_p_2'),
             ], Response::HTTP_FORBIDDEN);
         }
 

@@ -48,7 +48,7 @@ class SpeakerController extends Controller
     {
         $s = Speaker::find($id_speaker);
 
-        return $s ? $this->ok('Detail narasumber berhasil dimuat.', $this->present($s)) : $this->fail('Narasumber tidak ditemukan.', Response::HTTP_NOT_FOUND);
+        return $s ? $this->ok(__('asic-api.messages.detail_narasumber_berhasil_dimuat'), $this->present($s)) : $this->fail(__('asic-api.messages.narasumber_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
     }
 
     public function store(Request $request): JsonResponse
@@ -58,14 +58,14 @@ class SpeakerController extends Controller
             $data['foto'] = $request->file('foto')->store('speakers', 'public');
         }
 
-        return $this->ok('Narasumber berhasil ditambahkan.', $this->present(Speaker::create($data)->fresh()), Response::HTTP_CREATED);
+        return $this->ok(__('asic-api.messages.narasumber_berhasil_ditambahkan'), $this->present(Speaker::create($data)->fresh()), Response::HTTP_CREATED);
     }
 
     public function update(Request $request, int $id_speaker): JsonResponse
     {
         $s = Speaker::find($id_speaker);
         if (! $s) {
-            return $this->fail('Narasumber tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.narasumber_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
         $data = $request->validate($this->rules(true));
         if ($request->hasFile('foto')) {
@@ -75,28 +75,28 @@ class SpeakerController extends Controller
         }
         $s->update($data);
 
-        return $this->ok('Narasumber berhasil diperbarui.', $this->present($s->fresh()));
+        return $this->ok(__('asic-api.messages.narasumber_berhasil_diperbarui'), $this->present($s->fresh()));
     }
 
     public function destroy(int $id_speaker): JsonResponse
     {
         $s = Speaker::find($id_speaker);
         if (! $s) {
-            return $this->fail('Narasumber tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.narasumber_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
         $foto = $s->foto;
         $s->delete();
         $foto && Storage::disk('public')->delete($foto);
 
-        return $this->ok('Narasumber berhasil dihapus.');
+        return $this->ok(__('asic-api.messages.narasumber_berhasil_dihapus'));
     }
 
     public function publicIndex(int $id_event): JsonResponse
     {
         if (! Event::whereIn('status_event', ['Aktif', 'Selesai'])->whereKey($id_event)->exists()) {
-            return $this->fail('Event tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.event_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
 
-        return $this->ok('Daftar narasumber berhasil dimuat.', Speaker::where('id_event', $id_event)->orderBy('nama_speaker')->get()->map(fn ($s) => $this->present($s)));
+        return $this->ok(__('asic-api.messages.daftar_narasumber_berhasil_dimuat'), Speaker::where('id_event', $id_event)->orderBy('nama_speaker')->get()->map(fn ($s) => $this->present($s)));
     }
 }

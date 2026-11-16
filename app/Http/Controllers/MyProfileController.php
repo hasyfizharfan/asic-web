@@ -17,13 +17,13 @@ class MyProfileController extends Controller
         abort_unless($participant, Response::HTTP_NOT_FOUND, 'Profil peserta tidak ditemukan.');
         $participant->fill($request->validated())->save();
 
-        return response()->json(['success' => true, 'message' => 'Profil berhasil diperbarui.', 'data' => new MyProfileResource($request->user()->load('participant'))], Response::HTTP_OK);
+        return response()->json(['success' => true, 'message' => __('asic-api.messages.profil_berhasil_diperbarui'), 'data' => new MyProfileResource($request->user()->load('participant'))], Response::HTTP_OK);
     }
 
     public function updatePassword(UpdateMyPasswordRequest $request): JsonResponse
     {
         $request->user()->forceFill(['password' => Hash::make($request->validated('password'))])->save();
 
-        return response()->json(['success' => true, 'message' => 'Kata sandi berhasil diperbarui.'], Response::HTTP_OK);
+        return response()->json(['success' => true, 'message' => __('asic-api.messages.kata_sandi_berhasil_diperbarui')], Response::HTTP_OK);
     }
 }

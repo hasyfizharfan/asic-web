@@ -23,31 +23,31 @@ class RecapController extends Controller
 
     public function registrations(Request $request, ReportService $r): JsonResponse
     {
-        return $this->ok('Rekap registrasi berhasil dimuat.', $r->registrations(self::filters($request)));
+        return $this->ok(__('asic-api.messages.rekap_registrasi_berhasil_dimuat'), $r->registrations(self::filters($request)));
     }
 
     public function participants(Request $request, ReportService $r): JsonResponse
     {
-        return $this->ok('Rekap peserta berhasil dimuat.', $r->participants(self::filters($request)));
+        return $this->ok(__('asic-api.messages.rekap_peserta_berhasil_dimuat'), $r->participants(self::filters($request)));
     }
 
     public function abstracts(Request $request, ReportService $r): JsonResponse
     {
-        return $this->ok('Rekap abstrak dan hasil seleksi berhasil dimuat.', $r->abstracts(self::filters($request)));
+        return $this->ok(__('asic-api.messages.rekap_abstrak_dan_hasil_seleksi_berhasil_dimuat'), $r->abstracts(self::filters($request)));
     }
 
     public function invoices(Request $request, ReportService $r): JsonResponse
     {
-        return $this->ok('Rekap invoice berhasil dimuat.', $r->invoices(self::filters($request)));
+        return $this->ok(__('asic-api.messages.rekap_invoice_berhasil_dimuat'), $r->invoices(self::filters($request)));
     }
 
     public function payments(Request $request, ReportService $r): JsonResponse
     {
-        return $this->ok('Rekap pembayaran berhasil dimuat.', $r->payments(self::filters($request)));
+        return $this->ok(__('asic-api.messages.rekap_pembayaran_berhasil_dimuat'), $r->payments(self::filters($request)));
     }
 
     public function attendance(Request $request, ReportService $r): JsonResponse
     {
-        return $this->ok('Rekap kehadiran per sesi berhasil dimuat.', $r->attendance(self::filters($request)));
+        return $this->ok(__('asic-api.messages.rekap_kehadiran_per_sesi_berhasil_dimuat'), $r->attendance(self::filters($request)));
     }
 }
