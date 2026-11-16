@@ -16,7 +16,6 @@ Fitur berikut belum boleh menampilkan keberhasilan atau mengubah state seolah-ol
 | Draft review reviewer | Belum tersedia; pengiriman review final tersedia. |
 | Website settings | Belum tersedia. |
 | Refund | Belum tersedia. |
-| Notifikasi | Belum tersedia. |
 | Sertifikat | Belum tersedia. |
 | Archive | Belum tersedia. |
 | CRUD template dokumen | Belum tersedia. |
@@ -31,7 +30,6 @@ Untuk fitur baru, tambahkan kontrak backend (Form Request, middleware `permissio
 
 - Pengajuan dan pemrosesan refund belum memiliki endpoint backend. Halaman refund menampilkan status **Belum tersedia** dan aksi pengajuan dinonaktifkan.
 - Penerbitan/pengunduhan sertifikat belum memiliki endpoint backend. Halaman sertifikat menampilkan status **Belum tersedia** dan tombol unduh dinonaktifkan.
-- Layanan notifikasi peserta belum memiliki endpoint backend. Halaman notifikasi menampilkan status **Belum tersedia** dan aksinya dinonaktifkan.
 
 ## Bendahara
 

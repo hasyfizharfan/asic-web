@@ -2793,6 +2793,131 @@
                 ]
             }
         },
+        "/api/me/notifications": {
+            "get": {
+                "tags": [
+                    "Notifikasi"
+                ],
+                "summary": "Daftar notifikasi saya",
+                "operationId": "ff36a021dd115f73f2d9c2d8dfba4c67",
+                "parameters": [
+                    {
+                        "name": "unread",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 50,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar notifikasi (belum dibaca di atas)"
+                    },
+                    "401": {
+                        "description": "Belum login"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/me/notifications/unread-count": {
+            "get": {
+                "tags": [
+                    "Notifikasi"
+                ],
+                "summary": "Jumlah notifikasi saya yang belum dibaca",
+                "operationId": "8e8608cd6c8e66c0c83aa5b082e4c03f",
+                "responses": {
+                    "200": {
+                        "description": "Jumlah belum dibaca"
+                    },
+                    "401": {
+                        "description": "Belum login"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/me/notifications/{id}/read": {
+            "patch": {
+                "tags": [
+                    "Notifikasi"
+                ],
+                "summary": "Tandai satu notifikasi saya sebagai dibaca",
+                "operationId": "551d0557a7452cfdb11eb01ecac04905",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Ditandai dibaca"
+                    },
+                    "404": {
+                        "description": "Bukan milik pengguna atau tidak ada"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/me/notifications/read-all": {
+            "post": {
+                "tags": [
+                    "Notifikasi"
+                ],
+                "summary": "Tandai semua notifikasi saya sebagai dibaca",
+                "operationId": "61ddeac022d093dda25617adee34c146",
+                "responses": {
+                    "200": {
+                        "description": "Jumlah notifikasi yang ditandai"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
         "/api/registrations/{id_registration}/files": {
             "get": {
                 "tags": [
@@ -4164,6 +4289,10 @@
         {
             "name": "Dokumen",
             "description": "Dokumen"
+        },
+        {
+            "name": "Notifikasi",
+            "description": "Notifikasi"
         },
         {
             "name": "Verifikasi Pembayaran",

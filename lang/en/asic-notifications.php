@@ -1,0 +1,38 @@
+<?php
+
+return [
+    'kinds' => [
+        'loa_issued' => ['title' => 'Letter of Acceptance issued', 'body' => 'The LoA for registration #:id is ready to download on the Documents page.'],
+        'invoice_issued' => ['title' => 'Invoice issued', 'body' => 'The invoice for registration #:id has been issued. Please pay before the due date.'],
+        'receipt_issued' => ['title' => 'Receipt issued', 'body' => 'Payment for registration #:id has been received. The receipt is ready on the Documents page.'],
+        'rejection_issued' => ['title' => 'Rejection letter issued', 'body' => 'The abstract decision letter for registration #:id is ready to download.'],
+        'certificate_issued' => ['title' => 'Certificate issued', 'body' => 'The certificate for registration #:id is ready to download.'],
+        'invoice_extended' => ['title' => 'Invoice due date extended', 'body' => 'The payment deadline for registration #:id has been extended to :due.'],
+        'invoice_expired' => ['title' => 'Invoice expired', 'body' => 'The invoice for registration #:id has expired. Contact the committee if you need help.'],
+        'payment_valid' => ['title' => 'Payment verified', 'body' => 'The treasurer has verified the payment for registration #:id.'],
+        'payment_invalid' => ['title' => 'Payment proof rejected', 'body' => 'The payment proof for registration #:id was rejected: :reason. Please upload a correct proof.'],
+        'abstract_accepted' => ['title' => 'Abstract accepted', 'body' => 'The abstract for registration #:id has been accepted. The LoA and invoice will be available in your account.'],
+        'abstract_rejected' => ['title' => 'Abstract not accepted', 'body' => 'The abstract for registration #:id could not be accepted. The decision letter is on the Documents page.'],
+        'reregistered' => ['title' => 'Re-registration recorded', 'body' => 'Re-registration for registration #:id has been recorded at the secretariat desk.'],
+    ],
+    'page' => [
+        'title' => 'Notifications',
+        'heading' => 'Notifications',
+        'subtitle' => 'Status changes for your registration, documents, and payments.',
+        'tab_all' => 'All',
+        'tab_unread' => 'Unread',
+        'mark_read' => 'Mark as read',
+        'mark_all_read' => 'Mark all as read',
+        'open' => 'Open',
+        'loading' => 'Loading notifications…',
+        'empty' => 'No notifications yet.',
+        'empty_unread' => 'No unread notifications.',
+        'load_failed' => 'Failed to load notifications.',
+        'action_failed' => 'Failed to update the notification.',
+        'load_more' => 'Load more',
+        'announcements' => 'Committee announcements',
+        'announcements_empty' => 'No announcements yet.',
+        'unread_badge' => ':count unread',
+        'bell_label' => 'Notifications',
+    ],
+];

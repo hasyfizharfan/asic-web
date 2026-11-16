@@ -25,6 +25,9 @@ class AbstractDecisionProcessor
     {
         $reg = $abstract->registration()->with(['participant.userAccount', 'event'])->firstOrFail();
         $result = ['documents' => [], 'invoice' => null, 'warnings' => []];
+        if (in_array($abstract->status_abstrak, ['Diterima', 'Ditolak'], true)) {
+            app(StatusNotifier::class)->notify($reg, $abstract->status_abstrak === 'Diterima' ? 'abstract_accepted' : 'abstract_rejected', 'abstract:'.$abstract->id_abstract.':'.$abstract->status_abstrak);
+        }
         $files = [];
 
         try {

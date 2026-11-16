@@ -163,7 +163,7 @@ class DocumentService
             Storage::disk($this->disk())->put($path, $this->renderer->render($jenis, $context));
 
             try {
-                return IssuedDocument::create([
+                $document = IssuedDocument::create([
                     'id_registration' => $reg->id_registration,
                     'id_template' => $template->id_template,
                     'jenis_dokumen' => $jenis,
@@ -175,6 +175,13 @@ class DocumentService
                 Storage::disk($this->disk())->delete($path);
                 throw $e;
             }
+
+            // KF-30: satu titik notifikasi untuk dokumen terbit (dikirim setelah commit, gagal tidak membatalkan).
+            if ($kind = StatusNotifier::documentKind($jenis)) {
+                app(StatusNotifier::class)->notify($reg, $kind, 'document:'.$document->id_document);
+            }
+
+            return $document;
         });
     }
 }

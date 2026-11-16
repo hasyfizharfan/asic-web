@@ -15,6 +15,7 @@ use App\Http\Controllers\EventScheduleController;
 use App\Http\Controllers\EventSessionController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\MyNotificationController;
 use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\ParticipantFileController;
 use App\Http\Controllers\PasswordResetController;
@@ -56,6 +57,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/me', [AuthController::class, 'me'])->name('api.me');
     Route::put('/me/profile', [MyProfileController::class, 'update'])->middleware('permission:access_participant_portal')->name('api.me.profile.update');
     Route::put('/me/password', [MyProfileController::class, 'updatePassword'])->name('api.me.password.update');
+    // KF-30: notifikasi dalam situs milik pengguna sendiri
+    Route::get('/me/notifications', [MyNotificationController::class, 'index'])->name('api.me.notifications.index');
+    Route::get('/me/notifications/unread-count', [MyNotificationController::class, 'unreadCount'])->name('api.me.notifications.unread-count');
+    Route::patch('/me/notifications/{id}/read', [MyNotificationController::class, 'markRead'])->whereUuid('id')->name('api.me.notifications.read');
+    Route::post('/me/notifications/read-all', [MyNotificationController::class, 'readAll'])->name('api.me.notifications.read-all');
 
     // -----------------------------------------------------------------
     // MODUL M-03: PENDAFTARAN PESERTA & ADD-ON (KF-10)

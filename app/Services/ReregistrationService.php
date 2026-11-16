@@ -54,6 +54,9 @@ class ReregistrationService
         });
 
         $registration->refresh();
+        if ($updated) {
+            app(StatusNotifier::class)->notify($registration, 'reregistered', 'reregistered:'.$registration->id_registration);
+        }
 
         return $updated
             ? ['status' => Response::HTTP_OK, 'message' => __('asic-api.reregistration.success'), 'registration' => $registration]

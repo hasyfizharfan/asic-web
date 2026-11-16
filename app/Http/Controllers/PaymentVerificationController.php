@@ -9,6 +9,7 @@ use App\Models\PaymentProof;
 use App\Models\PaymentVerification;
 use App\Models\UserAccount;
 use App\Services\DocumentService;
+use App\Services\StatusNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -178,6 +179,13 @@ class PaymentVerificationController extends Controller
         if (isset($outcome['error'])) {
             return $this->fail($outcome['message'], $outcome['error']);
         }
+
+        app(StatusNotifier::class)->notify(
+            $outcome['invoice']->registration,
+            $input['hasil_verifikasi'] === 'Valid' ? 'payment_valid' : 'payment_invalid',
+            'verification:'.$outcome['verification']->id_verification,
+            ['reason' => $outcome['verification']->alasan_penolakan]
+        );
 
         Log::info('payment.verified', [
             'id_invoice' => $outcome['invoice']->id_invoice, 'id_payment_proof' => $outcome['proof']->id_payment_proof,

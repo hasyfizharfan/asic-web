@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ExtendInvoiceRequest;
 use App\Models\Invoice;
 use App\Models\UserAccount;
+use App\Services\StatusNotifier;
 use App\Support\PermissionMatrix;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -70,6 +71,7 @@ class InvoiceController extends Controller
 
         if ($invoice->isKedaluwarsa() && $invoice->status_pembayaran === 'Menunggu Pembayaran') {
             $invoice->update(['status_pembayaran' => 'Kedaluwarsa']);
+            app(StatusNotifier::class)->notify($invoice->registration, 'invoice_expired', 'invoice_expired:'.$invoice->id_invoice);
         }
 
         return response()->json([
@@ -128,6 +130,9 @@ class InvoiceController extends Controller
 
         $validated = $request->validated();
         $invoice->perpanjangJatuhTempo($validated['tanggal_jatuh_tempo_baru']);
+        app(StatusNotifier::class)->notify($invoice->registration, 'invoice_extended', 'invoice_extended:'.$invoice->id_invoice.':'.$invoice->jumlah_perpanjangan, [
+            'due' => (string) $invoice->tanggal_jatuh_tempo_baru?->toDateString(),
+        ]);
 
         return response()->json([
             'success' => true,
@@ -188,6 +193,8 @@ class InvoiceController extends Controller
         }
 
         $invoice->update(['status_pembayaran' => 'Kedaluwarsa']);
+        $invoice->loadMissing('registration');
+        app(StatusNotifier::class)->notify($invoice->registration, 'invoice_expired', 'invoice_expired:'.$invoice->id_invoice);
 
         return response()->json([
             'success' => true,

@@ -1,0 +1,38 @@
+<?php
+
+return [
+    'kinds' => [
+        'loa_issued' => ['title' => 'Letter of Acceptance terbit', 'body' => 'LoA untuk registrasi #:id sudah dapat diunduh di halaman Dokumen.'],
+        'invoice_issued' => ['title' => 'Invoice terbit', 'body' => 'Invoice untuk registrasi #:id sudah terbit. Lakukan pembayaran sebelum jatuh tempo.'],
+        'receipt_issued' => ['title' => 'Receipt terbit', 'body' => 'Pembayaran registrasi #:id sudah diterima. Receipt dapat diunduh di halaman Dokumen.'],
+        'rejection_issued' => ['title' => 'Surat penolakan terbit', 'body' => 'Surat keputusan abstrak untuk registrasi #:id sudah dapat diunduh.'],
+        'certificate_issued' => ['title' => 'Sertifikat terbit', 'body' => 'Sertifikat untuk registrasi #:id sudah dapat diunduh.'],
+        'invoice_extended' => ['title' => 'Jatuh tempo invoice diperpanjang', 'body' => 'Batas pembayaran registrasi #:id diperpanjang sampai :due.'],
+        'invoice_expired' => ['title' => 'Invoice kedaluwarsa', 'body' => 'Invoice registrasi #:id sudah kedaluwarsa. Hubungi panitia bila membutuhkan bantuan.'],
+        'payment_valid' => ['title' => 'Pembayaran terverifikasi', 'body' => 'Bendahara telah memverifikasi pembayaran registrasi #:id.'],
+        'payment_invalid' => ['title' => 'Bukti bayar ditolak', 'body' => 'Bukti bayar registrasi #:id ditolak: :reason. Silakan unggah ulang bukti yang benar.'],
+        'abstract_accepted' => ['title' => 'Abstrak diterima', 'body' => 'Abstrak untuk registrasi #:id diterima. LoA dan invoice akan tersedia di akun Anda.'],
+        'abstract_rejected' => ['title' => 'Abstrak belum dapat diterima', 'body' => 'Abstrak untuk registrasi #:id belum dapat diterima. Surat keputusan tersedia di halaman Dokumen.'],
+        'reregistered' => ['title' => 'Registrasi ulang tercatat', 'body' => 'Registrasi ulang untuk registrasi #:id sudah tercatat di meja sekretariat.'],
+    ],
+    'page' => [
+        'title' => 'Notifikasi',
+        'heading' => 'Notifikasi',
+        'subtitle' => 'Perubahan status registrasi, dokumen, dan pembayaran Anda.',
+        'tab_all' => 'Semua',
+        'tab_unread' => 'Belum dibaca',
+        'mark_read' => 'Tandai dibaca',
+        'mark_all_read' => 'Tandai semua dibaca',
+        'open' => 'Buka',
+        'loading' => 'Memuat notifikasi…',
+        'empty' => 'Belum ada notifikasi.',
+        'empty_unread' => 'Tidak ada notifikasi yang belum dibaca.',
+        'load_failed' => 'Notifikasi gagal dimuat.',
+        'action_failed' => 'Notifikasi gagal diperbarui.',
+        'load_more' => 'Muat lebih banyak',
+        'announcements' => 'Pengumuman panitia',
+        'announcements_empty' => 'Belum ada pengumuman.',
+        'unread_badge' => ':count belum dibaca',
+        'bell_label' => 'Notifikasi',
+    ],
+];
