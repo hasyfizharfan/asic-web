@@ -148,6 +148,19 @@ return [
             'stat_registrations' => 'Registrasi', 'stat_abstracts' => 'Abstrak terkirim', 'stat_invoices' => 'Invoice menunggu', 'stat_documents' => 'Dokumen diterbitkan',
             'my_registrations' => 'Registrasi saya', 'abstract' => 'Abstrak', 'not_submitted' => 'Belum dikirim', 'documents' => 'Dokumen', 'start_registration' => 'Mulai registrasi',
         ],
+        'abstract' => [
+            'title' => 'Abstrak', 'heading' => 'Pengajuan abstrak', 'subtitle' => 'Status dan dokumen berasal dari registrasi Anda.', 'loading' => 'Memuat data abstrak…',
+            'load_failed' => 'Data registrasi gagal dimuat.', 'no_registration' => 'Belum ada registrasi aktif.', 'submit_failed' => 'Abstrak gagal dikirim.', 'submitted' => 'Abstrak berhasil dikirim.',
+            'registration' => 'Registrasi', 'payment' => 'Pembayaran', 'title_label' => 'Judul', 'status_label' => 'Status abstrak', 'download' => 'Unduh abstrak',
+            'field_title' => 'Judul abstrak', 'field_scope' => 'Bidang (scope)', 'choose_scope' => 'Pilih bidang', 'field_method' => 'Metode presentasi',
+            'field_file' => 'Berkas abstrak (PDF/DOC/DOCX, maks. 10 MB)', 'submit' => 'Kirim abstrak', 'submitting' => 'Mengirim…',
+        ],
+        'full_paper' => [
+            'title' => 'Berkas peserta', 'heading' => 'Full paper dan presentasi', 'subtitle' => 'Berkas peserta disimpan privat dan hanya dapat dibuka pemiliknya dan panitia berwenang.', 'loading' => 'Memuat berkas…',
+            'load_failed' => 'Berkas gagal dimuat.', 'no_registration' => 'Belum ada registrasi untuk mengunggah berkas.', 'upload_failed' => 'Berkas gagal diunggah.', 'uploaded' => 'Berkas berhasil diunggah.',
+            'field_type' => 'Jenis berkas', 'type_article' => 'Full paper / Artikel', 'type_presentation' => 'Presentasi', 'field_file' => 'Pilih berkas (PDF, DOC, DOCX, PPT, PPTX; maks. 10 MB)',
+            'upload' => 'Unggah berkas', 'uploading' => 'Mengunggah…', 'uploaded_files' => 'Berkas terunggah', 'empty' => 'Belum ada berkas.', 'download' => 'Unduh',
+        ],
         'refund' => [
             'title' => 'Pengajuan refund', 'submit' => 'Ajukan refund',
             'unavailable' => 'Belum tersedia. Pengembalian biaya publikasi diproses manual oleh panitia; biaya seminar tidak dapat dikembalikan.',

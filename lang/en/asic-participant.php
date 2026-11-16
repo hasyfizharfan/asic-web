@@ -148,6 +148,19 @@ return [
             'stat_registrations' => 'Registrations', 'stat_abstracts' => 'Abstracts submitted', 'stat_invoices' => 'Pending invoices', 'stat_documents' => 'Documents issued',
             'my_registrations' => 'My registrations', 'abstract' => 'Abstract', 'not_submitted' => 'Not submitted', 'documents' => 'Documents', 'start_registration' => 'Start registration',
         ],
+        'abstract' => [
+            'title' => 'Abstract', 'heading' => 'Abstract submission', 'subtitle' => 'Status and documents come from your registration.', 'loading' => 'Loading abstract data…',
+            'load_failed' => 'Failed to load registration data.', 'no_registration' => 'No active registration yet.', 'submit_failed' => 'Failed to submit the abstract.', 'submitted' => 'Abstract submitted.',
+            'registration' => 'Registration', 'payment' => 'Payment', 'title_label' => 'Title', 'status_label' => 'Abstract status', 'download' => 'Download abstract',
+            'field_title' => 'Abstract title', 'field_scope' => 'Scope', 'choose_scope' => 'Choose a scope', 'field_method' => 'Presentation method',
+            'field_file' => 'Abstract file (PDF/DOC/DOCX, max 10 MB)', 'submit' => 'Submit abstract', 'submitting' => 'Submitting…',
+        ],
+        'full_paper' => [
+            'title' => 'Participant files', 'heading' => 'Full paper and presentation', 'subtitle' => 'Participant files are stored privately and can only be opened by their owner and authorised committee members.', 'loading' => 'Loading files…',
+            'load_failed' => 'Failed to load files.', 'no_registration' => 'No registration to upload files to yet.', 'upload_failed' => 'Failed to upload the file.', 'uploaded' => 'File uploaded.',
+            'field_type' => 'File type', 'type_article' => 'Full paper / Article', 'type_presentation' => 'Presentation', 'field_file' => 'Choose a file (PDF, DOC, DOCX, PPT, PPTX; max 10 MB)',
+            'upload' => 'Upload file', 'uploading' => 'Uploading…', 'uploaded_files' => 'Uploaded files', 'empty' => 'No files yet.', 'download' => 'Download',
+        ],
         'refund' => [
             'title' => 'Refund request', 'submit' => 'Request refund',
             'unavailable' => 'Not available yet. Publication fee refunds are processed manually by the committee; seminar fees are non-refundable.',
