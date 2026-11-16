@@ -4,6 +4,7 @@ return [
     'title' => 'ASIC 2027 — Agrifood System International Conference',
     'location_badge' => 'PADANG, INDONESIA',
     'hero_title' => 'Konferensi Internasional Sistem Agrifood',
+    'hero_info' => ['theme' => 'Tema konferensi', 'dates' => 'Tanggal konferensi', 'venue' => 'Tempat konferensi', 'dates_default' => '9–10 Juni 2027', 'field_trip' => 'Field trip 11 Juni', 'tba' => 'Akan diumumkan', 'venue_default' => 'Convention Hall, Universitas Andalas'],
     'hero_lead' => 'Menghubungkan riset, manusia, dan peluang untuk sistem agrifood yang berkelanjutan.',
     'btn_register' => 'Daftar',
     'btn_submit_abstract' => 'Kirim Abstrak',

@@ -43,7 +43,7 @@
         </a>
 
         <!-- Mobile close button -->
-        <button @click="sidebarOpen = false" class="lg:hidden p-1.5 text-secondary-fixed-dim hover:text-white rounded-md hover:bg-primary-container transition" aria-label="Close sidebar">
+        <button @click="sidebarOpen = false" class="lg:hidden p-1.5 text-white/80 hover:text-white rounded-md hover:bg-primary-container transition" aria-label="Close sidebar">
             <span class="material-symbols-outlined text-xl">close</span>
         </button>
     </div>
@@ -56,9 +56,9 @@
                 $url = !empty($item['route']) && \Illuminate\Support\Facades\Route::has($item['route']) ? route($item['route']) : ($item['url'] ?? '#');
             @endphp
             <a href="{{ $url }}" 
-               class="flex items-center gap-3 px-3 py-2.5 rounded-r-lg text-xs tracking-wide transition group {{ $isActive ? 'bg-primary-container text-white border-l-4 border-tertiary-fixed font-semibold shadow-inner' : 'text-secondary-fixed-dim hover:text-white hover:bg-primary-container/50' }}"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm tracking-wide transition group {{ $isActive ? 'bg-primary-container text-white font-semibold shadow-sm' : 'text-white/85 hover:text-white hover:bg-primary-container/60' }}"
                {!! $isActive ? 'aria-current="page"' : '' !!}>
-                <span class="material-symbols-outlined text-[20px] shrink-0 transition-transform group-hover:scale-110 {{ $isActive ? 'text-tertiary-fixed' : 'text-secondary-fixed-dim group-hover:text-white' }}">{{ $item['icon'] ?? 'circle' }}</span>
+                <span class="material-symbols-outlined text-[20px] shrink-0 transition-transform group-hover:scale-110 {{ $isActive ? 'text-white' : 'text-white/80 group-hover:text-white' }}">{{ $item['icon'] ?? 'circle' }}</span>
                 <span class="flex-1 truncate">{{ $item['label'] ?? '' }}</span>
                 @if(!empty($item['badge']))
                     <span class="px-1.5 py-0.5 text-[10px] font-bold rounded-full {{ $item['badge_class'] ?? 'bg-tertiary-fixed text-primary' }}">
@@ -73,7 +73,7 @@
     <div class="p-3 border-t border-primary-container/60">
         <form data-asic-logout action="{{ route('api.logout') }}" method="POST">
             @csrf
-            <button type="submit" class="flex w-full items-center gap-3 px-3 py-2 text-xs text-secondary-fixed-dim hover:text-white hover:bg-primary-container/40 rounded-lg transition">
+            <button type="submit" class="flex w-full items-center gap-3 px-3 py-2 text-xs text-white/80 hover:text-white hover:bg-primary-container/40 rounded-lg transition">
                 <span class="material-symbols-outlined text-[18px]">logout</span>
                 <span>{{ __('asic-nav.logout') ?? 'Sign Out' }}</span>
             </button>

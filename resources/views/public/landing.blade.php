@@ -7,7 +7,7 @@
 
 <!-- Hero Section with Integrated Navbar matching Image 2 & Prototype w__landing.html -->
 <header id="top" class="relative text-white overflow-hidden flex flex-col justify-between"
-        style="background-color: #0A2B19;">
+        style="background: linear-gradient(135deg, #0B5D2E 0%, #168348 100%);">
     
     <!-- SVG Hero Scenic Vector Art (Mountain + Layered Terraces with #F5C518 Contours) -->
     @include('public.partials.hero-art')
@@ -112,21 +112,22 @@
             {{ __('asic-landing.hero_lead') }}
         </p>
 
-        @if ($event)
-            <p class="mb-5 max-w-2xl rounded-xl border border-white/20 bg-black/20 px-4 py-3 text-xs text-white/90">
-                <strong class="text-[#F5C518]">{{ $event->nama_event }}</strong>
-                · {{ \Illuminate\Support\Carbon::parse($event->tanggal_mulai)->format('d M Y') }} – {{ \Illuminate\Support\Carbon::parse($event->tanggal_selesai)->format('d M Y') }}
-                · {{ $event->lokasi }}
-            </p>
-        @endif
+        @php
+            $heroDates = $event ? \App\Support\DateRange::format($event->tanggal_mulai, $event->tanggal_selesai) : __('asic-landing.hero_info.dates_default');
+        @endphp
+        <dl class="mb-6 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
+            <div><dt class="text-xs text-white/70">{{ __('asic-landing.hero_info.theme') }}</dt><dd class="mt-1 text-sm font-bold text-white">{{ $event?->tema ?: __('asic-landing.hero_info.tba') }}</dd></div>
+            <div><dt class="text-xs text-white/70">{{ __('asic-landing.hero_info.dates') }}</dt><dd class="mt-1 text-sm font-bold text-white">{{ $heroDates }} · {{ __('asic-landing.hero_info.field_trip') }}</dd></div>
+            <div><dt class="text-xs text-white/70">{{ __('asic-landing.hero_info.venue') }}</dt><dd class="mt-1 text-sm font-bold text-white">{{ $event?->lokasi ?: __('asic-landing.hero_info.venue_default') }}</dd></div>
+        </dl>
 
         <!-- CTA Buttons matching Image 2 & Prototype w__landing.html -->
         <div class="flex items-center gap-4 flex-wrap">
-            <a href="{{ route('auth.participant.register') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#0F3D24] font-bold text-sm sm:text-base shadow-xl active:scale-95 transition">
-                <span>{{ __('asic-landing.btn_register') }}</span>
+            <a href="{{ route('auth.participant.register') }}" class="inline-flex min-h-10 items-center gap-2 px-6 py-3 rounded-[9px] bg-[#F5C518] hover:bg-[#fed649] text-[#182820] font-bold text-sm sm:text-base shadow-xl active:scale-95 transition">
+                <span>{{ __('asic-landing.btn_register') }}</span><span aria-hidden="true">↗</span>
             </a>
-            <a href="#cfa" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/60 hover:border-white text-white font-semibold text-sm sm:text-base hover:bg-white/10 active:scale-95 transition">
-                <span>{{ __('asic-landing.btn_submit_abstract') }}</span>
+            <a href="#cfa" class="inline-flex min-h-10 items-center gap-2 px-6 py-3 rounded-[9px] bg-white text-[#182820] font-bold text-sm sm:text-base shadow-xl hover:bg-[#E6F4EA] active:scale-95 transition">
+                <span>{{ __('asic-landing.btn_submit_abstract') }}</span><span aria-hidden="true">↗</span>
             </a>
         </div>
     </div>

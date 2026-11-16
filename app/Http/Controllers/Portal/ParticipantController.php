@@ -3,11 +3,14 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\NotificationResource;
 use App\Models\Event;
 use App\Models\IssuedDocument;
 use App\Models\Registration;
 use App\Models\RegistrationFee;
 use App\Models\UserAccount;
+use App\Services\PublicContent;
+use App\Support\ParticipantJourney;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -43,9 +46,20 @@ class ParticipantController extends Controller
         ]);
     }
 
-    public function dashboard(Request $request): View
+    public function dashboard(Request $request, ParticipantJourney $journey, PublicContent $content): View
     {
-        return $this->page($request, 'participant.dashboard');
+        $view = $this->page($request, 'participant.dashboard');
+        /** @var Registration|null $current */
+        $current = $view->getData()['registration'];
+        $event = $current?->event ?? $content->activeEvent();
+
+        return $view->with([
+            'journey' => $current ? $journey->evaluate($current) : null,
+            'milestones' => $content->importantDates($event)->take(4),
+            'contacts' => $content->contacts($event)->take(2),
+            'channel' => $content->channels($event)->first(),
+            'latestNotifications' => NotificationResource::collection($request->user()->notifications()->latest()->take(3)->get())->resolve(),
+        ]);
     }
 
     public function registration(Request $request): View
