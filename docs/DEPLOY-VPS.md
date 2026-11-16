@@ -59,6 +59,8 @@ ASIC_CHAIR_NAME=<nama ketua>     # penanda tangan LoA/penolakan/sertifikat
 ASIC_TREASURER_NAME=<nama bendahara>
 ```
 
+**Penting:** nilai `.env` yang mengandung `#`, spasi, atau `$` wajib diberi tanda kutip ganda (mis. `ADMIN_DEFAULT_PASSWORD="abc#123"`); tanpa kutip, `#` dibaca sebagai awal komentar sehingga nilai terpotong.
+
 Informasi rekening tidak perlu ditaruh di `.env`: Bendahara mengisinya lewat menu **Tarif → Informasi pembayaran**.
 
 ```bash
@@ -113,3 +115,10 @@ Aplikasi belum memakai antrean (queue) untuk pekerjaan penting; worker tidak waj
 - Jangan unggah berkas template panitia yang berisi tanda tangan, rekening, atau data pribadi asli ke repo.
 - Batasi akses panel hosting (password kuat, firewall `ufw allow 'Nginx Full'` dan SSH saja).
 - Cadangkan database harian: `mysqldump asic > backup-$(date +%F).sql`.
+
+## 8. Catatan server aaPanel (VPS tim)
+
+- Situs dibuat lewat aaPanel (Website → PHP 8.5), *running directory* `/public`, rewrite Laravel, SSL Let's Encrypt dari panel.
+- PHP 8.5 aaPanel perlu ekstensi `fileinfo` (pasang dari App Store/PHP → Install extensions). Fungsi yang dimatikan aaPanel (`putenv`, `proc_open`, `symlink`) tidak mengganggu web karena konfigurasi di-cache; perintah CLI memakai `php-cli.ini` tanpa pembatasan.
+- Composer bawaan server bisa terlalu lama (2.0.x) untuk `composer.lock`; pakai Composer terbaru terpisah (`composer.phar`) tanpa mengganti milik proyek lain.
+- `public/.user.ini` membatasi `open_basedir` ke folder situs dan menaikkan batas unggah.
