@@ -39,12 +39,16 @@ class PaymentProofController extends Controller
         ]);
 
         $outcome = DB::transaction(function () use ($id_invoice, $user, $request, $input) {
-            $invoice = Invoice::with('registration.participant')->lockForUpdate()->find($id_invoice);
+            $invoice = Invoice::with(['registration.participant', 'registration.abstractSubmission'])->lockForUpdate()->find($id_invoice);
             if (! $invoice) {
                 return ['error' => Response::HTTP_NOT_FOUND, 'message' => 'Invoice tidak ditemukan.'];
             }
             if ($invoice->registration?->participant?->id_user !== $user->id_user) {
                 return ['error' => Response::HTTP_FORBIDDEN, 'message' => 'Anda bukan pemilik invoice ini.'];
+            }
+            // KF-20: presenter membayar setelah abstrak diterima (invoice lama yang terbit dini tidak dihapus).
+            if ($invoice->registration?->isPresenter() && $invoice->registration->abstractSubmission?->status_abstrak !== 'Diterima') {
+                return ['error' => Response::HTTP_UNPROCESSABLE_ENTITY, 'message' => __('asic-api.payment.presenter_abstract_not_accepted')];
             }
             if (! in_array($invoice->status_pembayaran, ['Menunggu Pembayaran', 'Ditolak'], true)) {
                 return ['error' => Response::HTTP_CONFLICT, 'message' => "Bukti tidak dapat diunggah pada invoice berstatus '{$invoice->status_pembayaran}'."];

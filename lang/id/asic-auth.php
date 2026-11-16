@@ -47,4 +47,6 @@ return [
     'admin_email_label' => 'Email Administrator',
     'admin_email_placeholder' => 'admin@asic.unand.ac.id',
     'demo_admin_staff' => 'Super Administrator',
+    'country_label' => 'Negara asal',
+    'country_help' => 'Peserta dari Indonesia ditagih dalam IDR; peserta dari negara lain ditagih dalam USD.',
 ];

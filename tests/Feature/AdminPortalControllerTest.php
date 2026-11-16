@@ -8,6 +8,7 @@ use App\Models\PaymentProof;
 use App\Models\PaymentVerification;
 use App\Models\Role;
 use App\Models\UserAccount;
+use App\Support\Currency;
 use App\Support\PermissionMatrix;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -73,7 +74,7 @@ class AdminPortalControllerTest extends TestCase
         PaymentVerification::create(['id_payment_proof' => $proof->id_payment_proof, 'id_treasurer' => $this->user(Role::ROLE_BENDAHARA)->id_user, 'hasil_verifikasi' => 'Valid']);
 
         $this->as(Role::ROLE_ADMIN)->get('/admin/dashboard')->assertOk()
-            ->assertSee('IDR 600.000,00')->assertSee('Belum lunas')->assertSee('Menunggu verifikasi');
+            ->assertSee(Currency::format(600000, 'IDR'))->assertSee('Belum lunas')->assertSee('Menunggu verifikasi');
 
         $admin = $this->user(Role::ROLE_ADMIN, '.without-payment-view');
         $paymentView = Role::where('nama_role', Role::ROLE_ADMIN)->value('id_role');

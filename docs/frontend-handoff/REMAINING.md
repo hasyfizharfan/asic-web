@@ -11,7 +11,7 @@ Fitur berikut belum boleh menampilkan keberhasilan atau mengubah state seolah-ol
 | Fitur | Status |
 | --- | --- |
 | Override check-in sekretariat | Belum tersedia; alur otorisasi supervisor belum dirancang. |
-| Pencarian registrasi ulang dengan nomor badge terpisah | Belum tersedia; pencarian memakai ID primary key registrasi, nama, atau email melalui `GET /api/registrations/search`. |
+| Pencarian registrasi ulang dengan nomor badge terpisah | Belum tersedia; pencarian memakai ID primary key registrasi, nama, atau email melalui `GET /api/registrations/search`. Registrasi ulang luring hari pertama (KF-12) tersedia lewat pindai QR atau hasil pencarian (`POST /api/events/{id_event}/reregistration[/scan]`). |
 | Cetak badge dan issue kit | Belum tersedia. |
 | Draft review reviewer | Belum tersedia; pengiriman review final tersedia. |
 | Website settings | Belum tersedia. |
@@ -22,7 +22,6 @@ Fitur berikut belum boleh menampilkan keberhasilan atau mengubah state seolah-ol
 | CRUD template dokumen | Belum tersedia. |
 | Assignment reviewer | Belum tersedia; antrean reviewer menampilkan abstrak sesuai filter tanpa penugasan individual. Kontrol penugasan Sekretariat dinonaktifkan. |
 | Status Revisi | Belum tersedia; keputusan final hanya Diterima atau Ditolak. |
-| Mata uang USD pada tarif bendahara | Skema `registration_fee` hanya memiliki kolom `amount` dan `discount` tanpa kode mata uang. UI saat ini menampilkan nominal sebagai IDR; dukungan USD memerlukan perubahan skema dan aturan invoice. |
 | Landing sections selain event/speaker/schedule/tarif aktif | Masih memakai konten presentasi statis. |
 | Pemindaian kamera QR dan pembentukan gambar QR | Check-in menerima token melalui input manual/pemindai keyboard; kamera dan gambar QR belum disediakan. |
 | Target audiens pengumuman dan pengiriman kanal | Belum tersedia di skema/API; pengumuman memiliki event, jadwal, dan status Draft/Dipublikasikan. Kanal komunikasi menyimpan jenis, URL, dan status tanpa relasi target pengumuman. |
@@ -37,7 +36,6 @@ Untuk fitur baru, tambahkan kontrak backend (Form Request, middleware `permissio
 ## Bendahara
 
 - Refund bendahara belum memiliki endpoint backend. Halaman refund menampilkan **Belum tersedia** dengan aksi dinonaktifkan.
-- Skema tarif menyimpan `amount` dan `discount` tanpa kode mata uang. Portal bendahara menampilkan nominal tersebut sebagai IDR; USD belum dapat dibedakan atau dihitung dengan aman.
 
 ## Admin
 

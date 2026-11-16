@@ -65,4 +65,11 @@ Email diarahkan ke log. Periksa `storage/logs/laravel.log` untuk melihat email r
 
 ## Catatan tarif demo
 
-Skema `registration_fee` saat ini menyimpan jenis registrasi, mode kehadiran, tujuan publikasi, nominal, dan diskon. Skema belum memiliki dimensi negara/domestik-internasional atau mata uang. Karena itu demo memuat tarif Student/Regular untuk mode Daring/Luring dalam nominal IDR; tarif USD atau tarif terpisah berdasarkan negara memerlukan perubahan skema dan kontrak API pada tahap tersendiri.
+Tarif memiliki mata uang (`IDR` atau `USD`). Peserta dengan negara Indonesia ditagih dengan tarif IDR, peserta negara lain dengan tarif USD; bila tarif USD untuk kombinasi tersebut belum dibuat Bendahara, invoice tidak terbit (tercatat di log sebagai `invoice.skipped`). Demo hanya memuat tarif IDR.
+
+## Perintah pemeliharaan
+
+- `php artisan migrate` setelah menarik perubahan terbaru (kolom registrasi ulang dan mata uang).
+- `php artisan asic:report-early-presenter-invoices` — laporan read-only invoice presenter yang terbit sebelum abstraknya Diterima (sisa aturan lama). Tidak mengubah data.
+- `php artisan registration-periods:close-expired` — menonaktifkan periode yang tanggal selesainya lewat (juga dijadwalkan per jam; jalankan `php artisan schedule:work` atau cron `schedule:run`).
+- Zona waktu aplikasi: `APP_TIMEZONE=Asia/Jakarta`.

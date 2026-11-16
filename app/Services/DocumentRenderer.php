@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\DigitalSignature;
 use App\Models\Role;
+use App\Support\Currency;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
@@ -58,45 +59,16 @@ class DocumentRenderer
         ])->render();
     }
 
-    /** Format rupiah seperti di template panitia: 1,000,000 */
-    public static function money(mixed $value): string
+    /** Format nominal seperti di template panitia: 1,000,000 (IDR) atau 1,000.00 (USD). */
+    public static function money(mixed $value, ?string $currency = 'IDR'): string
     {
-        return number_format((float) $value, 0, '.', ',');
+        return Currency::plain($value, $currency);
     }
 
-    /** Terbilang bahasa Inggris untuk receipt ("Five million rupiah"). */
-    public static function amountInWords(mixed $value): string
+    /** Terbilang bahasa Inggris untuk receipt ("Five million rupiah" / "... US dollars"). */
+    public static function amountInWords(mixed $value, ?string $currency = 'IDR'): string
     {
-        $n = (int) round((float) $value);
-        if ($n === 0) {
-            return 'Zero rupiah';
-        }
-        $ones = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve',
-            'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
-        $tens = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
-        $chunk = function (int $x) use ($ones, $tens): string {
-            $w = [];
-            if ($x >= 100) {
-                $w[] = $ones[intdiv($x, 100)].' hundred';
-                $x %= 100;
-            }
-            if ($x >= 20) {
-                $w[] = $tens[intdiv($x, 10)].($x % 10 ? '-'.$ones[$x % 10] : '');
-            } elseif ($x > 0) {
-                $w[] = $ones[$x];
-            }
-
-            return implode(' ', $w);
-        };
-        $parts = [];
-        foreach ([1_000_000_000 => 'billion', 1_000_000 => 'million', 1_000 => 'thousand', 1 => ''] as $size => $label) {
-            if ($n >= $size) {
-                $parts[] = trim($chunk(intdiv($n, $size)).' '.$label);
-                $n %= $size;
-            }
-        }
-
-        return ucfirst(implode(' ', $parts)).' rupiah';
+        return Currency::words($value, $currency);
     }
 
     /**

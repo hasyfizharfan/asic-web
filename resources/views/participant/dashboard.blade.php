@@ -25,7 +25,7 @@
                 </div>
                 <div class="mt-4 flex flex-wrap gap-3 text-sm">
                     <a class="font-semibold text-primary" href="{{ route('portal.participant.abstract', ['id_registration' => $item->id_registration]) }}">Abstrak: {{ $item->abstractSubmission?->status_abstrak ?? 'Belum dikirim' }}</a>
-                    @if($item->invoice)<a class="font-semibold text-primary" href="{{ route('portal.participant.payment.checkout', ['id_registration' => $item->id_registration]) }}">Invoice {{ $item->invoice->nomor_invoice }}</a>@endif
+                    @if($item->invoice)<a class="font-semibold text-primary" href="{{ route('portal.participant.payment.checkout', ['id_registration' => $item->id_registration]) }}">Invoice {{ $item->invoice->nomor_invoice }}</a>@elseif($item->isPresenter())<span class="text-on-surface-variant">{{ __('asic-participant.flow.invoice_after_acceptance') }}</span>@endif
                     <a class="font-semibold text-primary" href="{{ route('portal.participant.documents', ['id_registration' => $item->id_registration]) }}">Dokumen ({{ $documents->where('id_registration', $item->id_registration)->count() }})</a>
                 </div>
             </article>

@@ -21,15 +21,15 @@
 </table>
 
 <table class="grid">
-    <tr><th>DESCRIPTION OF FEE PAYMENT</th><th class="right" style="width:30%">AMOUNT (IDR)</th></tr>
+    <tr><th>DESCRIPTION OF FEE PAYMENT</th><th class="right" style="width:30%">AMOUNT ({{ $currency ?? 'IDR' }})</th></tr>
     @foreach($items as $item)
     <tr>
         <td>{{ $item['jenis_biaya'] }}@if(!empty($item['deskripsi']))<br><span class="note">{{ $item['deskripsi'] }}</span>@endif
             @if(($item['jumlah'] ?? 1) > 1) (×{{ $item['jumlah'] }})@endif</td>
-        <td class="right">{{ \App\Services\DocumentRenderer::money($item['subtotal']) }}</td>
+        <td class="right">{{ \App\Services\DocumentRenderer::money($item['subtotal'], $currency ?? 'IDR') }}</td>
     </tr>
     @endforeach
-    <tr><th class="right">TOTAL (IDR)</th><th class="right">{{ \App\Services\DocumentRenderer::money($total) }}</th></tr>
+    <tr><th class="right">TOTAL ({{ $currency ?? 'IDR' }})</th><th class="right">{{ \App\Services\DocumentRenderer::money($total, $currency ?? 'IDR') }}</th></tr>
 </table>
 
 <p><strong>NOTES:</strong></p>

@@ -15,7 +15,11 @@
         const registrations = response.data?.data?.data || [];
         this.registration = registrations.find(row => String(row.id_registration) === String(requestedId)) || registrations[0] || null;
         if (!this.registration) { this.loadError = 'Belum ada pendaftaran untuk ditagihkan.'; this.loading = false; return; }
-        if (!this.registration.invoice?.id_invoice) { this.loadError = 'Invoice belum tersedia untuk pendaftaran ini.'; this.loading = false; return; }
+        if (!this.registration.invoice?.id_invoice) {
+            const presenter = ['Oral Presenter', 'Poster Presenter'].includes(this.registration.participation_type);
+            this.loadError = presenter ? @js(__('asic-participant.flow.invoice_after_acceptance')) : @js(__('asic-participant.flow.invoice_unavailable'));
+            this.loading = false; return;
+        }
         const invoiceResponse = await window.asicApi.get('/api/invoices/' + this.registration.invoice.id_invoice);
         this.loading = false;
         if (!invoiceResponse.ok) { this.loadError = invoiceResponse.error || 'Invoice gagal dimuat.'; return; }
@@ -35,7 +39,8 @@
         event.target.reset();
         window.asicApi.showToast(response.data?.message || 'Bukti transfer berhasil dikirim.', 'success');
     },
-    formatAmount(value) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value || 0)); }
+    internationalNote: @js(config('asic.payment.international_note')),
+    formatAmount(value) { return window.asicMoney(value, this.invoice?.mata_uang); }
 }">
     <header class="space-y-1">
         <h1 class="text-2xl font-bold text-on-surface">Pembayaran registrasi</h1>
@@ -56,12 +61,13 @@
             <div class="rounded-xl bg-surface-container-low p-4 text-sm">
                 <h2 class="font-bold">Instruksi transfer</h2>
                 <p class="mt-1 whitespace-pre-line" x-text="invoice.payment_qr_info || 'Hubungi bendahara untuk mendapatkan informasi rekening pembayaran.'"></p>
+                <p x-show="invoice.mata_uang === 'USD' && internationalNote" class="mt-2 whitespace-pre-line font-semibold" x-text="internationalNote"></p>
             </div>
             <template x-if="invoice.status_pembayaran === 'Menunggu Pembayaran' || invoice.status_pembayaran === 'Ditolak'">
                 <form class="space-y-4 border-t border-surface-container-highest pt-5" @submit.prevent="uploadProof($event)">
                     <h2 class="font-bold">Unggah bukti pembayaran</h2>
                     <label class="block text-sm font-semibold">Nominal transfer
-                        <input type="number" name="nominal_transfer" min="1" step="1" required class="mt-1 block w-full rounded-xl border-surface-container-highest">
+                        <input type="number" name="nominal_transfer" min="0.01" :step="invoice.mata_uang === 'USD' ? '0.01' : '1'" required class="mt-1 block w-full rounded-xl border-surface-container-highest">
                     </label>
                     <p x-show="fieldErrors.nominal_transfer" x-text="fieldErrors.nominal_transfer?.[0]" class="text-sm text-error"></p>
                     <label class="block text-sm font-semibold">Bukti transfer (JPG, PNG, atau PDF)

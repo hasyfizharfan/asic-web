@@ -37,7 +37,7 @@
     <section x-show="!loading && invoice" class="space-y-4 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-6">
         <div><span class="text-sm text-on-surface-variant">Nomor invoice</span><p class="font-semibold" x-text="invoice?.nomor_invoice"></p></div>
         <div><span class="text-sm text-on-surface-variant">Peserta</span><p x-text="invoice?.registration?.participant?.full_name || invoice?.registration?.participant?.user_account?.email"></p></div>
-        <div><span class="text-sm text-on-surface-variant">Total</span><p x-text="new Intl.NumberFormat('id-ID').format(Number(invoice?.total_tagihan || 0))"></p></div>
+        <div><span class="text-sm text-on-surface-variant">Total</span><p x-text="window.asicMoney(invoice?.total_tagihan, invoice?.mata_uang)"></p></div>
         <div><span class="text-sm text-on-surface-variant">Status</span><p x-text="invoice?.status_pembayaran"></p></div>
         <template x-if="latestProof"><a class="text-primary underline" target="_blank" :href="'/api/payment-proofs/' + latestProof.id_payment_proof + '/file'">Lihat bukti transfer</a></template>
         <div x-show="invoice?.status_pembayaran === 'Menunggu Verifikasi' && latestProof" class="flex gap-3">

@@ -28,6 +28,7 @@ class StoreRegistrationFeeRequest extends FormRequest
             'tujuan_publikasi' => ['required', Rule::in(RegistrationFee::PUBLICATION_TARGETS)],
             'amount' => ['required', 'numeric', 'min:0', 'max:9999999999.99', 'decimal:0,2'],
             'discount' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99', 'decimal:0,2'],
+            'mata_uang' => ['nullable', Rule::in(RegistrationFee::CURRENCIES)],
         ];
     }
 
@@ -51,6 +52,7 @@ class StoreRegistrationFeeRequest extends FormRequest
             'discount.numeric' => 'Diskon harus berupa angka.',
             'discount.min' => 'Diskon tidak boleh negatif.',
             'discount.decimal' => 'Diskon maksimal 2 angka desimal.',
+            'mata_uang.in' => 'Mata uang harus IDR atau USD.',
         ];
     }
 
@@ -72,6 +74,7 @@ class StoreRegistrationFeeRequest extends FormRequest
                     'registration_type' => $data['registration_type'],
                     'attendance_mode' => $data['attendance_mode'],
                     'tujuan_publikasi' => $data['tujuan_publikasi'],
+                    'mata_uang' => $data['mata_uang'] ?? 'IDR',
                 ]);
             },
         ];
@@ -120,7 +123,7 @@ class StoreRegistrationFeeRequest extends FormRequest
             ->exists();
 
         if ($exists) {
-            $validator->errors()->add('registration_type', 'Tarif dengan kombinasi event, periode, kategori peserta, mode kehadiran, dan tujuan publikasi yang sama sudah ada.');
+            $validator->errors()->add('registration_type', 'Tarif dengan kombinasi event, periode, kategori peserta, mode kehadiran, tujuan publikasi, dan mata uang yang sama sudah ada.');
         }
     }
 }

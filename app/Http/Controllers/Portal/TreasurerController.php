@@ -9,6 +9,7 @@ use App\Models\IssuedDocument;
 use App\Models\RegistrationFee;
 use App\Models\RegistrationPeriod;
 use App\Models\UserAccount;
+use App\Support\Currency;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -27,7 +28,9 @@ class TreasurerController extends Controller
     public function dashboard(Request $request): View
     {
         $pendingProofs = Invoice::query()->where('status_pembayaran', 'Menunggu Verifikasi')->whereHas('latestPaymentProof')->count();
-        $verifiedTotal = Invoice::query()->where('status_pembayaran', 'Terverifikasi')->sum('total_tagihan');
+        // Nominal tidak dijumlahkan lintas mata uang.
+        $verifiedSums = Invoice::query()->where('status_pembayaran', 'Terverifikasi')->selectRaw('mata_uang, SUM(total_tagihan) as amount')->groupBy('mata_uang')->pluck('amount', 'mata_uang');
+        $verifiedTotals = collect(Currency::ALL)->mapWithKeys(fn ($c) => [$c => (float) ($verifiedSums[$c] ?? 0)])->all();
         $expiredInvoices = Invoice::query()->where(function (Builder $q): void {
             $q->whereIn('status_pembayaran', ['Kedaluwarsa', 'Kadaluwarsa'])
                 ->orWhere(fn (Builder $due) => $due->where('status_pembayaran', 'Menunggu Pembayaran')
@@ -35,12 +38,12 @@ class TreasurerController extends Controller
         })->count();
         $categorySummary = Invoice::query()->where('status_pembayaran', 'Terverifikasi')
             ->join('registration', 'registration.id_registration', '=', 'invoice.id_registration')
-            ->selectRaw('registration.registration_type as category, COUNT(invoice.id_invoice) as invoice_count, SUM(invoice.total_tagihan) as amount')
-            ->groupBy('registration.registration_type')->orderBy('registration.registration_type')->get();
+            ->selectRaw('registration.registration_type as category, invoice.mata_uang as currency, COUNT(invoice.id_invoice) as invoice_count, SUM(invoice.total_tagihan) as amount')
+            ->groupBy('registration.registration_type', 'invoice.mata_uang')->orderBy('registration.registration_type')->orderBy('invoice.mata_uang')->get();
         $latestPending = Invoice::query()->with(['registration.participant', 'latestPaymentProof'])
             ->where('status_pembayaran', 'Menunggu Verifikasi')->latest('id_invoice')->limit(5)->get();
 
-        return view('treasurer.dashboard', $this->identity($request) + compact('pendingProofs', 'verifiedTotal', 'expiredInvoices', 'categorySummary', 'latestPending'));
+        return view('treasurer.dashboard', $this->identity($request) + compact('pendingProofs', 'verifiedTotals', 'expiredInvoices', 'categorySummary', 'latestPending'));
     }
 
     public function tariffs(Request $request): View

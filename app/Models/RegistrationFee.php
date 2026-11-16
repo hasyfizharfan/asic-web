@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Currency;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,6 +30,7 @@ class RegistrationFee extends Model
         'tujuan_publikasi',
         'amount',
         'discount',
+        'mata_uang',
     ];
 
     protected function casts(): array
@@ -59,6 +61,8 @@ class RegistrationFee extends Model
     public const ATTENDANCE_MODES = ['Daring', 'Luring'];
 
     public const PUBLICATION_TARGETS = ['Prosiding', 'Jurnal', 'Tidak'];
+
+    public const CURRENCIES = Currency::ALL;
 
     /**
      * Tarif dianggap "terpakai" jika sudah dirujuk oleh minimal satu invoice.

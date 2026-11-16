@@ -26,6 +26,21 @@ if (window.Alpine && !window.Alpine.store('toast')) {
 }
 
 // Cookie-based SPA API client shared by all real portal pages.
+/**
+ * Format nominal sesuai mata uang (IDR tanpa desimal, USD dua desimal) dan bahasa halaman.
+ * Nominal lintas mata uang tidak pernah dijumlahkan di klien.
+ */
+window.asicMoney = function (value, currency = 'IDR') {
+    const code = currency === 'USD' ? 'USD' : 'IDR';
+    const locale = document.documentElement.lang === 'en' ? 'en-US' : 'id-ID';
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: code,
+        minimumFractionDigits: code === 'USD' ? 2 : 0,
+        maximumFractionDigits: code === 'USD' ? 2 : 0,
+    }).format(Number(value || 0));
+};
+
 window.asicApi = {
     xsrfCookie() {
         const cookie = document.cookie.split('; ').find((item) => item.startsWith('XSRF-TOKEN='));

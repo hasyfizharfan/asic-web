@@ -18,10 +18,6 @@
     },
     async submit(event) {
         this.fieldErrors = {};
-        if (this.registration?.invoice?.status_pembayaran !== 'Terverifikasi') {
-            this.loadError = 'Pembayaran harus terverifikasi sebelum abstrak dikirim.';
-            return;
-        }
         this.submitting = true;
         const response = await window.asicApi.upload('/api/registrations/' + this.registration.id_registration + '/abstract', new FormData(event.target));
         this.submitting = false;
@@ -37,7 +33,8 @@
     <p x-show="loading" role="status" class="rounded-xl bg-surface-container-low p-4 text-sm">Memuat data abstrak…</p>
     <p x-show="loadError" x-text="loadError" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-on-error-container"></p>
     <section x-show="registration" class="space-y-4 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5">
-        <p class="text-sm">Registrasi <strong x-text="registration?.id_registration"></strong> · Pembayaran <strong x-text="registration?.invoice?.status_pembayaran || 'Belum ada invoice'"></strong></p>
+        <p class="text-sm">Registrasi <strong x-text="registration?.id_registration"></strong> · Pembayaran <strong x-text="registration?.invoice?.status_pembayaran || @js(__('asic-participant.flow.invoice_after_acceptance'))"></strong></p>
+        <p x-show="!registration?.invoice" class="text-xs text-on-surface-variant">{{ __('asic-participant.flow.abstract_payment_note') }}</p>
         <template x-if="abstractSubmission">
             <div class="space-y-3 rounded-xl bg-surface-container-low p-4">
                 <p class="text-sm">Judul: <strong x-text="abstractSubmission.judul_abstrak"></strong></p>
@@ -64,7 +61,7 @@
                 <input type="file" name="file_abstrak" required accept=".pdf,.doc,.docx" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
             </label>
             <p x-show="fieldErrors.file_abstrak" x-text="fieldErrors.file_abstrak?.[0]" class="text-sm text-error"></p>
-            <button type="submit" :disabled="submitting || registration?.invoice?.status_pembayaran !== 'Terverifikasi'" class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50" x-text="submitting ? 'Mengirim…' : 'Kirim abstrak'"></button>
+            <button type="submit" :disabled="submitting" class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50" x-text="submitting ? 'Mengirim…' : 'Kirim abstrak'"></button>
         </form>
     </section>
 </main>

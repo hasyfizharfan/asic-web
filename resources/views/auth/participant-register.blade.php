@@ -21,6 +21,10 @@
         <label class="block text-sm font-semibold">Institusi / afiliasi
             <input name="affiliation" maxlength="150" autocomplete="organization" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
         </label>
+        <label class="block text-sm font-semibold">{{ __('asic-auth.country_label') }}
+            <input name="country" required maxlength="100" value="Indonesia" autocomplete="country-name" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
+            <span class="mt-1 block text-xs font-normal text-on-surface-variant">{{ __('asic-auth.country_help') }}</span>
+        </label>
         <label class="block text-sm font-semibold">Nomor telepon
             <input name="phone" maxlength="20" autocomplete="tel" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
         </label>

@@ -24,6 +24,7 @@ use App\Http\Controllers\RecapController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegistrationFeeController;
 use App\Http\Controllers\RegistrationSearchController;
+use App\Http\Controllers\ReregistrationController;
 use App\Http\Controllers\SpeakerController;
 use Illuminate\Support\Facades\Route;
 
@@ -122,6 +123,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/sessions/{id_session}/attendees', [EventSessionController::class, 'attendees'])->name('api.sessions.attendees');
         Route::post('/sessions/{id_session}/attendance', [AttendanceController::class, 'recordAttendance'])->name('api.sessions.attendance.record');
         Route::post('/sessions/{id_session}/attendance/scan', [AttendanceController::class, 'scanParticipantQr'])->name('api.sessions.attendance.scan');
+        // KF-12: registrasi ulang luring hari pertama (terpisah dari kehadiran sesi KF-14)
+        Route::post('/events/{id_event}/reregistration/scan', [ReregistrationController::class, 'scan'])
+            ->whereNumber('id_event')->name('api.events.reregistration.scan');
+        Route::post('/events/{id_event}/reregistration', [ReregistrationController::class, 'store'])
+            ->whereNumber('id_event')->name('api.events.reregistration.store');
         Route::patch('/attendance/{id_attendance}/presentation', [AttendanceController::class, 'updatePresentationStatus'])->name('api.attendance.presentation');
     });
     Route::post('/attendance/scan', [AttendanceController::class, 'submitSessionQr'])

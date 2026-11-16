@@ -26,6 +26,7 @@ class RegistrationFeeResource extends JsonResource
             'amount' => (string) $this->amount,
             'discount' => (string) $this->discount,
             'final_amount' => $this->finalAmount(),
+            'mata_uang' => $this->mata_uang ?? 'IDR',
             'event' => $this->whenLoaded('event', fn () => [
                 'id_event' => $this->event->id_event,
                 'nama_event' => $this->event->nama_event,

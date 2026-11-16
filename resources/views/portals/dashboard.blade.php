@@ -72,7 +72,7 @@
                         <p class="mt-1 text-xs text-on-surface-variant">{{ $invoice->registration?->participant?->full_name ?? 'Peserta' }}</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-mono text-sm font-bold text-primary">Rp {{ number_format((float) $invoice->total_tagihan, 0, ',', '.') }}</p>
+                        <p class="font-mono text-sm font-bold text-primary">{{ \App\Support\Currency::format($invoice->total_tagihan, $invoice->mata_uang) }}</p>
                         <p class="mt-1 text-xs text-on-surface-variant">{{ $invoice->status_pembayaran }}</p>
                     </div>
                 </article>

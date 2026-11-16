@@ -29,8 +29,7 @@
         @if($canSeePayments && $payments)
             <article class="rounded-xl border border-surface-container-highest bg-surface-container-lowest p-5">
                 <h2 class="text-sm font-semibold text-on-surface-variant">Pembayaran</h2>
-                <dl class="mt-3 space-y-2 text-sm"><div class="flex justify-between"><dt>Terverifikasi</dt><dd>IDR {{ number_format((float) $payments['amount_verified'], 2, ',', '.') }}</dd></div><div class="flex justify-between"><dt>Belum lunas</dt><dd>IDR {{ number_format((float) $payments['amount_outstanding'], 2, ',', '.') }}</dd></div><div class="flex justify-between"><dt>Menunggu verifikasi</dt><dd>{{ $payments['awaiting_verification'] }}</dd></div></dl>
-                <p class="mt-3 text-xs text-on-surface-variant">Nominal ditampilkan sebagai IDR karena skema belum menyimpan kode mata uang.</p>
+                <dl class="mt-3 space-y-2 text-sm">@foreach(\App\Support\Currency::ALL as $currency)<div class="flex justify-between"><dt>Terverifikasi ({{ $currency }})</dt><dd>{{ \App\Support\Currency::format($payments['amount_verified_by_currency'][$currency], $currency) }}</dd></div><div class="flex justify-between"><dt>Belum lunas ({{ $currency }})</dt><dd>{{ \App\Support\Currency::format($payments['amount_outstanding_by_currency'][$currency], $currency) }}</dd></div>@endforeach<div class="flex justify-between"><dt>Menunggu verifikasi</dt><dd>{{ $payments['awaiting_verification'] }}</dd></div></dl>
             </article>
         @endif
     </section>

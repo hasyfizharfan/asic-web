@@ -45,7 +45,7 @@ Dijalankan pada branch `feat/fe-be-integration`, dari HEAD awal `4d96ac4` (`dev`
 ## Tahap C — keputusan kontrak
 
 - Registrasi peserta memakai `POST /api/registrations`; pilihan event dan periode diambil dari endpoint publik, dan FE hanya melanjutkan ke checkout setelah respons 201 memuat `id_registration`.
-- Agar urutan alur yang disepakati dapat dilakukan (registrasi → invoice → bukti bayar → verifikasi → abstrak), invoice kini diterbitkan untuk semua registrasi yang memiliki tarif. LoA Listener tetap terbit saat registrasi; LoA presenter tetap menunggu hasil review. `InvoiceIssuer` idempoten sehingga pemanggilan setelah keputusan tidak menggandakan invoice.
+- Agar urutan alur yang disepakati dapat dilakukan (registrasi → invoice → bukti bayar → verifikasi → abstrak), invoice kini diterbitkan untuk semua registrasi yang memiliki tarif. LoA Listener tetap terbit saat registrasi; LoA presenter tetap menunggu hasil review. `InvoiceIssuer` idempoten sehingga pemanggilan setelah keputusan tidak menggandakan invoice. **Digantikan Tahap H (KF-20):** invoice presenter kini terbit saat abstrak Diterima.
 - Tim Abstrak memakai `POST /api/tim-abstrak/submissions/{id_abstract}/review` dan payload DB `hasil_review`/`catatan_review`. Draft, override check-in, badge, kit, dan website settings belum didukung API dan tidak boleh ditampilkan sebagai sukses.
 - Tarif memakai daftar `GET /api/registration-fees`; pembaruan backend dilakukan per ID lewat `PATCH /api/registration-fees/{id_fee}`, bukan PUT agregat siklus.
 # Sekretariat: pencarian registrasi ulang
@@ -56,9 +56,39 @@ Dijalankan pada branch `feat/fe-be-integration`, dari HEAD awal `4d96ac4` (`dev`
 ## Portal Admin
 
 - Dashboard Admin menjadi satu-satunya halaman ringkasan. `/admin/overview` tetap tersedia sebagai redirect kompatibilitas ke `/admin/dashboard`.
-- Angka dashboard dihitung dari `ReportService` dan tabel operasional. Bagian pembayaran hanya ditampilkan untuk pengguna dengan akses lihat `verify_payment`; nominal disebut IDR karena skema tidak memiliki kode mata uang.
+- Angka dashboard dihitung dari `ReportService` dan tabel operasional. Bagian pembayaran hanya ditampilkan untuk pengguna dengan akses lihat `verify_payment`; nominal ditampilkan per mata uang (IDR dan USD terpisah, Tahap H).
 - Aktivitas dashboard hanya memakai registrasi, verifikasi pembayaran, dan review yang benar-benar tersimpan. Tidak ada kurva, target, kanal pembayaran, atau aktivitas contoh.
 - Audit perubahan ACL dan akun memakai tabel `acl_audit_log` baru. Baris audit mempertahankan email pelaku setelah akun dihapus; metadata tidak menyimpan password atau kredensial.
 - Akun Admin yang sedang dipakai tidak dapat dihapus, dinonaktifkan, atau diturunkan perannya. Operasi tunggal dan batch juga harus menjaga setidaknya satu Admin aktif.
 - Tanda tangan digital memakai endpoint dan penyimpanan privat yang telah tersedia, dengan capability `manage_digital_signatures`.
 - CRUD arsip, CRUD template dokumen, dan pengaturan website global belum memiliki kontrak backend. Halaman tetap menampilkan **Belum tersedia** dengan aksi nonaktif. Halaman template menyebut kedua kelompok yang diminta: dokumen terbit dan template berkas unduhan.
+
+## Tahap H — Perbaikan hasil audit PRD
+
+### KF-12 registrasi ulang luring hari pertama
+
+- Registrasi ulang menjadi konsep tersendiri: kolom baru `registration.reregistered_at` dan `registration.reregistered_by` (nullable, FK `user_account` nullOnDelete) lewat migration baru.
+- Endpoint `POST /api/events/{id_event}/reregistration/scan` (body `qr_token`) dan `POST /api/events/{id_event}/reregistration` (body `id_registration`, untuk hasil pencarian manual), keduanya `permission:scan_attendance_qr` (full_access) dan memakai satu aturan di `ReregistrationService`: Terdaftar, event cocok (422), Luring (Daring 422), invoice Terverifikasi (403), sudah registrasi ulang (409, tanpa mengubah waktu), hari ini = `event.tanggal_mulai` (403 "Registrasi ulang hanya dibuka pada hari pertama kegiatan").
+- Urutan pemeriksaan: kecocokan event → status → mode → pembayaran → sudah registrasi ulang → hari pertama. Peserta yang sudah registrasi ulang tetap mendapat 409 (bukan 403) bila dipindai di hari berikutnya agar petugas tahu statusnya.
+- Zona waktu aplikasi kini `env('APP_TIMEZONE', 'Asia/Jakarta')` (sebelumnya `UTC`). Tanggal hari pertama dan waktu sesi dibandingkan dalam WIB.
+- Kehadiran sesi (KF-14, `AttendanceController`) tidak diubah. Halaman Sekretariat `/secretariat/reregistration` kini hanya untuk registrasi ulang; pencatatan per sesi tetap di menu Kehadiran. Override, badge, dan kit tetap **Belum tersedia**.
+- **Selisih yang dilaporkan, tidak diubah di tahap ini:** `AttendanceController::attendanceQr` menerbitkan QR kehadiran untuk peserta Daring maupun Luring, sedangkan PRD KF-13 hanya menyebut Luring (kesepakatan mitra Meeting 2 meminta QR untuk semua peserta). Peserta Daring tetap dapat hadir lewat QR sesi.
+
+### KF-20 invoice presenter setelah abstrak diterima
+
+- Menggantikan keputusan Tahap C. Alasan: PRD KF-20 menetapkan invoice dibuat "saat abstrak Presenter diterima atau saat Listener selesai mendaftar"; menagih presenter sebelum seleksi berisiko meminta pembayaran untuk abstrak yang kemudian ditolak (biaya seminar tidak dapat dikembalikan).
+- `RegistrationObserver::created` hanya menerbitkan invoice + LoA untuk Listener. Invoice presenter diterbitkan `AbstractDecisionProcessor` saat Diterima (idempoten lewat `InvoiceIssuer`); abstrak Ditolak hanya mendapat surat penolakan.
+- Pengiriman abstrak tidak bergantung pada pembayaran. Halaman `participant/abstract` sebelumnya memblokir pengiriman sebelum pembayaran Terverifikasi (kebuntuan dengan aturan baru) — pemblokiran itu dihapus. Setelah registrasi, presenter diarahkan ke halaman abstrak, Listener ke checkout.
+- Unggah bukti bayar presenter yang abstraknya belum Diterima ditolak 422 (berlaku juga untuk invoice lama yang terbit dini).
+- Data lama tidak dihapus. `php artisan asic:report-early-presenter-invoices` (read-only) mencantumkan invoice presenter yang abstraknya belum Diterima beserta jumlahnya.
+
+### Mata uang IDR dan USD
+
+- Kolom baru `registration_fee.mata_uang` dan `invoice.mata_uang` enum('IDR','USD') default 'IDR' (snapshot saat terbit). Data lama otomatis IDR.
+- Aturan peserta dipusatkan di `App\Support\Currency::forParticipant`: negara `Indonesia` (juga `ID`, `IDN`, `Republic of Indonesia`, `Republik Indonesia`, tanpa membedakan huruf besar/kecil) atau kosong → IDR; selain itu → USD. Negara kosong dianggap IDR karena registrasi akun mengisi `Indonesia` sebagai bawaan. Form daftar akun kini meminta negara.
+- `InvoiceIssuer` mencari tarif dengan mata uang peserta. Bila tarif untuk mata uang itu belum ada, hasilnya `skipped` dengan alasan yang menyebut mata uangnya; tidak ada fallback ke mata uang lain.
+- Add-on (`add_on.harga`) hanya IDR; tidak ditambah kolom mata uang. Peserta bertarif USD tidak dapat memilih add-on (422 saat registrasi) dan `InvoiceIssuer` menolak invoice USD yang memuat add-on.
+- Kombinasi tarif (event, periode, kategori, mode, tujuan publikasi, mata uang) divalidasi unik di Form Request dan unique index lewat migration baru; index hanya dibuat bila data lama tidak memiliki duplikat (jika ada, migration mencatat peringatan di log, tidak mengubah data).
+- Dokumen: invoice/receipt menampilkan `AMOUNT (IDR|USD)`, format `1,000,000` untuk IDR dan `1,000.00` untuk USD, terbilang "rupiah" atau "US dollars ... cents". Nomor surat tidak berubah.
+- Laporan: nominal tidak pernah dijumlahkan lintas mata uang. Kunci lama `total_tagihan`, `amount_verified`, `amount_outstanding` kini berisi nominal **IDR saja**; kunci baru `total_tagihan_by_currency`, `amount_verified_by_currency`, `amount_outstanding_by_currency` berisi `{IDR, USD}`. Ekspor Excel menambah kolom "Mata Uang" di akhir; sheet rekap memisahkan IDR dan USD.
+- Pembayaran tetap verifikasi manual. Peserta USD melihat catatan internasional dari `config('asic.payment.international_note')`; tidak ada integrasi payment gateway.

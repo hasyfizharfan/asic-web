@@ -54,6 +54,8 @@ class Registration extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'reregistered_at',
+        'reregistered_by',
         'id_participant',
         'id_event',
         'id_period',
@@ -75,6 +77,7 @@ class Registration extends Model
     {
         return [
             'registration_date' => 'datetime',
+            'reregistered_at' => 'datetime',
         ];
     }
 

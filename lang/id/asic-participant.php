@@ -92,4 +92,11 @@ return [
     'cert_locked_desc' => 'Sertifikat dapat diunduh setelah sesi presentasi Anda selesai dicatat oleh pimpinan sidang dan presensi terverifikasi.',
     'download_pdf' => 'Unduh Sertifikat (PDF)',
     'verify_online' => 'Verifikasi Kredensial Online',
+    'flow' => [
+        'invoice_after_acceptance' => 'Invoice terbit setelah abstrak diterima.',
+        'invoice_unavailable' => 'Invoice belum tersedia.',
+        'no_fee_currency' => 'Belum ada event atau tarif pendaftaran aktif untuk mata uang :currency.',
+        'fee_unavailable' => 'Tarif tidak tersedia',
+        'abstract_payment_note' => 'Kirim abstrak terlebih dahulu. Invoice dan LoA terbit setelah abstrak diterima Tim Abstrak.',
+    ],
 ];

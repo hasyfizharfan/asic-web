@@ -92,4 +92,11 @@ return [
     'cert_locked_desc' => 'Certificates become available after your presentation is logged by the session chair and attendance is verified.',
     'download_pdf' => 'Download Certificate (PDF)',
     'verify_online' => 'Verify Credential Online',
+    'flow' => [
+        'invoice_after_acceptance' => 'The invoice is issued after the abstract is accepted.',
+        'invoice_unavailable' => 'The invoice is not available yet.',
+        'no_fee_currency' => 'No active event or registration fee is available for :currency.',
+        'fee_unavailable' => 'Fee not available',
+        'abstract_payment_note' => 'Submit your abstract first. The invoice and LoA are issued after the Abstract Team accepts it.',
+    ],
 ];

@@ -55,6 +55,7 @@
                                             "type": "object"
                                         },
                                         "file_url": {
+                                            "description": "URL endpoint unduhan terotorisasi",
                                             "type": "string",
                                             "nullable": true
                                         }
@@ -236,7 +237,7 @@
                     {
                         "name": "status_abstrak",
                         "in": "query",
-                        "description": "Filter berdasarkan status abstrak (Diajukan, Diterima, Ditolak, Revisi)",
+                        "description": "Filter berdasarkan status abstrak (Diajukan, Diterima, Ditolak)",
                         "required": false,
                         "schema": {
                             "type": "string",
@@ -251,6 +252,46 @@
                         "schema": {
                             "type": "string",
                             "example": "Agronomy"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Cari berdasarkan judul/kode abstrak; staf berwenang juga dapat mencari nama penulis dan email.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 150
+                        }
+                    },
+                    {
+                        "name": "reviewed_by_me",
+                        "in": "query",
+                        "description": "Batasi abstrak yang sudah/belum direview pengguna ini.",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 15,
+                            "maximum": 100,
+                            "minimum": 1
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1,
+                            "minimum": 1
                         }
                     }
                 ],
@@ -294,7 +335,7 @@
                     "Review Abstrak"
                 ],
                 "summary": "Detail Naskah Abstrak dan Riwayat Review",
-                "description": "Mendapatkan informasi detail naskah abstrak, data peserta author, dan seluruh riwayat review yang pernah dilakukan.",
+                "description": "Mendapatkan metadata abstrak dan seluruh riwayat keputusan review sesuai hak akses pengguna.",
                 "operationId": "ae5142e970f84ed3d00c40dc34893e81",
                 "parameters": [
                     {
@@ -321,10 +362,6 @@
                                         },
                                         "data": {
                                             "type": "object"
-                                        },
-                                        "file_url": {
-                                            "type": "string",
-                                            "nullable": true
                                         }
                                     },
                                     "type": "object"
@@ -346,13 +383,52 @@
                 ]
             }
         },
+        "/api/tim-abstrak/submissions/{id_abstract}/file": {
+            "get": {
+                "tags": [
+                    "Review Abstrak"
+                ],
+                "summary": "Unduh berkas abstrak untuk reviewer",
+                "description": "Mengunduh naskah melalui pemeriksaan permission review_abstracts. Nama unduhan hanya berisi ID abstrak.",
+                "operationId": "4bff550d9c714923d420685ed7560af4",
+                "parameters": [
+                    {
+                        "name": "id_abstract",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berkas abstrak berhasil diunduh",
+                        "content": {
+                            "application/octet-stream": {}
+                        }
+                    },
+                    "403": {
+                        "description": "Akses ditolak"
+                    },
+                    "404": {
+                        "description": "Berkas abstrak tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
         "/api/tim-abstrak/submissions/{id_abstract}/review": {
             "post": {
                 "tags": [
                     "Review Abstrak"
                 ],
                 "summary": "Kirim Keputusan Review Abstrak",
-                "description": "Menyimpan penilaian seleksi abstrak (Diterima, Ditolak, Revisi) beserta catatan evaluasi reviewer.",
+                "description": "Menyimpan keputusan final seleksi abstrak (Diterima atau Ditolak) beserta catatan evaluasi reviewer.",
                 "operationId": "f234e7467e59220d078140c47bcc8f7e",
                 "parameters": [
                     {
@@ -380,8 +456,7 @@
                                         "example": "Diterima",
                                         "enum": [
                                             "Diterima",
-                                            "Ditolak",
-                                            "Revisi"
+                                            "Ditolak"
                                         ]
                                     },
                                     "catatan_review": {
@@ -3581,6 +3656,18 @@
                         }
                     },
                     {
+                        "name": "mata_uang",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "IDR",
+                                "USD"
+                            ]
+                        }
+                    },
+                    {
                         "name": "per_page",
                         "in": "query",
                         "required": false,
@@ -3662,6 +3749,15 @@
                                     "discount": {
                                         "type": "number",
                                         "example": 0
+                                    },
+                                    "mata_uang": {
+                                        "description": "Bawaan IDR. Peserta Indonesia memakai tarif IDR, peserta negara lain tarif USD.",
+                                        "type": "string",
+                                        "example": "IDR",
+                                        "enum": [
+                                            "IDR",
+                                            "USD"
+                                        ]
                                     }
                                 },
                                 "type": "object"
@@ -3726,6 +3822,18 @@
                         "required": false,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "mata_uang",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "IDR",
+                                "USD"
+                            ]
                         }
                     }
                 ],
@@ -3830,6 +3938,160 @@
                     },
                     "422": {
                         "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/registrations/search": {
+            "get": {
+                "tags": [
+                    "Pendaftaran"
+                ],
+                "summary": "Cari pendaftaran untuk registrasi ulang",
+                "description": "Mencari nomor pendaftaran, nama, atau email peserta. Hanya staf dengan izin manage_registrations.",
+                "operationId": "cbdbaf83179acd5ebc9e952a38343854",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Minimal dua karakter; ID registrasi numerik dapat satu digit.",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "maxLength": 100,
+                            "minLength": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hasil pencarian"
+                    },
+                    "403": {
+                        "description": "Tidak memiliki izin"
+                    },
+                    "422": {
+                        "description": "Kata pencarian tidak valid"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/events/{id_event}/reregistration/scan": {
+            "post": {
+                "tags": [
+                    "Kehadiran"
+                ],
+                "summary": "Registrasi ulang lewat pemindaian QR kehadiran peserta",
+                "description": "Hanya peserta Luring, berstatus Terdaftar, pembayaran Terverifikasi, dan hanya pada hari pertama kegiatan (zona waktu aplikasi). Pemindaian kedua mengembalikan 409 tanpa mengubah waktu registrasi ulang.",
+                "operationId": "e8a36314aafe39a2985ec543b8ac313e",
+                "parameters": [
+                    {
+                        "name": "id_event",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "qr_token"
+                                ],
+                                "properties": {
+                                    "qr_token": {
+                                        "type": "string",
+                                        "maxLength": 100
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Registrasi ulang tercatat"
+                    },
+                    "403": {
+                        "description": "Tanpa izin, pembayaran belum Terverifikasi, status bukan Terdaftar, atau bukan hari pertama"
+                    },
+                    "409": {
+                        "description": "Peserta sudah registrasi ulang"
+                    },
+                    "422": {
+                        "description": "Token tidak dikenali, peserta Daring, atau kegiatan tidak cocok"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/events/{id_event}/reregistration": {
+            "post": {
+                "tags": [
+                    "Kehadiran"
+                ],
+                "summary": "Registrasi ulang manual dari hasil pencarian",
+                "description": "Aturan sama dengan pemindaian QR: Luring, Terdaftar, Terverifikasi, hari pertama, idempoten (409).",
+                "operationId": "0567ca9c91cd16a4111842af9ddce101",
+                "parameters": [
+                    {
+                        "name": "id_event",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "id_registration"
+                                ],
+                                "properties": {
+                                    "id_registration": {
+                                        "type": "integer"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Registrasi ulang tercatat"
+                    },
+                    "403": {
+                        "description": "Tanpa izin atau syarat tidak terpenuhi"
+                    },
+                    "409": {
+                        "description": "Peserta sudah registrasi ulang"
+                    },
+                    "422": {
+                        "description": "Validasi gagal, peserta Daring, atau kegiatan tidak cocok"
                     }
                 },
                 "security": [

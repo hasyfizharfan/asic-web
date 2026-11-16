@@ -8,6 +8,7 @@
 @section('content')
 <div class="max-w-4xl mx-auto space-y-6" x-data="{
     participationType: '{{ $isListener ? 'Listener' : 'Oral Presenter' }}',
+    currency: @js(\App\Support\Currency::forParticipant($participant ?? null)),
     nationality: 'domestic',
     category: 'Regular',
     attendanceMode: 'Luring',
@@ -25,10 +26,11 @@
             const eventData = events.data?.data;
             const feeData = fees.data?.data;
             this.events = Array.isArray(eventData) ? eventData : (eventData?.data || []);
-            this.fees = Array.isArray(feeData) ? feeData : (feeData?.data || []);
+            const allFees = Array.isArray(feeData) ? feeData : (feeData?.data || []);
+            this.fees = allFees.filter(f => (f.mata_uang || 'IDR') === this.currency);
             this.idEvent = String(this.fees[0]?.id_event || this.events[0]?.id_event || '');
             this.syncPeriod();
-            if (!this.events.length || !this.fees.length) this.loadError = 'Belum ada event atau tarif pendaftaran aktif.';
+            if (!this.events.length || !this.fees.length) this.loadError = @js(__('asic-participant.flow.no_fee_currency')).replace(':currency', this.currency);
         } catch (error) { this.loadError = error.message || 'Data pendaftaran gagal dimuat.'; }
         finally { this.loading = false; }
     },
@@ -52,7 +54,7 @@
     },
     get selectedFee() { return this.fees.find(f => String(f.id_event) === this.idEvent && String(f.id_period) === this.idPeriod && f.registration_type === this.category && f.attendance_mode === this.attendanceMode && f.tujuan_publikasi === this.publicationOption); },
     get calculatedFee() {
-        return this.selectedFee ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(this.selectedFee.final_amount)) : 'Tarif tidak tersedia';
+        return this.selectedFee ? window.asicMoney(this.selectedFee.final_amount, this.selectedFee.mata_uang) : @js(__('asic-participant.flow.fee_unavailable'));
     },
     async handleSubmit(e) {
         this.fieldErrors = {};
@@ -73,7 +75,8 @@
             return;
         }
         const registrationId = res.data?.data?.id_registration;
-        if (registrationId) window.location.assign('{{ route('portal.participant.payment.checkout') }}?id_registration=' + encodeURIComponent(registrationId));
+        const target = this.participationType === 'Listener' ? '{{ route('portal.participant.payment.checkout') }}' : '{{ route('portal.participant.abstract') }}';
+        if (registrationId) window.location.assign(target + '?id_registration=' + encodeURIComponent(registrationId));
         else window.asicApi.showToast('Pendaftaran tersimpan, tetapi data invoice belum tersedia. Buka halaman pembayaran dari dashboard.');
     }
 }">
@@ -201,7 +204,7 @@
 
         <!-- Section 4: Abstract Submission (Visible only for Presenter) -->
         <div x-show="false" class="rounded-xl border border-surface-container-highest bg-surface-container-low p-4 text-sm text-on-surface-variant">
-            Pengajuan abstrak dilakukan setelah invoice dan pembayaran diverifikasi pada halaman abstrak peserta.
+            {{ __('asic-participant.flow.abstract_payment_note') }}
         </div>
         <div x-show="false" class="space-y-6">
             <x-ui.card title="{{ __('asic-participant.abstract_info') }}" icon="description">

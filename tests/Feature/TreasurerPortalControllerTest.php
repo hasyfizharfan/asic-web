@@ -6,6 +6,7 @@ use App\Http\Controllers\Portal\TreasurerController;
 use App\Models\Invoice;
 use App\Models\PaymentProof;
 use App\Models\Role;
+use App\Support\Currency;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Routing\Route as RoutingRoute;
@@ -41,7 +42,7 @@ class TreasurerPortalControllerTest extends TestCase
     public function test_all_treasurer_portal_routes_render_through_the_controller_for_treasurer(): void
     {
         $this->fee();
-        $registration = $this->registration('route-smoke');
+        $registration = $this->registration('route-smoke', ['participation_type' => 'Listener']); // KF-20: Listener langsung ber-invoice
         $invoice = Invoice::where('id_registration', $registration->id_registration)->firstOrFail();
         $pageRoutes = [
             'portal.treasurer.' => route('portal.treasurer.'),
@@ -65,7 +66,7 @@ class TreasurerPortalControllerTest extends TestCase
     public function test_other_roles_are_denied_all_treasurer_portal_routes(): void
     {
         $this->fee();
-        $registration = $this->registration('other-role-route');
+        $registration = $this->registration('other-role-route', ['participation_type' => 'Listener']);
         $invoice = Invoice::where('id_registration', $registration->id_registration)->firstOrFail();
         $urls = [
             route('portal.treasurer.'), route('portal.treasurer.dashboard'), route('portal.treasurer.tariffs'), route('portal.treasurer.payments.index'),
@@ -92,6 +93,6 @@ class TreasurerPortalControllerTest extends TestCase
         $this->as(Role::ROLE_BENDAHARA)->postJson($url, ['hasil_verifikasi' => 'Valid'])
             ->assertOk()->assertJsonPath('data.status_pembayaran', 'Terverifikasi');
         $this->assertSame('Terverifikasi', $invoice->fresh()->status_pembayaran);
-        $this->get(route('portal.treasurer.dashboard'))->assertOk()->assertSee('500.000')->assertSee('Student');
+        $this->get(route('portal.treasurer.dashboard'))->assertOk()->assertSee(Currency::format(500000, 'IDR'))->assertSee('Student'); // format mengikuti locale & mata uang
     }
 }

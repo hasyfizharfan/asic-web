@@ -9,6 +9,7 @@ use App\Models\PaymentProof;
 use App\Models\PaymentVerification;
 use App\Models\Registration;
 use App\Models\RegistrationAddOn;
+use App\Models\RegistrationFee;
 use App\Models\Role;
 use App\Services\InvoiceIssuer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,7 +40,9 @@ class InvoiceAndPaymentTest extends TestCase
 
     private function listenerInvoice(string $suffix = '1'): Invoice
     {
-        $this->fee(['registration_type' => 'Student', 'attendance_mode' => 'Daring', 'tujuan_publikasi' => 'Tidak', 'amount' => 500000, 'discount' => 0]);
+        // Kombinasi tarif kini unik (termasuk mata uang): buat sekali saja bila helper dipanggil berulang.
+        $combination = ['id_event' => $this->event->id_event, 'id_period' => $this->period->id_period, 'registration_type' => 'Student', 'attendance_mode' => 'Daring', 'tujuan_publikasi' => 'Tidak'];
+        RegistrationFee::where($combination)->exists() || $this->fee(['registration_type' => 'Student', 'attendance_mode' => 'Daring', 'tujuan_publikasi' => 'Tidak', 'amount' => 500000, 'discount' => 0]);
         $reg = $this->registration($suffix, ['participation_type' => 'Listener', 'registration_type' => 'Student', 'attendance_mode' => 'Daring', 'publication_option' => 'Tidak']);
 
         return Invoice::where('id_registration', $reg->id_registration)->firstOrFail();
@@ -57,11 +60,13 @@ class InvoiceAndPaymentTest extends TestCase
         $this->assertSame(1, IssuedDocument::where('jenis_dokumen', 'Invoice')->count());
     }
 
-    public function test_presenter_gets_invoice_before_abstract_review(): void
+    /** KF-20 (menggantikan keputusan Tahap C): invoice presenter tidak terbit saat registrasi. */
+    public function test_presenter_gets_no_invoice_before_abstract_review(): void
     {
         $this->fee();
         $reg = $this->registration('1');
-        $this->assertSame(1, Invoice::where('id_registration', $reg->id_registration)->count());
+        $this->assertSame(0, Invoice::where('id_registration', $reg->id_registration)->count());
+        $this->assertSame('issued', $this->issue($reg)['status']);
         $this->assertSame('exists', $this->issue($reg)['status']);
     }
 

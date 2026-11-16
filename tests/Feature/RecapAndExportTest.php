@@ -43,6 +43,8 @@ class RecapAndExportTest extends TestCase
         $this->fee(['amount' => 1500000, 'discount' => 100000]);
         $this->fee(['registration_type' => 'Student', 'attendance_mode' => 'Daring', 'tujuan_publikasi' => 'Tidak', 'amount' => 500000, 'discount' => 0]);
         $this->fee(['id_period' => $this->regular->id_period, 'tujuan_publikasi' => 'Tidak', 'amount' => 1000000, 'discount' => 0]);
+        // P4 (Malaysia) memakai tarif USD: menguji bahwa rekap tidak menjumlahkan lintas mata uang.
+        $this->fee(['registration_type' => 'Student', 'attendance_mode' => 'Daring', 'tujuan_publikasi' => 'Tidak', 'amount' => 35, 'discount' => 0, 'mata_uang' => 'USD']);
 
         $r1 = $this->registration('1');
         $a1 = $this->abstractFor($r1);
@@ -112,10 +114,17 @@ class RecapAndExportTest extends TestCase
     public function test_invoice_and_payment_recap_amounts(): void
     {
         $inv = $this->as(Role::ROLE_BENDAHARA)->getJson('/api/recap/invoices')->assertOk()->json('data');
-        $this->assertSame(5, $inv['total']);
-        $this->assertSame('4800000.00', $inv['total_tagihan']); // invoice presenter diterbitkan sejak registrasi
-        $byStatus = collect($inv['by_status'])->pluck('total_tagihan', 'key')->all();
-        $this->assertSame(['Menunggu Pembayaran' => '2900000.00', 'Menunggu Verifikasi' => '500000.00', 'Terverifikasi' => '1400000.00'], $byStatus);
+        // KF-20: invoice presenter hanya untuk abstrak Diterima (P1); P2 Ditolak & P3 Diajukan tidak punya invoice.
+        // Mata uang: P4 (Malaysia) USD 35, tidak pernah dijumlahkan dengan IDR. Kunci lama total_tagihan = IDR saja.
+        $this->assertSame(3, $inv['total']);
+        $this->assertSame('2400000.00', $inv['total_tagihan']);
+        $this->assertSame(['IDR' => '2400000.00', 'USD' => '35.00'], $inv['total_tagihan_by_currency']);
+        $byStatus = collect($inv['by_status'])->pluck('total_tagihan_by_currency', 'key')->all();
+        $this->assertSame([
+            'Menunggu Pembayaran' => ['IDR' => '1000000.00', 'USD' => '0.00'],
+            'Menunggu Verifikasi' => ['IDR' => '0.00', 'USD' => '35.00'],
+            'Terverifikasi' => ['IDR' => '1400000.00', 'USD' => '0.00'],
+        ], $byStatus);
 
         $pay = $this->as(Role::ROLE_BENDAHARA)->getJson('/api/recap/payments')->assertOk()->json('data');
         $this->assertSame(2, $pay['proofs_total']);
@@ -123,7 +132,9 @@ class RecapAndExportTest extends TestCase
         $this->assertSame(0, $pay['verified_invalid']);
         $this->assertSame(1, $pay['awaiting_verification']);
         $this->assertSame('1400000.00', $pay['amount_verified']);
-        $this->assertSame('3400000.00', $pay['amount_outstanding']);
+        $this->assertSame('1000000.00', $pay['amount_outstanding']);
+        $this->assertSame(['IDR' => '1000000.00', 'USD' => '35.00'], $pay['amount_outstanding_by_currency']);
+        $this->assertSame(['IDR' => '1400000.00', 'USD' => '0.00'], $pay['amount_verified_by_currency']);
 
         $period = $this->as(Role::ROLE_BENDAHARA)->getJson('/api/recap/payments?id_period='.$this->regular->id_period)->json('data');
         $this->assertSame(0, $period['proofs_total']);
@@ -209,13 +220,13 @@ class RecapAndExportTest extends TestCase
     public function test_payment_and_invoice_exports(): void
     {
         $pay = $this->sheetRows($this->as(Role::ROLE_BENDAHARA)->get('/api/exports/payments')->assertOk()->getContent());
-        $this->assertCount(6, $pay);
+        $this->assertCount(4, $pay); // header + 3 invoice (KF-20)
         $verified = collect($pay)->firstWhere(3, 'Terverifikasi');
         $this->assertSame('1400000', $verified[4]);
         $this->assertSame('Valid', $verified[7]);
 
         $inv = $this->sheetRows($this->as(Role::ROLE_BENDAHARA)->get('/api/exports/invoices?status=Menunggu Pembayaran')->assertOk()->getContent());
-        $this->assertCount(4, $inv);
+        $this->assertCount(2, $inv); // header + invoice P5
         $this->assertContains('1000000', array_column($inv, 8));
     }
 

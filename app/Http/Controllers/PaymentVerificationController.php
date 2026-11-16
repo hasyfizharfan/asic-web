@@ -164,6 +164,7 @@ class PaymentVerificationController extends Controller
                 $receipt = app(DocumentService::class)->issue($invoice->registration, 'Receipt', [
                     'invoice_nomor' => $invoice->nomor_invoice,
                     'amount' => $invoice->total_tagihan,
+                    'currency' => $invoice->mata_uang ?? 'IDR',
                     'verified_at' => $verification->tanggal_verifikasi,
                     'items' => $invoice->invoiceDetails()->get(['jenis_biaya', 'deskripsi', 'jumlah', 'harga_satuan', 'subtotal'])->toArray(),
                 ]);

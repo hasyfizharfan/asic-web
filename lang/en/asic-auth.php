@@ -47,4 +47,6 @@ return [
     'admin_email_label' => 'Administrator Email',
     'admin_email_placeholder' => 'admin@asic.unand.ac.id',
     'demo_admin_staff' => 'Super Administrator',
+    'country_label' => 'Country',
+    'country_help' => 'Participants from Indonesia are billed in IDR; participants from other countries are billed in USD.',
 ];
