@@ -48,3 +48,7 @@ Dijalankan pada branch `feat/fe-be-integration`, dari HEAD awal `4d96ac4` (`dev`
 - Agar urutan alur yang disepakati dapat dilakukan (registrasi → invoice → bukti bayar → verifikasi → abstrak), invoice kini diterbitkan untuk semua registrasi yang memiliki tarif. LoA Listener tetap terbit saat registrasi; LoA presenter tetap menunggu hasil review. `InvoiceIssuer` idempoten sehingga pemanggilan setelah keputusan tidak menggandakan invoice.
 - Tim Abstrak memakai `POST /api/tim-abstrak/submissions/{id_abstract}/review` dan payload DB `hasil_review`/`catatan_review`. Draft, override check-in, badge, kit, dan website settings belum didukung API dan tidak boleh ditampilkan sebagai sukses.
 - Tarif memakai daftar `GET /api/registration-fees`; pembaruan backend dilakukan per ID lewat `PATCH /api/registration-fees/{id_fee}`, bukan PUT agregat siklus.
+# Sekretariat: pencarian registrasi ulang
+
+- Pencarian memakai `registration.id_registration` sebagai nomor yang ditampilkan/dicari, serta nama peserta dan email akun.
+- Tidak menambahkan kolom nomor registrasi atau nomor badge karena identitas tersebut belum memiliki aturan penerbitan dan migrasi historis. Pencarian badge memerlukan keputusan produk dan kontrak penomoran tersendiri.

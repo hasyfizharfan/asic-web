@@ -38,9 +38,19 @@ Dokumen ini memetakan seluruh view Blade frontend, nama route preview `fe.*`, va
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | `secretariat.abstracts.index` | `fe.secretariat.abstracts.index` | `/_fe/secretariat/abstracts` | `$abstracts`<br>`$statistics` | `LengthAwarePaginator`<br>`array` (`total`, `under_review`, `accepted`, `rejected`) | Tidak | `secretariat.abstracts.index` |
 | `secretariat.abstracts.show` | `fe.secretariat.abstracts.show` | `/_fe/secretariat/abstracts/{id}` | `$abstract` | `array` (detail lengkap manuskrip, form review, status) | Tidak | `secretariat.abstracts.show` |
+| `secretariat.dashboard` | `portal.secretariat.dashboard` | `/secretariat/dashboard` | Query database | Registrasi per status, abstrak menunggu putusan/dokumen, sesi terdekat, draft pengumuman, 5 abstrak terbaru; pembayaran hanya dengan izin | Tidak | `portal.secretariat.dashboard` |
+| `secretariat.reregistration` | `portal.secretariat.reregistration` | `/secretariat/reregistration` | API langsung | `GET /api/registrations/search?q=` mencari ID registrasi, nama, atau email; hasil mencakup status registrasi, invoice, dan abstrak | Tidak | `portal.secretariat.reregistration` |
 | `secretariat.attendance` | `fe.secretariat.attendance` | `/_fe/secretariat/attendance` | `$attendanceList` | `LengthAwarePaginator` / `array` | Tidak | `secretariat.attendance` |
 | `secretariat.announcements` | `fe.secretariat.announcements` | `/_fe/secretariat/announcements` | `$announcements` | `array` of announcement records | Tidak | `secretariat.announcements` |
 | `secretariat.recap` | `fe.secretariat.recap` | `/_fe/secretariat/recap` | `$recapData` | `array` statistik demografi negara, track, dsb. | Tidak | `secretariat.recap` |
+
+### Kontrak API Sekretariat
+
+- Pencarian registrasi ulang: `GET /api/registrations/search?q=` (minimal 2 karakter), dibatasi permission `manage_registrations`. ID yang dapat dicari adalah primary key `registration.id_registration`; tidak ada nomor registrasi terpisah pada skema.
+- Check-in registrasi terpilih: `POST /api/sessions/{id_session}/attendance` dengan `id_registration`; sesi harus sedang berlangsung dan pembayaran harus `Terverifikasi`. Pemindaian token QR tetap memakai `POST /api/sessions/{id_session}/attendance/scan`.
+- Rekap kehadiran per sesi: `GET /api/recap/attendance?id_event=` dengan permission `scan_attendance_qr` view-only atau lebih tinggi. Ringkasan registrasi/peserta/abstrak serta invoice/pembayaran memakai endpoint recap masing-masing; endpoint finansial hanya ditampilkan kepada role dengan izin `verify_payment`.
+- Ekspor memakai `GET /api/exports/{participants,abstracts,payments,invoices,recap}` sesuai permission kategori. `recap` memerlukan izin registrasi, review abstrak, dan verifikasi pembayaran.
+- Pengumuman saat ini mendukung event, judul/isi, jadwal, dan status Draft/Dipublikasikan. Target audiens/pengiriman email atau kanal belum didukung. Kanal komunikasi menyimpan nama, jenis, URL, event, dan status.
 
 ---
 
@@ -86,7 +96,7 @@ Dokumen ini memetakan seluruh view Blade frontend, nama route preview `fe.*`, va
 | `participant.registration` → `/api/participant/register` (tidak ada) | `POST /api/registrations` | `id_event`, `id_period`, `registration_type` (`Student`/`Regular`/`Committee`), `participation_type` (`Oral Presenter`/`Poster Presenter`/`Listener`), `attendance_mode` (`Daring`/`Luring`), `publication_option`, opsional `add_ons`. Arahkan ke checkout hanya setelah HTTP 201 dan menerima `id_registration`. Event dan periode dipilih dari `GET /api/public/events` serta `GET /api/public/registration-fees`. |
 | `reviewer.detail` → `/api/reviewer/abstracts/{id}/review` (tidak ada) | `POST /api/tim-abstrak/submissions/{id_abstract}/review` | `hasil_review: Diterima|Ditolak`, `catatan_review`; UI baru terkunci setelah sukses. Draft review belum memiliki endpoint. |
 | `treasurer.tariffs` → `/api/treasurer/tariffs` (tidak ada) | `GET /api/registration-fees`; perubahan memakai `PATCH /api/registration-fees/{id_fee}` | Setiap baris tarif harus menggunakan kontrak `RegistrationFeeResource` dan payload `UpdateRegistrationFeeRequest`. PUT agregat per siklus tidak didukung. |
-| `secretariat.reregistration` → `/api/secretariat/checkin/{override,print-badge,issue-kit}` (tidak ada) | Scan QR staf: `POST /api/sessions/{id_session}/attendance/scan`; sesi peserta: `GET /api/sessions/{id_session}/attendees` | Payload scan mengikuti `ScanAttendanceRequest`. Override, cetak badge, penerbitan kit, dan pencarian peserta berdasarkan nomor registrasi belum tersedia; UI tidak boleh menandai tindakan tersebut berhasil. |
+| `secretariat.reregistration` | `GET /api/registrations/search?q=` dan `POST /api/sessions/{id_session}/attendance` atau `/attendance/scan` | Pencarian ID registrasi/nama/email, status invoice/abstrak, dan check-in memakai data backend; override, cetak badge, dan issue kit tetap belum tersedia. |
 | `admin.settings` → `/api/admin/settings` (tidak ada) | Belum ada endpoint settings | Tombol simpan harus menyatakan fitur belum tersedia, tanpa menyimpan state lokal. |
 
 Status API dibungkus sebagai `{success, message?, data}`. Untuk daftar berhalaman, baca item dari `data.data`; untuk `RegistrationFeeResource`, field tarif menggunakan `id_event`, `id_period`, `registration_type`, `attendance_mode`, `tujuan_publikasi`, `final_amount`, serta relasi `event` dan `period`.

@@ -45,4 +45,9 @@ class RecapController extends Controller
     {
         return $this->ok('Rekap pembayaran berhasil dimuat.', $r->payments(self::filters($request)));
     }
+
+    public function attendance(Request $request, ReportService $r): JsonResponse
+    {
+        return $this->ok('Rekap kehadiran per sesi berhasil dimuat.', $r->attendance(self::filters($request)));
+    }
 }

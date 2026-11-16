@@ -1,24 +1,57 @@
-@extends('layouts.portal', ['role' => 'secretariat', 'roleName' => 'Rekapitulasi', 'nav' => $secNav])
+@extends('layouts.portal', ['role' => 'secretariat', 'roleName' => 'Rekapitulasi', 'nav' => $secNav, 'title' => __('asic-secretariat.recap.title')])
 
 @section('content')
 <main class="space-y-6" x-data="{
-    registrations: null, abstracts: null, loading: true, loadError: '',
+    registrations: null, participants: null, abstracts: null, attendance: null, invoices: null, payments: null,
+    loading: true, loadError: '',
     async init() {
-        const [registrationResponse, abstractResponse] = await Promise.all([
-            window.asicApi.get('/api/recap/registrations'), window.asicApi.get('/api/recap/abstracts')
-        ]);
-        this.loading = false;
-        if (!registrationResponse.ok || !abstractResponse.ok) { this.loadError = registrationResponse.error || abstractResponse.error || 'Rekap gagal dimuat.'; return; }
-        this.registrations = registrationResponse.data?.data;
-        this.abstracts = abstractResponse.data?.data;
+        const requests = [
+            window.asicApi.get('/api/recap/registrations'), window.asicApi.get('/api/recap/participants'),
+            window.asicApi.get('/api/recap/abstracts'), window.asicApi.get('/api/recap/attendance')
+            @if($canSeePayments)
+            , window.asicApi.get('/api/recap/invoices'), window.asicApi.get('/api/recap/payments')
+            @endif
+        ];
+        const responses = await Promise.all(requests); this.loading = false;
+        const failed = responses.find(response => !response.ok);
+        if (failed) { this.loadError = failed.error || 'Rekap gagal dimuat.'; return; }
+        this.registrations = responses[0].data?.data; this.participants = responses[1].data?.data;
+        this.abstracts = responses[2].data?.data; this.attendance = responses[3].data?.data;
+        @if($canSeePayments)
+        this.invoices = responses[4].data?.data; this.payments = responses[5].data?.data;
+        @endif
     }
 }">
-    <header class="flex flex-wrap items-end justify-between gap-4"><div><h1 class="text-2xl font-bold text-on-surface">Rekapitulasi ASIC</h1><p class="mt-1 text-sm text-on-surface-variant">Ringkasan dihitung dari registrasi dan abstrak di database.</p></div><div class="flex gap-2"><a href="/api/exports/participants" class="rounded-xl border border-surface-container-highest px-4 py-2 text-sm font-semibold">Ekspor peserta</a><a href="/api/exports/abstracts" class="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white">Ekspor abstrak</a></div></header>
+    <header class="flex flex-wrap items-end justify-between gap-4 rounded-2xl bg-surface-container-low p-6">
+        <div><p class="mb-1 text-xs font-bold uppercase tracking-widest text-primary">Secretariat desk · sinkron langsung</p><h1 class="text-2xl font-bold">{{ __('asic-secretariat.recap.title') }}</h1><p class="mt-1 text-sm text-on-surface-variant">{{ __('asic-secretariat.recap.subtitle') }}</p></div>
+        <nav class="flex flex-wrap gap-2" aria-label="Ekspor rekap">
+            <a href="/api/exports/participants" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest px-3 py-2 text-xs font-semibold">Ekspor peserta</a>
+            <a href="/api/exports/abstracts" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest px-3 py-2 text-xs font-semibold">Ekspor abstrak</a>
+            @if($canSeePayments)
+                <a href="/api/exports/payments" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest px-3 py-2 text-xs font-semibold">Ekspor pembayaran</a>
+                <a href="/api/exports/invoices" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest px-3 py-2 text-xs font-semibold">Ekspor invoice</a>
+                <a href="/api/exports/recap" class="rounded-lg bg-primary px-3 py-2 text-xs font-bold text-white">Ekspor rekap lengkap</a>
+            @endif
+        </nav>
+    </header>
     <p x-show="loading" role="status" class="rounded-xl bg-surface-container-low p-4 text-sm">Memuat rekap…</p>
     <p x-show="loadError" x-text="loadError" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-on-error-container"></p>
-    <section x-show="registrations && abstracts" class="grid gap-4 sm:grid-cols-2">
-        <article class="rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5"><h2 class="font-bold">Registrasi</h2><p class="mt-3 text-3xl font-bold text-primary" x-text="registrations?.total ?? 0"></p><p class="text-sm text-on-surface-variant">Jumlah pendaftaran</p><template x-for="status in registrations?.by_status || []" :key="status.key"><p class="mt-2 flex justify-between text-sm"><span x-text="status.key"></span><span class="font-semibold" x-text="status.total"></span></p></template></article>
-        <article class="rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5"><h2 class="font-bold">Abstrak</h2><p class="mt-3 text-3xl font-bold text-primary" x-text="abstracts?.total ?? 0"></p><p class="text-sm text-on-surface-variant">Jumlah abstrak</p><template x-for="status in abstracts?.by_status || []" :key="status.key"><p class="mt-2 flex justify-between text-sm"><span x-text="status.key"></span><span class="font-semibold" x-text="status.total"></span></p></template></article>
+    <section x-show="registrations && abstracts" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <article class="rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5 shadow-sm"><p class="text-xs font-semibold uppercase text-on-surface-variant">Registrasi</p><p class="mt-2 text-3xl font-bold text-primary" x-text="registrations?.total ?? 0"></p><p class="text-sm">Jumlah pendaftaran</p><template x-for="row in registrations?.by_status || []" :key="row.key"><p class="mt-2 flex justify-between border-t pt-2 text-xs"><span x-text="row.key"></span><b x-text="row.total"></b></p></template></article>
+        <article class="rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5 shadow-sm"><p class="text-xs font-semibold uppercase text-on-surface-variant">Partisipasi</p><p class="mt-2 text-3xl font-bold text-primary" x-text="participants?.total_participants ?? 0"></p><p class="text-sm">Peserta unik</p><template x-for="row in registrations?.by_participation_type || []" :key="row.key"><p class="mt-2 flex justify-between border-t pt-2 text-xs"><span x-text="row.key || 'Tidak diketahui'"></span><b x-text="row.total"></b></p></template></article>
+        <article class="rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5 shadow-sm"><p class="text-xs font-semibold uppercase text-on-surface-variant">Abstrak</p><p class="mt-2 text-3xl font-bold text-secondary" x-text="abstracts?.total ?? 0"></p><p class="text-sm">Pengajuan masuk</p><template x-for="row in abstracts?.by_status || []" :key="row.key"><p class="mt-2 flex justify-between border-t pt-2 text-xs"><span x-text="row.key"></span><b x-text="row.total"></b></p></template></article>
+        <article class="rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5 shadow-sm"><p class="text-xs font-semibold uppercase text-on-surface-variant">Kehadiran</p><p class="mt-2 text-3xl font-bold text-primary" x-text="attendance?.total_check_ins ?? 0"></p><p class="text-sm">Check-in tercatat</p><template x-for="row in attendance?.sessions || []" :key="row.id_session"><p class="mt-2 flex justify-between border-t pt-2 text-xs"><span class="truncate" x-text="row.nama_sesi"></span><b x-text="row.check_ins"></b></p></template></article>
     </section>
+    <section class="grid gap-4 lg:grid-cols-2">
+        <article class="rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5"><h2 class="font-bold">Abstrak menurut bidang</h2><template x-for="row in abstracts?.by_scope || []" :key="row.key"><div class="flex justify-between border-t py-2 text-sm"><span x-text="row.key || 'Belum ditentukan'"></span><b x-text="row.total"></b></div></template><p x-show="abstracts && abstracts.by_scope.length===0" class="py-3 text-sm text-on-surface-variant">Belum ada data bidang abstrak.</p></article>
+        <article class="rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5"><h2 class="font-bold">Partisipasi menurut negara</h2><p class="mb-3 text-xs text-on-surface-variant">Jumlah peserta dikelompokkan menurut negara di profil.</p><template x-for="row in participants?.by_country || []" :key="row.key"><div class="flex justify-between border-t py-2 text-sm"><span x-text="row.key"></span><b x-text="row.total"></b></div></template><p class="mt-3 text-xs font-semibold">Kategori registrasi</p><template x-for="row in participants?.by_category_and_period || []" :key="row.period + row.registration_type"><div class="flex justify-between border-t py-2 text-sm"><span x-text="row.period + ' · ' + row.registration_type"></span><b x-text="row.total"></b></div></template></article>
+        <article class="rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5"><h2 class="font-bold">Kehadiran per sesi</h2><template x-for="row in attendance?.sessions || []" :key="row.id_session"><div class="border-t py-3"><div class="flex justify-between gap-3 text-sm"><strong x-text="row.nama_sesi"></strong><b x-text="row.check_ins + ' check-in'"></b></div><p class="mt-1 text-xs text-on-surface-variant" x-text="row.nama_event + ' · ' + row.waktu + ' · presentasi selesai: ' + row.presentations_completed"></p></div></template><p x-show="attendance && attendance.sessions.length===0" class="py-4 text-sm text-on-surface-variant">Belum ada sesi yang memiliki data check-in.</p></article>
+    </section>
+    @if($canSeePayments)
+    <section class="grid gap-4 sm:grid-cols-2">
+        <article class="rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5"><h2 class="font-bold">Invoice</h2><p class="mt-2 text-3xl font-bold" x-text="invoices?.total ?? 0"></p><p class="text-sm text-on-surface-variant" x-text="'Total tagihan: ' + (invoices?.total_tagihan ?? '0')"></p><template x-for="row in invoices?.by_status || []" :key="row.key"><p class="mt-2 flex justify-between border-t pt-2 text-sm"><span x-text="row.key"></span><b x-text="row.total + ' · ' + row.total_tagihan"></b></p></template></article>
+        <article class="rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5"><h2 class="font-bold">Pembayaran</h2><template x-for="item in [{label:'Bukti masuk', value:payments?.proofs_total},{label:'Menunggu verifikasi', value:payments?.awaiting_verification},{label:'Valid', value:payments?.verified_valid},{label:'Tidak valid', value:payments?.verified_invalid},{label:'Nominal terverifikasi', value:payments?.amount_verified}]" :key="item.label"><p class="flex justify-between border-t py-2 text-sm"><span x-text="item.label"></span><b x-text="item.value ?? 0"></b></p></template></article>
+    </section>
+    @endif
 </main>
 @endsection

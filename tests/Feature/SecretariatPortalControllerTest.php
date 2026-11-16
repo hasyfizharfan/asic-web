@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Models\Attendance;
+use App\Models\EventSession;
 use App\Models\IssuedDocument;
 use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -75,6 +77,60 @@ class SecretariatPortalControllerTest extends TestCase
             $this->assertStringNotContainsString('Farhan Harahap', $contents, $path);
             $this->assertStringNotContainsString('ABS-2027-01', $contents, $path);
             $this->assertStringNotContainsString('342 records', $contents, $path);
+        }
+    }
+
+    public function test_registration_search_returns_status_details_and_requires_manage_registrations(): void
+    {
+        $registration = $this->registration('lookup-001', [], ['first_name' => 'Lookup', 'last_name' => 'Person']);
+        $abstract = $this->abstractFor($registration, ['judul_abstrak' => 'Lookup abstract']);
+
+        $this->as(Role::ROLE_SEKRETARIAT)->getJson('/api/registrations/search?q=Lookup')->assertOk()
+            ->assertJsonPath('data.0.id_registration', $registration->id_registration)
+            ->assertJsonPath('data.0.participant.full_name', 'Lookup Person')
+            ->assertJsonPath('data.0.abstract.judul_abstrak', $abstract->judul_abstrak)
+            ->assertJsonPath('data.0.abstract.status_abstrak', 'Diajukan');
+        $this->as(Role::ROLE_SEKRETARIAT)->getJson('/api/registrations/search?q='.$registration->id_registration)->assertOk()
+            ->assertJsonPath('data.0.id_registration', $registration->id_registration);
+        $this->as(Role::ROLE_PESERTA)->getJson('/api/registrations/search?q=Lookup')->assertForbidden();
+        $this->as(Role::ROLE_BENDAHARA)->getJson('/api/registrations/search?q=Lookup')->assertForbidden();
+        $this->as(Role::ROLE_TIM_ABSTRAK)->getJson('/api/registrations/search?q=Lookup')->assertForbidden();
+    }
+
+    public function test_attendance_recap_aggregates_real_check_ins_per_session_and_export_permissions_apply(): void
+    {
+        $registration = $this->registration('session-recap');
+        $session = EventSession::create([
+            'id_event' => $this->event->id_event, 'nama_sesi' => 'Recap Session', 'waktu' => now()->subHour(),
+            'waktu_selesai' => now()->addHour(), 'qr_token' => 'session-recap-token',
+        ]);
+        Attendance::create([
+            'id_registration' => $registration->id_registration, 'id_session' => $session->id_session,
+            'tanggal_generate' => now(), 'tanggal_check_in' => now(), 'status_kehadiran' => 'Hadir', 'status_presentasi' => 'Sudah',
+        ]);
+
+        $this->as(Role::ROLE_SEKRETARIAT)->getJson('/api/recap/attendance?id_event='.$this->event->id_event)->assertOk()
+            ->assertJsonPath('data.total_check_ins', 1)
+            ->assertJsonPath('data.sessions.0.nama_sesi', 'Recap Session')
+            ->assertJsonPath('data.sessions.0.presentations_completed', 1);
+        $this->as(Role::ROLE_SEKRETARIAT)->get('/api/exports/recap')->assertOk();
+        $this->as(Role::ROLE_TIM_ABSTRAK)->get('/api/exports/abstracts')->assertOk();
+        $this->as(Role::ROLE_TIM_ABSTRAK)->getJson('/api/exports/payments')->assertForbidden();
+        $this->as(Role::ROLE_PESERTA)->getJson('/api/exports/participants')->assertForbidden();
+    }
+
+    public function test_each_secretariat_portal_route_is_limited_to_authorized_staff(): void
+    {
+        $names = ['dashboard', 'abstracts.index', 'abstracts.show', 'reregistration', 'attendance', 'recap', 'announcements', 'content'];
+        $urls = ['/secretariat/dashboard', '/secretariat/abstracts', '/secretariat/abstracts/1', '/secretariat/reregistration', '/secretariat/attendance', '/secretariat/recap', '/secretariat/announcements', '/secretariat/content'];
+        foreach ($names as $index => $name) {
+            $route = app('router')->getRoutes()->getByName('portal.secretariat.'.$name);
+            $this->assertNotNull($route, $name);
+            $this->assertStringContainsString('SecretariatController@', $route->getActionName(), $name);
+            $this->as(Role::ROLE_SEKRETARIAT)->get($urls[$index])->assertOk();
+            foreach ([Role::ROLE_PESERTA, Role::ROLE_BENDAHARA, Role::ROLE_TIM_ABSTRAK, Role::ROLE_ADMIN] as $role) {
+                $this->as($role)->get($urls[$index])->assertForbidden();
+            }
         }
     }
 }

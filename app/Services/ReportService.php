@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AbstractSubmission;
+use App\Models\Attendance;
 use App\Models\Invoice;
 use App\Models\Registration;
 use Illuminate\Database\Eloquent\Builder;
@@ -155,6 +156,32 @@ class ReportService
             'by_invoice_status' => $this->countBy($invoices, 'status_pembayaran'),
             'amount_verified' => $this->money($paid),
             'amount_outstanding' => $this->money($outstanding),
+        ];
+    }
+
+    public function attendance(array $f): array
+    {
+        $query = Attendance::query()
+            ->join('event_session as s', 's.id_session', '=', 'attendance.id_session')
+            ->join('event as e', 'e.id_event', '=', 's.id_event')
+            ->when(! empty($f['id_event']), fn ($q) => $q->where('s.id_event', $f['id_event']))
+            ->select('s.id_session', 's.nama_sesi', 's.waktu', 'e.id_event', 'e.nama_event',
+                DB::raw('count(attendance.id_attendance) as check_ins'),
+                DB::raw("sum(case when attendance.status_presentasi = 'Sudah' then 1 else 0 end) as presentations_completed"))
+            ->groupBy('s.id_session', 's.nama_sesi', 's.waktu', 'e.id_event', 'e.nama_event')
+            ->orderBy('s.waktu');
+
+        return [
+            'total_check_ins' => (int) (clone $query)->get()->sum('check_ins'),
+            'sessions' => $query->get()->map(fn ($row) => [
+                'id_session' => (int) $row->id_session,
+                'nama_sesi' => $row->nama_sesi,
+                'waktu' => $row->waktu,
+                'id_event' => (int) $row->id_event,
+                'nama_event' => $row->nama_event,
+                'check_ins' => (int) $row->check_ins,
+                'presentations_completed' => (int) $row->presentations_completed,
+            ])->all(),
         ];
     }
 

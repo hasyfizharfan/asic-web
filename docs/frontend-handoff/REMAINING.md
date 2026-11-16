@@ -2,10 +2,16 @@
 
 Fitur berikut belum boleh menampilkan keberhasilan atau mengubah state seolah-olah operasi berhasil.
 
+## Sekretariat
+
+- Override check-in, cetak badge, dan penerbitan kit tetap dinonaktifkan.
+- Nomor badge/reg_no belum ada; pencarian registrasi memakai primary key `id_registration`, nama, atau email.
+- Target audiens pengumuman dan pengiriman email/WhatsApp belum didukung backend. Jadwal serta status Draft/Dipublikasikan tersimpan; kanal komunikasi dikelola sebagai entitas terpisah.
+
 | Fitur | Status |
 | --- | --- |
 | Override check-in sekretariat | Belum tersedia; alur otorisasi supervisor belum dirancang. |
-| Pencarian registrasi ulang dengan `reg_no` / nomor badge | Belum tersedia; check-in QR dan daftar peserta sesi tersedia. |
+| Pencarian registrasi ulang dengan nomor badge terpisah | Belum tersedia; pencarian memakai ID primary key registrasi, nama, atau email melalui `GET /api/registrations/search`. |
 | Cetak badge dan issue kit | Belum tersedia. |
 | Draft review reviewer | Belum tersedia; pengiriman review final tersedia. |
 | Website settings | Belum tersedia. |
@@ -19,6 +25,7 @@ Fitur berikut belum boleh menampilkan keberhasilan atau mengubah state seolah-ol
 | Mata uang USD pada tarif bendahara | Skema `registration_fee` hanya memiliki kolom `amount` dan `discount` tanpa kode mata uang. UI saat ini menampilkan nominal sebagai IDR; dukungan USD memerlukan perubahan skema dan aturan invoice. |
 | Landing sections selain event/speaker/schedule/tarif aktif | Masih memakai konten presentasi statis. |
 | Pemindaian kamera QR dan pembentukan gambar QR | Check-in menerima token melalui input manual/pemindai keyboard; kamera dan gambar QR belum disediakan. |
+| Target audiens pengumuman dan pengiriman kanal | Belum tersedia di skema/API; pengumuman memiliki event, jadwal, dan status Draft/Dipublikasikan. Kanal komunikasi menyimpan jenis, URL, dan status tanpa relasi target pengumuman. |
 
 Untuk fitur baru, tambahkan kontrak backend (Form Request, middleware `permission:`, API Resource, OpenAPI, dan Feature test) sebelum menghubungkan kontrol UI.
 # Fitur portal peserta yang belum tersedia

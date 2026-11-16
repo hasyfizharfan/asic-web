@@ -23,6 +23,7 @@ use App\Http\Controllers\PaymentVerificationController;
 use App\Http\Controllers\RecapController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegistrationFeeController;
+use App\Http\Controllers\RegistrationSearchController;
 use App\Http\Controllers\SpeakerController;
 use Illuminate\Support\Facades\Route;
 
@@ -61,6 +62,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/registrations', [RegistrationController::class, 'index'])
         ->middleware('permission:manage_registrations,view_only')
         ->name('api.registrations.index');
+    Route::get('/registrations/search', RegistrationSearchController::class)
+        ->middleware('permission:manage_registrations')
+        ->name('api.registrations.search');
     Route::post('/registrations', [RegistrationController::class, 'store'])
         ->middleware('permission:pay_registration')
         ->name('api.registrations.store');
@@ -225,6 +229,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('abstracts', [RecapController::class, 'abstracts'])->middleware('permission:review_abstracts,view_only')->name('abstracts');
         Route::get('invoices', [RecapController::class, 'invoices'])->middleware('permission:verify_payment,view_only')->name('invoices');
         Route::get('payments', [RecapController::class, 'payments'])->middleware('permission:verify_payment,view_only')->name('payments');
+        Route::get('attendance', [RecapController::class, 'attendance'])->middleware('permission:scan_attendance_qr,view_only')->name('attendance');
     });
     Route::prefix('exports')->name('api.exports.')->group(function () {
         Route::get('participants', [ExportController::class, 'participants'])->middleware('permission:manage_registrations')->name('participants');

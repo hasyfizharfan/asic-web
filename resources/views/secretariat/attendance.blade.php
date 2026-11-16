@@ -2,14 +2,15 @@
 
 @section('content')
 <main class="space-y-6" x-data="{
-    events: [], sessions: [], attendees: [], idEvent: '', idSession: '',
+    events: [], sessions: [], attendees: [], sessionSummary: [], idEvent: '', idSession: '',
     loading: true, loadError: '', actionError: '',
     async init() {
-        const response = await window.asicApi.get('/api/public/events');
+        const response = await window.asicApi.get('/api/content/events', { per_page: 100 });
         this.loading = false;
         if (!response.ok) { this.loadError = response.error || 'Event gagal dimuat.'; return; }
         this.events = response.data?.data || []; this.idEvent = String(this.events[0]?.id_event || '');
         if (this.idEvent) await this.loadSessions();
+        await this.loadSummary();
     },
     async loadSessions() {
         this.loading = true; this.sessions = []; this.attendees = [];
@@ -18,11 +19,17 @@
         if (!response.ok) { this.loadError = response.error || 'Sesi gagal dimuat.'; return; }
         this.sessions = response.data?.data || []; this.idSession = String(this.sessions[0]?.id_session || '');
         if (this.idSession) await this.loadAttendees();
+        await this.loadSummary();
     },
     async loadAttendees() {
         const response = await window.asicApi.get('/api/sessions/' + this.idSession + '/attendees');
         if (!response.ok) { this.loadError = response.error || 'Kehadiran gagal dimuat.'; return; }
         this.attendees = response.data?.data?.attendances || [];
+    },
+    async loadSummary() {
+        const response = await window.asicApi.get('/api/recap/attendance', this.idEvent ? { id_event: this.idEvent } : {});
+        if (!response.ok) { this.loadError = response.error || 'Rekap per sesi gagal dimuat.'; return; }
+        this.sessionSummary = response.data?.data?.sessions || [];
     },
     async markPresented(attendance) {
         this.actionError = '';
@@ -32,10 +39,11 @@
         window.asicApi.showToast(response.data?.message || 'Status presentasi diperbarui.', 'success');
     }
 }">
-    <header><h1 class="text-2xl font-bold text-on-surface">Kehadiran dan presentasi</h1><p class="mt-1 text-sm text-on-surface-variant">Daftar peserta dan status presentasi dimuat dari sesi event.</p></header>
+    <header class="rounded-2xl bg-surface-container-low p-6"><p class="text-xs font-bold uppercase tracking-widest text-primary">Operasional acara</p><h1 class="mt-1 text-2xl font-bold text-on-surface">Kehadiran dan presentasi</h1><p class="mt-1 text-sm text-on-surface-variant">Daftar hadir dan status presentasi berasal dari sesi event terpilih.</p></header>
     <p x-show="loading" role="status" class="rounded-xl bg-surface-container-low p-4 text-sm">Memuat kehadiran…</p>
     <p x-show="loadError" x-text="loadError" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-on-error-container"></p>
     <p x-show="actionError" x-text="actionError" role="alert" class="text-sm text-error"></p>
+    <section class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4"><template x-for="summary in sessionSummary" :key="summary.id_session"><article class="rounded-xl border border-surface-container-high bg-surface-container-lowest p-4"><p class="text-xs text-on-surface-variant" x-text="summary.nama_event"></p><h2 class="mt-1 font-bold" x-text="summary.nama_sesi"></h2><div class="mt-3 flex justify-between text-sm"><span>Check-in</span><strong x-text="summary.check_ins"></strong></div><div class="flex justify-between text-sm"><span>Presentasi selesai</span><strong x-text="summary.presentations_completed"></strong></div></article></template></section>
     <div class="grid gap-4 sm:grid-cols-2"><label class="text-sm font-semibold">Event<select x-model="idEvent" @change="loadSessions()" class="mt-1 block w-full rounded-xl border-surface-container-highest"><template x-for="event in events" :key="event.id_event"><option :value="String(event.id_event)" x-text="event.nama_event"></option></template></select></label>
         <label class="text-sm font-semibold">Sesi<select x-model="idSession" @change="loadAttendees()" class="mt-1 block w-full rounded-xl border-surface-container-highest"><template x-for="session in sessions" :key="session.id_session"><option :value="String(session.id_session)" x-text="session.nama_sesi"></option></template></select></label>
     </div>
