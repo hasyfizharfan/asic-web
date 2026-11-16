@@ -6,6 +6,7 @@ use App\Http\Requests\ReviewAbstractRequest;
 use App\Http\Resources\AbstractSubmissionResource;
 use App\Models\AbstractReview;
 use App\Models\AbstractSubmission;
+use App\Models\IssuedDocument;
 use App\Models\Role;
 use App\Models\UserAccount;
 use App\Services\AbstractDecisionProcessor;
@@ -45,7 +46,7 @@ class AbstractReviewController extends Controller
                 description: 'Filter berdasarkan scope / bidang topik',
                 schema: new OA\Schema(type: 'string', example: 'Agronomy')
             ),
-            new OA\Parameter(name: 'search', in: 'query', required: false, description: 'Cari berdasarkan judul atau kode abstrak.', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'search', in: 'query', required: false, description: 'Cari berdasarkan judul/kode abstrak; staf berwenang juga dapat mencari nama penulis dan email.', schema: new OA\Schema(type: 'string', maxLength: 150)),
             new OA\Parameter(name: 'reviewed_by_me', in: 'query', required: false, description: 'Batasi abstrak yang sudah/belum direview pengguna ini.', schema: new OA\Schema(type: 'boolean')),
             new OA\Parameter(name: 'per_page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', minimum: 1, maximum: 100, default: 15)),
             new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', minimum: 1, default: 1)),
@@ -67,6 +68,7 @@ class AbstractReviewController extends Controller
     )]
     public function index(Request $request): JsonResponse
     {
+        $request->validate(['search' => ['nullable', 'string', 'max:150']]);
         $user = $request->user();
         $isReviewer = $user?->role?->nama_role === Role::ROLE_TIM_ABSTRAK;
         $query = AbstractSubmission::query();
@@ -98,6 +100,13 @@ class AbstractReviewController extends Controller
                 if (ctype_digit($search)) {
                     $q->orWhere('id_abstract', (int) $search);
                 }
+                if (auth()->user()?->role?->nama_role !== Role::ROLE_TIM_ABSTRAK) {
+                    $q->orWhereHas('registration.participant', function ($participant) use ($search): void {
+                        $participant->where('first_name', 'like', '%'.$search.'%')
+                            ->orWhere('last_name', 'like', '%'.$search.'%')
+                            ->orWhereHas('userAccount', fn ($account) => $account->where('email', 'like', '%'.$search.'%'));
+                    });
+                }
             });
         }
 
@@ -113,17 +122,24 @@ class AbstractReviewController extends Controller
 
         $page = $submissions->toArray();
         $page['data'] = collect($submissions->items())->map(fn ($item) => (new AbstractSubmissionResource($item))->resolve($request));
-        $stats = $isReviewer ? [
+        $counts = AbstractSubmission::query()->selectRaw('status_abstrak, COUNT(*) as total')->groupBy('status_abstrak')->pluck('total', 'status_abstrak');
+        $acceptedWithoutDocument = AbstractSubmission::where('status_abstrak', 'Diterima')->whereNotIn('id_registration', IssuedDocument::where('jenis_dokumen', 'LOA')->select('id_registration'))->count();
+        $rejectedWithoutDocument = AbstractSubmission::where('status_abstrak', 'Ditolak')->whereNotIn('id_registration', IssuedDocument::where('jenis_dokumen', 'Penolakan')->select('id_registration'))->count();
+        $stats = [
             'total' => AbstractSubmission::count(),
-            'pending' => AbstractSubmission::where('status_abstrak', 'Diajukan')->count(),
-            'reviewed_by_me' => AbstractSubmission::whereHas('reviews', fn ($q) => $q->where('id_reviewer', $user->id_user))->distinct('id_abstract')->count('id_abstract'),
-        ] : null;
+            'pending' => (int) ($counts['Diajukan'] ?? 0),
+            'accepted' => (int) ($counts['Diterima'] ?? 0),
+            'rejected' => (int) ($counts['Ditolak'] ?? 0),
+            'documents_pending' => $acceptedWithoutDocument + $rejectedWithoutDocument,
+            ...($isReviewer ? ['reviewed_by_me' => AbstractSubmission::whereHas('reviews', fn ($q) => $q->where('id_reviewer', $user->id_user))->distinct('id_abstract')->count('id_abstract')] : []),
+        ];
 
         return response()->json([
             'success' => true,
             'message' => 'Daftar naskah abstrak masuk berhasil dimuat.',
             'data' => $page,
-            ...($isReviewer ? ['stats' => $stats, 'scopes' => config('abstract-scopes', [])] : []),
+            'stats' => $stats,
+            ...($isReviewer ? ['scopes' => config('abstract-scopes', [])] : []),
         ], Response::HTTP_OK);
     }
 

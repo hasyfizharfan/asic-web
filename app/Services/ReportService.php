@@ -181,6 +181,20 @@ class ReportService
     {
         $q = $this->regFilter(AbstractSubmission::with(['registration.participant.userAccount', 'registration.event', 'latestReview.reviewer']), $f, viaRegistration: true);
         $q->when(! empty($f['status']), fn ($x) => $x->where('status_abstrak', $f['status']));
+        $q->when(! empty($f['scope']), fn ($x) => $x->where('scope', $f['scope']));
+        $q->when(! empty($f['search']), function ($query) use ($f): void {
+            $search = trim((string) $f['search']);
+            $query->where(function ($where) use ($search): void {
+                $where->where('judul_abstrak', 'like', '%'.$search.'%');
+                if (ctype_digit($search)) {
+                    $where->orWhere('abstract_submission.id_abstract', (int) $search);
+                }
+                $where->orWhereHas('registration.participant', fn ($participant) => $participant
+                    ->where('first_name', 'like', '%'.$search.'%')
+                    ->orWhere('last_name', 'like', '%'.$search.'%')
+                    ->orWhereHas('userAccount', fn ($account) => $account->where('email', 'like', '%'.$search.'%')));
+            });
+        });
 
         $rows = $q->orderBy('id_abstract')->get()->map(fn (AbstractSubmission $a) => [
             $a->id_abstract, $a->judul_abstrak, $a->scope, $a->metode_presentasi, $a->status_abstrak, (string) $a->tanggal_submit,

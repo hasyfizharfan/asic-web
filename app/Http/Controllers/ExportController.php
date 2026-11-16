@@ -28,7 +28,11 @@ class ExportController extends Controller
 
     public function abstracts(Request $request, ReportService $r): Response
     {
-        [$h, $rows] = $r->abstractRows(RecapController::filters($request));
+        $filters = RecapController::filters($request) + $request->validate([
+            'scope' => ['nullable', 'string', 'max:150'],
+            'search' => ['nullable', 'string', 'max:150'],
+        ]);
+        [$h, $rows] = $r->abstractRows($filters);
 
         return $this->download('abstrak', (new XlsxWriter)->addSheet('Abstrak', $h, $rows));
     }
