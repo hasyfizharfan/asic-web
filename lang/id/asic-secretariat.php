@@ -64,6 +64,7 @@ return [
         'section_results' => '3. Hasil Utama',
         'section_conclusion' => '4. Kesimpulan & Implikasi Kebijakan',
         'download_pdf' => 'Unduh Draf PDF',
+        'manuscript_reviewer_only' => 'Isi naskah abstrak hanya dapat dibuka oleh Tim Abstrak (kesepakatan panitia). Sekretariat mengelola status dan dokumen (LoA/surat penolakan).',
         'field_context' => 'Lokasi Uji Lapangan & Pengamatan Bintil Akar',
 
         // Decision Panel

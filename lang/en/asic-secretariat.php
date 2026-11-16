@@ -64,6 +64,7 @@ return [
         'section_results' => '3. Key Results',
         'section_conclusion' => '4. Conclusion & Policy Implications',
         'download_pdf' => 'Download PDF Draft',
+        'manuscript_reviewer_only' => 'The abstract manuscript can only be opened by the Abstract Team (committee policy). The Secretariat manages status and documents (LoA/rejection letter).',
         'field_context' => 'Field Research Site & Microscopic Root Assessment',
 
         // Decision Panel

@@ -185,6 +185,16 @@ class DigitalSignatureController extends Controller
 
         $targetRole = Role::findOrFail($targetRoleId);
 
+        // Selain Admin, pengguna hanya boleh mengunggah tanda tangan untuk perannya sendiri
+        // (mis. Bendahara untuk invoice & receipt). Mencegah peran lain mengganti tanda tangan Ketua.
+        $actor = $request->user();
+        if ($actor?->role?->nama_role !== Role::ROLE_ADMIN && $actor?->id_role !== $targetRole->id_role) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda hanya dapat mengunggah tanda tangan untuk peran Anda sendiri.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $ttdFile = $request->file('file_ttd');
         $ttdPath = $ttdFile->store('signatures/ttd', 'local');
 

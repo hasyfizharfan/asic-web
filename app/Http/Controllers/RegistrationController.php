@@ -300,6 +300,6 @@ class RegistrationController extends Controller
         RegistrationPeriod::query()
             ->where('status_periode', 'Aktif')
             ->whereDate('tanggal_selesai', '<', Carbon::today())
-            ->update(['status_periode' => 'Ditutup']);
+            ->update(['status_periode' => 'Tidak Aktif']);
     }
 }

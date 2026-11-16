@@ -267,7 +267,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->whereNumber('id_abstract')->middleware('permission:review_abstracts,view_only')
             ->name('submissions.show');
         Route::get('/submissions/{id_abstract}/file', [AbstractReviewController::class, 'download'])
-            ->whereNumber('id_abstract')->middleware('permission:review_abstracts,view_only')->name('submissions.file');
+            ->whereNumber('id_abstract')->middleware('permission:review_abstracts')->name('submissions.file');
         Route::post('/submissions/{id_abstract}/review', [AbstractReviewController::class, 'review'])
             ->whereNumber('id_abstract')->middleware('permission:accept_reject')
             ->name('submissions.review');

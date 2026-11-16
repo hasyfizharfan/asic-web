@@ -40,7 +40,7 @@ class ForgotPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email', 'exists:user_account,email'],
+            'email' => ['required', 'string', 'email'],
             'registered_email' => ['nullable', 'string', 'email'],
 
             // Token keamanan reCAPTCHA Enterprise dari frontend
@@ -60,7 +60,6 @@ class ForgotPasswordRequest extends FormRequest
         return [
             'email.required' => 'Alamat email terdaftar wajib diisi.',
             'email.email' => 'Format alamat email tidak valid.',
-            'email.exists' => 'Alamat email tidak ditemukan dalam sistem akun delegasi ASIC 2026.',
         ];
     }
 }

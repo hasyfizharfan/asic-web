@@ -53,7 +53,7 @@ class InvoiceController extends Controller
             'registration.participant.userAccount',
             'registrationFee',
             'invoiceDetails',
-            'paymentProofs',
+            'paymentProofs.verification:id_verification,id_payment_proof,tanggal_verifikasi,hasil_verifikasi,alasan_penolakan',
         ])->findOrFail($id_invoice);
 
         /** @var UserAccount $user */

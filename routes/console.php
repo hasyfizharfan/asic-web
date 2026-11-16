@@ -13,7 +13,7 @@ Artisan::command('registration-periods:close-expired', function () {
     $closed = DB::table('registration_period')
         ->where('status_periode', 'Aktif')
         ->whereDate('tanggal_selesai', '<', now()->toDateString())
-        ->update(['status_periode' => 'Ditutup']);
+        ->update(['status_periode' => 'Tidak Aktif']);
 
     $this->info("{$closed} periode pendaftaran ditutup.");
 })->purpose('Tutup periode pendaftaran yang telah melewati tanggal selesai');

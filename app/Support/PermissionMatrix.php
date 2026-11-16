@@ -52,7 +52,7 @@ class PermissionMatrix
 
         $defaultsByRoleName = [
             'submit_abstract' => [Role::ROLE_PESERTA => 'full_access', Role::ROLE_ADMIN => 'full_access'],
-            'view_abstracts' => [Role::ROLE_PESERTA => 'view_only', Role::ROLE_SEKRETARIAT => 'full_access', Role::ROLE_TIM_ABSTRAK => 'full_access', Role::ROLE_ADMIN => 'full_access'],
+            'view_abstracts' => [Role::ROLE_PESERTA => 'view_only', Role::ROLE_TIM_ABSTRAK => 'full_access', Role::ROLE_ADMIN => 'full_access'],
             'review_abstracts' => [Role::ROLE_SEKRETARIAT => 'view_only', Role::ROLE_TIM_ABSTRAK => 'full_access', Role::ROLE_ADMIN => 'full_access'],
             'accept_reject' => [Role::ROLE_TIM_ABSTRAK => 'full_access', Role::ROLE_ADMIN => 'full_access'],
             'issue_documents' => [Role::ROLE_SEKRETARIAT => 'full_access', Role::ROLE_TIM_ABSTRAK => 'full_access', Role::ROLE_ADMIN => 'full_access'],
@@ -67,7 +67,7 @@ class PermissionMatrix
             'manage_participant_files' => [Role::ROLE_PESERTA => 'view_only', Role::ROLE_SEKRETARIAT => 'full_access', Role::ROLE_TIM_ABSTRAK => 'full_access', Role::ROLE_ADMIN => 'full_access'],
             'upload_participant_files' => [Role::ROLE_PESERTA => 'full_access', Role::ROLE_SEKRETARIAT => 'full_access', Role::ROLE_TIM_ABSTRAK => 'full_access', Role::ROLE_ADMIN => 'full_access'],
             'manage_sessions' => [Role::ROLE_PESERTA => 'view_only', Role::ROLE_SEKRETARIAT => 'full_access', Role::ROLE_BENDAHARA => 'view_only', Role::ROLE_TIM_ABSTRAK => 'view_only', Role::ROLE_ADMIN => 'full_access'],
-            'manage_digital_signatures' => [Role::ROLE_PESERTA => 'view_only', Role::ROLE_SEKRETARIAT => 'full_access', Role::ROLE_BENDAHARA => 'view_only', Role::ROLE_TIM_ABSTRAK => 'view_only', Role::ROLE_ADMIN => 'full_access'],
+            'manage_digital_signatures' => [Role::ROLE_BENDAHARA => 'full_access', Role::ROLE_ADMIN => 'full_access'],
             'access_participant_portal' => [Role::ROLE_PESERTA => 'full_access'],
             'access_secretariat_portal' => [Role::ROLE_SEKRETARIAT => 'full_access'],
             'access_treasurer_portal' => [Role::ROLE_BENDAHARA => 'full_access'],
