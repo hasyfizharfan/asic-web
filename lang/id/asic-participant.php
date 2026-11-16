@@ -129,4 +129,28 @@ return [
         'account_no' => 'Nomor rekening',
         'branch' => 'Cabang',
     ],
+    'portal' => [
+        'registration_no' => 'Registrasi #:id',
+        'no_registration' => 'Belum ada registrasi.',
+        'payment_status' => ['title' => 'Status pembayaran', 'subtitle' => 'Status berdasarkan invoice pendaftaran Anda.', 'open_invoice' => 'Buka invoice'],
+        'profile' => [
+            'title' => 'Profil', 'heading' => 'Profil peserta', 'save_profile' => 'Simpan profil', 'change_password' => 'Ganti kata sandi',
+            'current_password' => 'Kata sandi saat ini', 'new_password' => 'Kata sandi baru', 'confirm_password' => 'Konfirmasi kata sandi baru', 'update_password' => 'Perbarui kata sandi',
+            'profile_saved' => 'Profil diperbarui.', 'profile_failed' => 'Profil gagal diperbarui.', 'password_saved' => 'Kata sandi diperbarui.', 'password_failed' => 'Kata sandi gagal diperbarui.',
+            'country_note' => 'Negara menentukan mata uang tagihan (Indonesia: IDR, negara lain: USD) untuk pendaftaran berikutnya.',
+            'fields' => ['prefix' => 'Gelar', 'first_name' => 'Nama depan', 'last_name' => 'Nama belakang', 'passport_no' => 'Nomor paspor', 'job_title' => 'Jabatan', 'phone' => 'Telepon', 'institution' => 'Institusi', 'address' => 'Alamat', 'city' => 'Kota', 'country' => 'Negara', 'postcode' => 'Kode pos'],
+        ],
+        'documents' => [
+            'title' => 'Dokumen', 'heading' => 'Dokumen terbit', 'subtitle' => 'Dokumen hanya tersedia untuk pendaftaran yang Anda miliki.', 'loading' => 'Memuat dokumen…',
+            'load_failed' => 'Dokumen gagal dimuat.', 'empty' => 'Belum ada dokumen yang diterbitkan.', 'number' => 'Nomor', 'issued' => 'Terbit', 'registration' => 'Registrasi', 'download' => 'Unduh PDF',
+        ],
+        'dashboard' => [
+            'stat_registrations' => 'Registrasi', 'stat_abstracts' => 'Abstrak terkirim', 'stat_invoices' => 'Invoice menunggu', 'stat_documents' => 'Dokumen diterbitkan',
+            'my_registrations' => 'Registrasi saya', 'abstract' => 'Abstrak', 'not_submitted' => 'Belum dikirim', 'documents' => 'Dokumen', 'start_registration' => 'Mulai registrasi',
+        ],
+        'refund' => [
+            'title' => 'Pengajuan refund', 'submit' => 'Ajukan refund',
+            'unavailable' => 'Belum tersedia. Pengembalian biaya publikasi diproses manual oleh panitia; biaya seminar tidak dapat dikembalikan.',
+        ],
+    ],
 ];

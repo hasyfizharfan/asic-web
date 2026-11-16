@@ -129,4 +129,28 @@ return [
         'account_no' => 'Account number',
         'branch' => 'Branch',
     ],
+    'portal' => [
+        'registration_no' => 'Registration #:id',
+        'no_registration' => 'No registration yet.',
+        'payment_status' => ['title' => 'Payment status', 'subtitle' => 'Status based on your registration invoices.', 'open_invoice' => 'Open invoice'],
+        'profile' => [
+            'title' => 'Profile', 'heading' => 'Participant profile', 'save_profile' => 'Save profile', 'change_password' => 'Change password',
+            'current_password' => 'Current password', 'new_password' => 'New password', 'confirm_password' => 'Confirm new password', 'update_password' => 'Update password',
+            'profile_saved' => 'Profile updated.', 'profile_failed' => 'Failed to update the profile.', 'password_saved' => 'Password updated.', 'password_failed' => 'Failed to update the password.',
+            'country_note' => 'Your country determines the billing currency (Indonesia: IDR, other countries: USD) for future registrations.',
+            'fields' => ['prefix' => 'Title', 'first_name' => 'First name', 'last_name' => 'Last name', 'passport_no' => 'Passport number', 'job_title' => 'Position', 'phone' => 'Phone', 'institution' => 'Institution', 'address' => 'Address', 'city' => 'City', 'country' => 'Country', 'postcode' => 'Postcode'],
+        ],
+        'documents' => [
+            'title' => 'Documents', 'heading' => 'Issued documents', 'subtitle' => 'Documents are only available for registrations you own.', 'loading' => 'Loading documents…',
+            'load_failed' => 'Failed to load documents.', 'empty' => 'No documents have been issued yet.', 'number' => 'Number', 'issued' => 'Issued', 'registration' => 'Registration', 'download' => 'Download PDF',
+        ],
+        'dashboard' => [
+            'stat_registrations' => 'Registrations', 'stat_abstracts' => 'Abstracts submitted', 'stat_invoices' => 'Pending invoices', 'stat_documents' => 'Documents issued',
+            'my_registrations' => 'My registrations', 'abstract' => 'Abstract', 'not_submitted' => 'Not submitted', 'documents' => 'Documents', 'start_registration' => 'Start registration',
+        ],
+        'refund' => [
+            'title' => 'Refund request', 'submit' => 'Request refund',
+            'unavailable' => 'Not available yet. Publication fee refunds are processed manually by the committee; seminar fees are non-refundable.',
+        ],
+    ],
 ];
