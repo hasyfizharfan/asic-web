@@ -85,6 +85,12 @@ class AdminController extends Controller
         return view('admin.settings');
     }
 
+    /** Fase 1: pengelolaan konten publik (permission manage_website_content). */
+    public function content(): View
+    {
+        return view('admin.content');
+    }
+
     public function archive(): View
     {
         return view('admin.archive');

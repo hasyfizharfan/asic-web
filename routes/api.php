@@ -8,6 +8,8 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommunicationChannelController;
+use App\Http\Controllers\ContentItemController;
+use App\Http\Controllers\ContentPhotoController;
 use App\Http\Controllers\DigitalSignatureController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\EventController;
@@ -15,18 +17,21 @@ use App\Http\Controllers\EventScheduleController;
 use App\Http\Controllers\EventSessionController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LegalDocumentController;
 use App\Http\Controllers\MyNotificationController;
 use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\ParticipantFileController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentProofController;
 use App\Http\Controllers\PaymentVerificationController;
+use App\Http\Controllers\PublicContentController;
 use App\Http\Controllers\RecapController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegistrationFeeController;
 use App\Http\Controllers\RegistrationSearchController;
 use App\Http\Controllers\ReregistrationController;
 use App\Http\Controllers\SpeakerController;
+use App\Http\Controllers\SponsorshipInquiryController;
 use Illuminate\Support\Facades\Route;
 
 // =========================================================================
@@ -47,6 +52,13 @@ Route::get('/public/events', [EventController::class, 'publicIndex'])->name('api
 Route::get('/public/events/{id_event}', [EventController::class, 'publicShow'])->whereNumber('id_event')->name('api.public.events.show');
 Route::get('/public/events/{id_event}/speakers', [SpeakerController::class, 'publicIndex'])->whereNumber('id_event')->name('api.public.speakers.index');
 Route::get('/public/events/{id_event}/schedules', [EventScheduleController::class, 'publicIndex'])->whereNumber('id_event')->name('api.public.schedules.index');
+// Fase 1: konten publik terpublikasi (KF-01, 04, 05, 07, 28, 33, 34) dan dokumen hukum (KF-35)
+foreach (['content', 'important-dates', 'faqs', 'contacts', 'photos', 'sponsorship-packages'] as $publicType) {
+    Route::get('/public/events/{id_event}/'.$publicType, [PublicContentController::class, 'index'])->whereNumber('id_event')
+        ->defaults('content_type', $publicType)->name('api.public.'.$publicType.'.index');
+}
+Route::get('/public/legal-documents/{jenis}', [LegalDocumentController::class, 'publicShow'])->name('api.public.legal-documents.show');
+Route::post('/public/sponsorship-inquiries', [SponsorshipInquiryController::class, 'publicStore'])->middleware('throttle:5,1')->name('api.public.sponsorship-inquiries.store');
 
 // =========================================================================
 // 2. AUTHENTICATED ROUTES
@@ -209,6 +221,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('announcements/{id_announcement}', [AnnouncementController::class, 'show'])->whereNumber('id_announcement')->name('announcements.show');
             Route::get('communication-channels', [CommunicationChannelController::class, 'manageIndex'])->name('channels.index');
             Route::get('communication-channels/{id_channel}', [CommunicationChannelController::class, 'show'])->whereNumber('id_channel')->name('channels.show');
+            foreach (['event-content', 'important-dates', 'faqs', 'contacts', 'sponsorship-packages'] as $contentType) {
+                Route::get($contentType, [ContentItemController::class, 'index'])->defaults('content_type', $contentType)->name($contentType.'.index');
+                Route::get($contentType.'/{content_id}', [ContentItemController::class, 'show'])->whereNumber('content_id')->defaults('content_type', $contentType)->name($contentType.'.show');
+            }
+            Route::get('photos', [ContentPhotoController::class, 'index'])->name('photos.index');
+            Route::get('sponsorship-inquiries', [SponsorshipInquiryController::class, 'index'])->name('sponsorship-inquiries.index');
+            Route::get('sponsorship-inquiries/{id_inquiry}', [SponsorshipInquiryController::class, 'show'])->whereNumber('id_inquiry')->name('sponsorship-inquiries.show');
+            Route::get('legal-documents', [LegalDocumentController::class, 'index'])->name('legal-documents.index');
+            Route::get('legal-documents/{id_legal}', [LegalDocumentController::class, 'show'])->whereNumber('id_legal')->name('legal-documents.show');
         });
         Route::middleware('permission:manage_website_content')->group(function () {
             Route::post('events', [EventController::class, 'store'])->name('events.store');
@@ -226,6 +247,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('communication-channels', [CommunicationChannelController::class, 'store'])->name('channels.store');
             Route::patch('communication-channels/{id_channel}', [CommunicationChannelController::class, 'update'])->whereNumber('id_channel')->name('channels.update');
             Route::delete('communication-channels/{id_channel}', [CommunicationChannelController::class, 'destroy'])->whereNumber('id_channel')->name('channels.destroy');
+            foreach (['event-content', 'important-dates', 'faqs', 'contacts', 'sponsorship-packages'] as $contentType) {
+                Route::patch($contentType.'/reorder', [ContentItemController::class, 'reorder'])->defaults('content_type', $contentType)->name($contentType.'.reorder');
+                Route::post($contentType, [ContentItemController::class, 'store'])->defaults('content_type', $contentType)->name($contentType.'.store');
+                Route::patch($contentType.'/{content_id}', [ContentItemController::class, 'update'])->whereNumber('content_id')->defaults('content_type', $contentType)->name($contentType.'.update');
+                Route::delete($contentType.'/{content_id}', [ContentItemController::class, 'destroy'])->whereNumber('content_id')->defaults('content_type', $contentType)->name($contentType.'.destroy');
+            }
+            Route::post('photos', [ContentPhotoController::class, 'store'])->name('photos.store');
+            Route::patch('photos/{id_photo}', [ContentPhotoController::class, 'update'])->whereNumber('id_photo')->name('photos.update');
+            Route::delete('photos/{id_photo}', [ContentPhotoController::class, 'destroy'])->whereNumber('id_photo')->name('photos.destroy');
+            Route::patch('sponsorship-inquiries/{id_inquiry}', [SponsorshipInquiryController::class, 'update'])->whereNumber('id_inquiry')->name('sponsorship-inquiries.update');
+            Route::post('legal-documents', [LegalDocumentController::class, 'store'])->name('legal-documents.store');
+            Route::patch('legal-documents/{id_legal}', [LegalDocumentController::class, 'update'])->whereNumber('id_legal')->name('legal-documents.update');
+            Route::delete('legal-documents/{id_legal}', [LegalDocumentController::class, 'destroy'])->whereNumber('id_legal')->name('legal-documents.destroy');
+            Route::post('legal-documents/{id_legal}/publish', [LegalDocumentController::class, 'publish'])->whereNumber('id_legal')->name('legal-documents.publish');
         });
     });
 

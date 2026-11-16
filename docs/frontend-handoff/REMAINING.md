@@ -21,7 +21,6 @@ Fitur berikut belum boleh menampilkan keberhasilan atau mengubah state seolah-ol
 | CRUD template dokumen | Belum tersedia. |
 | Assignment reviewer | Belum tersedia; antrean reviewer menampilkan abstrak sesuai filter tanpa penugasan individual. Kontrol penugasan Sekretariat dinonaktifkan. |
 | Status Revisi | Belum tersedia; keputusan final hanya Diterima atau Ditolak. |
-| Landing sections selain event/speaker/schedule/tarif aktif | Masih memakai konten presentasi statis. |
 | Pemindaian kamera QR dan pembentukan gambar QR | Check-in menerima token melalui input manual/pemindai keyboard; kamera dan gambar QR belum disediakan. |
 | Target audiens pengumuman dan pengiriman kanal | Belum tersedia di skema/API; pengumuman memiliki event, jadwal, dan status Draft/Dipublikasikan. Kanal komunikasi menyimpan jenis, URL, dan status tanpa relasi target pengumuman. |
 

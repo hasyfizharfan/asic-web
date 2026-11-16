@@ -38,7 +38,11 @@
         </div>
         <label class="flex items-start gap-2 text-sm text-on-surface-variant">
             <input name="agree_terms" type="checkbox" value="1" required class="mt-1 rounded border-surface-container-highest">
-            <span>Saya menyetujui syarat dan ketentuan serta pedoman etika publikasi ASIC.</span>
+            <span>{!! __('asic-public.register_terms', [
+                'terms' => '<a href="'.e(route('public.terms')).'" target="_blank" rel="noopener" class="font-semibold text-primary underline">'.e(__('asic-public.nav.terms')).'</a>',
+                'privacy' => '<a href="'.e(route('public.privacy')).'" target="_blank" rel="noopener" class="font-semibold text-primary underline">'.e(__('asic-public.nav.privacy')).'</a>',
+                'ethics' => '<a href="'.e(route('public.ethics')).'" target="_blank" rel="noopener" class="font-semibold text-primary underline">'.e(__('asic-public.nav.ethics')).'</a>',
+            ]) !!}</span>
         </label>
         <button type="submit" class="w-full rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white">Buat akun</button>
     </form>

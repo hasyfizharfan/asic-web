@@ -73,3 +73,10 @@ Tarif memiliki mata uang (`IDR` atau `USD`). Peserta dengan negara Indonesia dit
 - `php artisan asic:report-early-presenter-invoices` — laporan read-only invoice presenter yang terbit sebelum abstraknya Diterima (sisa aturan lama). Tidak mengubah data.
 - `php artisan registration-periods:close-expired` — menonaktifkan periode yang tanggal selesainya lewat (juga dijadwalkan per jam; jalankan `php artisan schedule:work` atau cron `schedule:run`).
 - Zona waktu aplikasi: `APP_TIMEZONE=Asia/Jakarta`.
+
+## Konten publik (Fase 1)
+
+- Jalankan `php artisan storage:link` sekali agar foto galeri (`storage/app/public/gallery/...`) dapat diakses lewat `/storage/...`.
+- Konten publik (ruang lingkup, tanggal penting, FAQ, kontak, galeri, paket sponsor, syarat & privasi) diisi lewat `/secretariat/content` atau `/admin/content` dan baru tampil setelah berstatus Dipublikasikan. Seeder tidak mengisi konten ini.
+- `ASIC_CONTACT_EMAIL` (opsional) menerima pemberitahuan permintaan sponsorship/exhibition.
+- Ekstensi PHP `gd` disarankan agar foto diencode ulang (membuang metadata EXIF).

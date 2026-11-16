@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'ASIC 2027 - Agrifood System International Conference' }}</title>
+    @isset($metaDescription)<meta name="description" content="{{ $metaDescription }}">@endisset
     
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,12 +49,13 @@
                     </div>
 
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">Navigation</h4>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">{{ __('asic-public.nav.information') }}</h4>
                         <ul class="space-y-2.5 text-xs">
-                            <li><a href="#about" class="hover:text-white transition">{{ __('asic-landing.nav_about') }}</a></li>
-                            <li><a href="#cfa" class="hover:text-white transition">{{ __('asic-landing.nav_cfa') }}</a></li>
-                            <li><a href="#fees" class="hover:text-white transition">{{ __('asic-landing.nav_fees') }}</a></li>
-                            <li><a href="#contact" class="hover:text-white transition">{{ __('asic-landing.nav_contact') }}</a></li>
+                            <li><a href="{{ route('portal.landing') }}" class="hover:text-white transition">{{ __('asic-public.nav.home') }}</a></li>
+                            {{-- Tautan halaman informasi hanya tampil bila panitia sudah mempublikasikan isinya. --}}
+                            @foreach(($publicPages ?? []) as $name => $available)
+                                @if($available && ! in_array($name, ['terms', 'privacy', 'ethics'], true))<li><a href="{{ route('public.'.$name) }}" class="hover:text-white transition">{{ __('asic-public.nav.'.$name) }}</a></li>@endif
+                            @endforeach
                             @if (app()->environment('local'))
                                 <li><a href="{{ url('/_fe/_ui') }}" class="text-[#F5C518] hover:underline font-mono">Component Gallery (_ui)</a></li>
                             @endif
@@ -61,13 +63,15 @@
                     </div>
 
                     <div>
-                        <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">Secretariat</h4>
-                        <p class="text-xs text-white/70 leading-relaxed">
-                            Faculty of Agriculture<br>
-                            Universitas Andalas, Limau Manih<br>
-                            Padang, West Sumatra 25163<br>
-                            <a href="mailto:{{ $asic['email'] }}" class="text-[#a7f4b6] hover:underline mt-2 inline-block font-mono">{{ $asic['email'] }}</a>
-                        </p>
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-4">{{ __('asic-public.nav.legal') }}</h4>
+                        <ul class="space-y-2.5 text-xs">
+                            @foreach(['terms', 'privacy', 'ethics'] as $name)
+                                @if(($publicPages[$name] ?? false))<li><a href="{{ route('public.'.$name) }}" class="hover:text-white transition">{{ __('asic-public.nav.'.$name) }}</a></li>@endif
+                            @endforeach
+                        </ul>
+                        @if(config('asic.contact_email'))
+                            <a href="mailto:{{ config('asic.contact_email') }}" class="text-[#a7f4b6] hover:underline mt-4 inline-block font-mono text-xs">{{ config('asic.contact_email') }}</a>
+                        @endif
                     </div>
                 </div>
 

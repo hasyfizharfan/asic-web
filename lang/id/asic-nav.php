@@ -38,4 +38,5 @@ return [
     'document_templates' => 'Template Dokumen',
     'website_settings' => 'Pengaturan Website',
     'archive' => 'Manajemen Arsip',
+    'public_content' => 'Konten publik',
 ];

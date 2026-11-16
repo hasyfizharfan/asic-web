@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\Registration;
 use App\Models\Role;
 use App\Observers\RegistrationObserver;
+use App\Services\PublicContent;
 use App\Support\PermissionMatrix;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -25,6 +26,14 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Registration::observe(RegistrationObserver::class);
+
+        // Nav/footer publik: tautan halaman hanya untuk halaman yang punya isi terpublikasi.
+        View::composer(['layouts.public', 'public._topnav'], function ($view): void {
+            if (! array_key_exists('publicPages', $view->getData())) {
+                $content = app(PublicContent::class);
+                $view->with('publicPages', $content->availablePages($content->activeEvent()));
+            }
+        });
 
         View::composer('participant.*', function ($view): void {
             $user = auth()->user();

@@ -31,6 +31,9 @@ return [
 
     // Kop surat. Data kontak/rekening/nama penanda tangan sengaja lewat .env
     // agar data pribadi panitia tidak masuk repositori publik.
+    // Email panitia penerima permintaan sponsorship/exhibition (opsional; kosong = tanpa email).
+    'contact_email' => env('ASIC_CONTACT_EMAIL'),
+
     'letterhead' => [
         'title' => env('ASIC_LETTERHEAD_TITLE', '4th AGRIFOOD SYSTEM INTERNATIONAL CONFERENCE (ASIC 2027)'),
         'subtitle' => env('ASIC_LETTERHEAD_SUBTITLE', 'FACULTY OF AGRICULTURE, UNIVERSITAS ANDALAS'),

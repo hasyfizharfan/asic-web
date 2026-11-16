@@ -8,6 +8,7 @@ use App\Models\Participant;
 use App\Models\Registration;
 use App\Models\Role;
 use App\Models\UserAccount;
+use App\Services\ConsentRecorder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -71,7 +72,7 @@ class AuthController extends Controller
     {
         $validated = $request->validated();
 
-        $user = DB::transaction(function () use ($validated) {
+        $user = DB::transaction(function () use ($validated, $request) {
             // 1. Ambil role default 'Peserta'
             $pesertaRole = Role::firstOrCreate(
                 ['nama_role' => Role::ROLE_PESERTA],
@@ -124,6 +125,9 @@ class AuthController extends Controller
                 'country' => $country,
                 'postcode' => null,
             ]);
+
+            // KF-35: persetujuan syarat/privasi/etika dicatat dalam transaksi yang sama.
+            app(ConsentRecorder::class)->record($userAccount, $request->ip());
 
             return $userAccount;
         });

@@ -2,36 +2,48 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event;
 use App\Models\RegistrationFee;
+use App\Services\PublicContent;
+use App\Support\Currency;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\View\View;
 
+/** Landing publik: data event, tarif, dan konten terpublikasi (tanpa teks pengganti seperti "TBA"). */
 class PublicPortalController extends Controller
 {
-    public function index(): View
+    public function index(PublicContent $content): View
     {
-        $event = Schema::hasTable('event')
-            ? Event::query()->where('status_event', 'Aktif')->orderByDesc('tanggal_mulai')->first()
-            : null;
+        $event = $content->activeEvent();
         $fees = $event && Schema::hasTable('registration_fee')
-            ? RegistrationFee::query()->where('id_event', $event->id_event)->with('registrationPeriod')->get()
+            ? RegistrationFee::query()->where('id_event', $event->id_event)
+                ->whereHas('registrationPeriod', fn ($q) => $q->where('status_periode', 'Aktif'))->get()
             : collect();
 
-        $feeAmount = static fn (string $type): ?string => $fees
-            ->first(fn (RegistrationFee $fee): bool => $fee->registration_type === $type)
-            ?->finalAmount();
+        // Tarif terendah per kategori & mata uang (IDR = domestik, USD = internasional). Baris tanpa tarif disembunyikan.
+        $feeRows = [];
+        foreach (['Student' => 'student', 'Regular' => 'regular'] as $type => $key) {
+            foreach ([Currency::IDR => 'domestic', Currency::USD => 'intl'] as $currency => $scope) {
+                $matching = $fees->filter(fn (RegistrationFee $fee) => $fee->registration_type === $type && ($fee->mata_uang ?? Currency::IDR) === $currency);
+                if ($matching->isNotEmpty()) {
+                    $feeRows[] = ['label' => __("asic-landing.fee_{$key}_{$scope}"), 'amount' => Currency::format($matching->min(fn ($fee) => (float) $fee->finalAmount()), $currency)];
+                }
+            }
+        }
+
+        $hasContent = Schema::hasTable('event_content');
 
         return view('public.landing', [
             'event' => $event,
-            'fees' => $fees,
+            'feeRows' => $feeRows,
+            'scopeBlocks' => $hasContent ? $content->blocks($event, ['scope']) : collect(),
+            'importantDates' => $hasContent ? $content->importantDates($event) : collect(),
+            'faqs' => $hasContent ? $content->faqs($event)->take(4) : collect(),
+            'contacts' => $hasContent ? $content->contacts($event) : collect(),
+            'packages' => $hasContent ? $content->packages($event)->take(3) : collect(),
+            'photos' => $hasContent ? $content->photos($event)->take(6) : collect(),
+            'pages' => $hasContent ? $content->availablePages($event) : [],
             'asic' => [
-                'email' => config('mail.from.address', 'asic@agr.unand.ac.id'),
-                'countdown_status' => $event?->nama_event ?? 'Event details will be announced soon',
-                'fee_student_id' => $feeAmount('Student') ? 'IDR '.number_format((float) $feeAmount('Student'), 0, ',', '.') : 'IDR TBA',
-                'fee_student_intl' => 'USD TBA',
-                'fee_regular_id' => $feeAmount('Regular') ? 'IDR '.number_format((float) $feeAmount('Regular'), 0, ',', '.') : 'IDR TBA',
-                'fee_regular_intl' => 'USD TBA',
+                'countdown_status' => $event?->nama_event,
             ],
         ]);
     }

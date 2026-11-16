@@ -26,4 +26,5 @@
         <div class="flex justify-end gap-2"><button type="button" @click="modal=false" class="rounded-lg border px-4 py-2 text-sm">Batal</button><button :disabled="saving" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white" x-text="saving ? 'Menyimpan…' : 'Simpan'"></button></div>
     </form></section></div>
 </main>
+<div class="mt-10">@include('content.manager')</div>
 @endsection

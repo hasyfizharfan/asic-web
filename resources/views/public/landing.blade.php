@@ -3,12 +3,6 @@
 @section('content')
 @php
     $countdownText = $asic['countdown_status'] ?? __('asic-landing.strip_tag');
-    $fees = [
-        'student_id' => $asic['fee_student_id'] ?? 'IDR TBA',
-        'student_intl' => $asic['fee_student_intl'] ?? 'USD TBA',
-        'regular_id' => $asic['fee_regular_id'] ?? 'IDR TBA',
-        'regular_intl' => $asic['fee_regular_intl'] ?? 'USD TBA',
-    ];
 @endphp
 
 <!-- Hero Section with Integrated Navbar matching Image 2 & Prototype w__landing.html -->
@@ -30,7 +24,7 @@
         <div class="hidden md:flex items-center text-sm font-medium" style="gap: 28px;">
             <a href="{{ route('portal.landing') }}" class="text-white/85 hover:text-white transition px-1 py-1">{{ __('asic-landing.nav_home') }}</a>
             <a href="#about" class="text-white/85 hover:text-white transition px-1 py-1">{{ __('asic-landing.nav_about') }}</a>
-            <a href="#cfa" class="text-white/85 hover:text-white transition px-1 py-1">{{ __('asic-landing.nav_cfa') }}</a>
+            <a href="{{ $scopeBlocks->isNotEmpty() ? '#cfa' : route('auth.participant.register') }}" class="text-white/85 hover:text-white transition px-1 py-1">{{ __('asic-landing.nav_cfa') }}</a>
             <a href="#fees" class="text-white/85 hover:text-white transition px-1 py-1">{{ __('asic-landing.nav_fees') }}</a>
             <a href="#contact" class="text-white/85 hover:text-white transition px-1 py-1">{{ __('asic-landing.nav_contact') }}</a>
         </div>
@@ -223,7 +217,8 @@
     </div>
 </section>
 
-<!-- Section: Call for Abstracts & Research Themes -->
+<!-- Section: Call for Abstracts & Research Themes (KF-01: dari konten panitia) -->
+@if($scopeBlocks->isNotEmpty())
 <section id="cfa" class="py-20 lg:py-28 px-6 lg:px-16 bg-white text-[#17261D] border-y border-[#d9e3f6]">
     <div class="max-w-6xl mx-auto">
         <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-display tracking-tight text-[#17261D] leading-tight mb-10">
@@ -231,36 +226,14 @@
         </h2>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-14 gap-y-4">
-            <div class="py-4 border-b border-[#c9d6c2]">
-                <p class="text-lg font-bold text-[#0F3D24] font-display flex items-center gap-3">
-                    <span class="w-2 h-2 rounded-full bg-[#F5C518]"></span>
-                    <span>{{ __('asic-landing.track_1') }}</span>
-                </p>
-            </div>
-            <div class="py-4 border-b border-[#c9d6c2]">
-                <p class="text-lg font-bold text-[#0F3D24] font-display flex items-center gap-3">
-                    <span class="w-2 h-2 rounded-full bg-[#F5C518]"></span>
-                    <span>{{ __('asic-landing.track_2') }}</span>
-                </p>
-            </div>
-            <div class="py-4 border-b border-[#c9d6c2]">
-                <p class="text-lg font-bold text-[#0F3D24] font-display flex items-center gap-3">
-                    <span class="w-2 h-2 rounded-full bg-[#F5C518]"></span>
-                    <span>{{ __('asic-landing.track_3') }}</span>
-                </p>
-            </div>
-            <div class="py-4 border-b border-[#c9d6c2]">
-                <p class="text-lg font-bold text-[#0F3D24] font-display flex items-center gap-3">
-                    <span class="w-2 h-2 rounded-full bg-[#F5C518]"></span>
-                    <span>{{ __('asic-landing.track_4') }}</span>
-                </p>
-            </div>
-            <div class="py-4 border-b border-[#c9d6c2] md:col-span-2">
-                <p class="text-lg font-bold text-[#0F3D24] font-display flex items-center gap-3">
-                    <span class="w-2 h-2 rounded-full bg-[#F5C518]"></span>
-                    <span>{{ __('asic-landing.track_5') }}</span>
-                </p>
-            </div>
+            @foreach($scopeBlocks as $block)
+                <div class="py-4 border-b border-[#c9d6c2]">
+                    @if($block->localized('judul'))
+                        <p class="text-lg font-bold text-[#0F3D24] font-display flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-[#F5C518]"></span><span>{{ $block->localized('judul') }}</span></p>
+                    @endif
+                    @if($block->localized('isi'))<p class="mt-2 text-sm text-[#3b4a40]">{!! nl2br(e($block->localized('isi'))) !!}</p>@endif
+                </div>
+            @endforeach
         </div>
 
         <div class="mt-10">
@@ -271,6 +244,7 @@
         </div>
     </div>
 </section>
+@endif
 
 <!-- Section: Four Steps to Join -->
 <section class="py-20 lg:py-28 px-6 lg:px-16 bg-[#F1F5EC] text-[#17261D]">
@@ -319,6 +293,8 @@
     </div>
 </section>
 
+@include('public._landing_content')
+
 <!-- Section: Registration Fees -->
 <section id="fees" class="py-20 lg:py-28 px-6 lg:px-16 text-white" style="background-color: #0F3D24;">
     <div class="max-w-6xl mx-auto">
@@ -326,24 +302,18 @@
             {{ __('asic-landing.fees_title') }}
         </h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-14 gap-y-2 mt-8">
-            <div class="flex items-center justify-between py-4 border-b border-white/20 text-base sm:text-lg">
-                <span class="text-white/90">{{ __('asic-landing.fee_student_domestic') }}</span>
-                <b class="text-[#F5C518] font-mono font-bold">{{ $fees['student_id'] }}</b>
+        @if(empty($feeRows))
+            <p class="text-base text-white/80">{{ __('asic-public.fees_not_announced') }}</p>
+        @else
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-14 gap-y-2 mt-8">
+                @foreach($feeRows as $row)
+                    <div class="flex items-center justify-between py-4 border-b border-white/20 text-base sm:text-lg">
+                        <span class="text-white/90">{{ $row['label'] }}</span>
+                        <b class="text-[#F5C518] font-mono font-bold">{{ $row['amount'] }}</b>
+                    </div>
+                @endforeach
             </div>
-            <div class="flex items-center justify-between py-4 border-b border-white/20 text-base sm:text-lg">
-                <span class="text-white/90">{{ __('asic-landing.fee_student_intl') }}</span>
-                <b class="text-[#F5C518] font-mono font-bold">{{ $fees['student_intl'] }}</b>
-            </div>
-            <div class="flex items-center justify-between py-4 border-b border-white/20 text-base sm:text-lg">
-                <span class="text-white/90">{{ __('asic-landing.fee_regular_domestic') }}</span>
-                <b class="text-[#F5C518] font-mono font-bold">{{ $fees['regular_id'] }}</b>
-            </div>
-            <div class="flex items-center justify-between py-4 border-b border-white/20 text-base sm:text-lg">
-                <span class="text-white/90">{{ __('asic-landing.fee_regular_intl') }}</span>
-                <b class="text-[#F5C518] font-mono font-bold">{{ $fees['regular_intl'] }}</b>
-            </div>
-        </div>
+        @endif
     </div>
 </section>
 @endsection
