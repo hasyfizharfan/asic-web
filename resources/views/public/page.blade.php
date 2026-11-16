@@ -44,8 +44,14 @@
                 @break
 
             @case('contact')
+                @if($channels->isNotEmpty())
+                    <section class="rounded-2xl border border-[#d9e3d0] bg-white p-6">
+                        <h2 class="text-lg font-bold text-[#0F3D24]">{{ __('asic-public.channels') }}</h2>
+                        <ul class="mt-2 space-y-2 text-sm">@foreach($channels as $channel)<li>@if(preg_match('#^https://#i', $channel->url))<a href="{{ $channel->url }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-[#005226] underline">{{ $channel->nama_kanal }}</a>@else<span class="font-semibold">{{ $channel->nama_kanal }}</span>@endif <span class="text-[#3b4a40]">· {{ $channel->jenis_kanal }}</span></li>@endforeach</ul>
+                    </section>
+                @endif
                 @include('public._contacts', ['contacts' => $contacts])
-                @if($contacts->isEmpty())<p class="rounded-2xl bg-white p-6 text-sm text-[#3b4a40]">{{ __('asic-public.empty_page') }}</p>@endif
+                @if($contacts->isEmpty() && $channels->isEmpty())<p class="rounded-2xl bg-white p-6 text-sm text-[#3b4a40]">{{ __('asic-public.empty_page') }}</p>@endif
                 @break
 
             @case('sponsorship')

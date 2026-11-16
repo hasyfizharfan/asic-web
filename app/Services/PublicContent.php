@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CommunicationChannel;
 use App\Models\ContactPerson;
 use App\Models\Event;
 use App\Models\EventContent;
@@ -69,6 +70,12 @@ class PublicContent
             ->orderBy('urutan')->orderBy('id_contact')->get();
     }
 
+    /** KF-32: kanal komunikasi aktif (grup WhatsApp/Google Group) untuk pengunjung. */
+    public function channels(?Event $event): Collection
+    {
+        return $event ? CommunicationChannel::where('id_event', $event->id_event)->where('status', 'Aktif')->orderBy('id_channel')->get() : new Collection;
+    }
+
     public function photos(?Event $event): Collection
     {
         return $event ? EventPhoto::query()->where('id_event', $event->id_event)->where('status', 'Dipublikasikan')
@@ -99,7 +106,7 @@ class PublicContent
             'venue' => $has(['accommodation', 'pickup']) || (bool) $event?->lokasi,
             'guidelines' => $has(['presentation_oral', 'presentation_poster']),
             'faq' => $this->faqs($event)->isNotEmpty(),
-            'contact' => $this->contacts($event)->isNotEmpty(),
+            'contact' => $this->contacts($event)->isNotEmpty() || $this->channels($event)->isNotEmpty(),
             'sponsorship' => $this->packages($event)->isNotEmpty() || $has(['sponsorship_intro', 'exhibition_intro']),
             'travel' => $has(['visa', 'travel']),
             'gallery' => $this->photos($event)->isNotEmpty(),

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\DigitalSignature;
 use App\Models\Role;
 use App\Support\Currency;
+use App\Support\PaymentSettings;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use InvalidArgumentException;
@@ -56,7 +57,7 @@ class DocumentRenderer
             'logoLeft' => $this->publicImage(config('asic.letterhead.logo_left')),
             'logoRight' => $this->publicImage(config('asic.letterhead.logo_right')),
             'city' => config('asic.city', 'Padang'),
-            'payment' => config('asic.payment'),
+            'payment' => PaymentSettings::current(),
             'signer' => config("asic.signers.$signerKey") + $this->signatureImages($role),
         ])->render();
     }

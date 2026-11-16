@@ -147,4 +147,13 @@ return [
         'token_qr_tidak_cocok_dengan_sesi_ini' => 'Token QR tidak cocok dengan sesi ini.',
         'validasi_gagal' => 'Validasi gagal.',
     ],
+    'settings' => [
+        'saved' => 'Informasi pembayaran tersimpan. Berlaku untuk invoice dan receipt yang terbit berikutnya.',
+    ],
+    'periods' => [
+        'saved' => 'Periode pendaftaran tersimpan.',
+        'deleted' => 'Periode pendaftaran dihapus.',
+        'in_use' => 'Periode sudah dipakai tarif atau pendaftaran sehingga tidak dapat dihapus. Ubah statusnya menjadi Tidak Aktif.',
+        'end_before_start' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
+    ],
 ];

@@ -25,6 +25,7 @@ use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\ParticipantFileController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentProofController;
+use App\Http\Controllers\PaymentSettingController;
 use App\Http\Controllers\PaymentVerificationController;
 use App\Http\Controllers\PublicArchiveController;
 use App\Http\Controllers\PublicContentController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\PublicDownloadController;
 use App\Http\Controllers\RecapController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegistrationFeeController;
+use App\Http\Controllers\RegistrationPeriodController;
 use App\Http\Controllers\RegistrationSearchController;
 use App\Http\Controllers\ReregistrationController;
 use App\Http\Controllers\SpeakerController;
@@ -62,6 +64,7 @@ foreach (['content', 'important-dates', 'faqs', 'contacts', 'photos', 'sponsorsh
         ->defaults('content_type', $publicType)->name('api.public.'.$publicType.'.index');
 }
 Route::get('/public/legal-documents/{jenis}', [LegalDocumentController::class, 'publicShow'])->name('api.public.legal-documents.show');
+Route::get('/public/events/{id_event}/communication-channels', [CommunicationChannelController::class, 'publicIndex'])->whereNumber('id_event')->name('api.public.communication-channels.index');
 Route::get('/public/downloads', [PublicDownloadController::class, 'index'])->name('api.public.downloads.index');
 Route::get('/public/archive', [PublicArchiveController::class, 'index'])->name('api.public.archive.index');
 Route::get('/public/archive/{id_event}', [PublicArchiveController::class, 'show'])->whereNumber('id_event')->name('api.public.archive.show');
@@ -76,6 +79,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/me', [AuthController::class, 'me'])->name('api.me');
     Route::put('/me/profile', [MyProfileController::class, 'update'])->middleware('permission:access_participant_portal')->name('api.me.profile.update');
     Route::put('/me/password', [MyProfileController::class, 'updatePassword'])->name('api.me.password.update');
+    // KF-11 periode pendaftaran & KF-23 informasi pembayaran (Bendahara/Admin)
+    Route::middleware('permission:manage_tariffs,view_only')->group(function () {
+        Route::get('/registration-periods', [RegistrationPeriodController::class, 'index'])->name('api.registration-periods.index');
+        Route::get('/payment-settings', [PaymentSettingController::class, 'show'])->name('api.payment-settings.show');
+    });
+    Route::middleware('permission:manage_tariffs')->group(function () {
+        Route::post('/registration-periods', [RegistrationPeriodController::class, 'store'])->name('api.registration-periods.store');
+        Route::patch('/registration-periods/{id_period}', [RegistrationPeriodController::class, 'update'])->whereNumber('id_period')->name('api.registration-periods.update');
+        Route::delete('/registration-periods/{id_period}', [RegistrationPeriodController::class, 'destroy'])->whereNumber('id_period')->name('api.registration-periods.destroy');
+        Route::put('/payment-settings', [PaymentSettingController::class, 'update'])->name('api.payment-settings.update');
+    });
+
     // Fase 2: template dokumen (KF-26) dan sertifikat (KF-27)
     Route::middleware('permission:manage_document_templates,view_only')->group(function () {
         Route::get('/document-templates', [DocumentTemplateController::class, 'index'])->name('api.document-templates.index');

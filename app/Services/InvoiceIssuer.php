@@ -7,6 +7,7 @@ use App\Models\InvoiceDetail;
 use App\Models\Registration;
 use App\Models\RegistrationFee;
 use App\Support\Currency;
+use App\Support\PaymentSettings;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -85,7 +86,7 @@ class InvoiceIssuer
                 'tanggal_jatuh_tempo' => $due,
                 'total_tagihan' => $total,
                 'mata_uang' => $currency,
-                'payment_qr_info' => config('asic.payment_qr_info'),
+                'payment_qr_info' => PaymentSettings::current()['qr_info'],
                 'status_pembayaran' => 'Menunggu Pembayaran',
             ]);
             foreach ($items as $item) {

@@ -35,6 +35,7 @@ return [
     'scope' => 'Ruang lingkup',
     'faq_short' => 'Pertanyaan umum',
     'see_all' => 'Lihat semua',
+    'channels' => 'Grup komunikasi peserta',
     'contacts' => 'Narahubung',
     'sponsors' => 'Sponsorship',
     'gallery' => 'Galeri',

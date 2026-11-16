@@ -147,4 +147,13 @@ return [
         'token_qr_tidak_cocok_dengan_sesi_ini' => 'The QR token does not match this session.',
         'validasi_gagal' => 'Validation failed.',
     ],
+    'settings' => [
+        'saved' => 'Payment information saved. It applies to invoices and receipts issued from now on.',
+    ],
+    'periods' => [
+        'saved' => 'Registration period saved.',
+        'deleted' => 'Registration period deleted.',
+        'in_use' => 'The period is already used by fees or registrations and cannot be deleted. Set its status to Inactive instead.',
+        'end_before_start' => 'The end date cannot be before the start date.',
+    ],
 ];

@@ -4312,6 +4312,82 @@
                 }
             }
         },
+        "/api/payment-settings": {
+            "get": {
+                "tags": [
+                    "Pembayaran"
+                ],
+                "summary": "Informasi pembayaran panitia",
+                "operationId": "1bae6388c82536911d6056c2147a5fbb",
+                "responses": {
+                    "200": {
+                        "description": "Nilai aktif (pengaturan menimpa konfigurasi server)"
+                    },
+                    "403": {
+                        "description": "Tanpa izin"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Pembayaran"
+                ],
+                "summary": "Simpan informasi pembayaran",
+                "description": "Dipakai di invoice/receipt yang terbit berikutnya dan di halaman pembayaran peserta. Invoice lama tidak berubah.",
+                "operationId": "86c91ad60e33564e63497ae608cb1ece",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "bank_name": {
+                                        "type": "string"
+                                    },
+                                    "account_name": {
+                                        "type": "string"
+                                    },
+                                    "account_no": {
+                                        "type": "string"
+                                    },
+                                    "swift_code": {
+                                        "type": "string"
+                                    },
+                                    "branch": {
+                                        "type": "string"
+                                    },
+                                    "qr_info": {
+                                        "type": "string"
+                                    },
+                                    "international_note": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tersimpan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
         "/api/payments": {
             "get": {
                 "tags": [
@@ -5233,6 +5309,117 @@
                 ]
             }
         },
+        "/api/registration-periods": {
+            "get": {
+                "tags": [
+                    "Tarif Pendaftaran"
+                ],
+                "summary": "Daftar periode pendaftaran",
+                "operationId": "c90e3c1587e48fe76442d1409b05f712",
+                "parameters": [
+                    {
+                        "name": "id_event",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar periode"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tarif Pendaftaran"
+                ],
+                "summary": "Tambah periode pendaftaran",
+                "operationId": "3c7ffe5f646d3e95aae7cd6adbf5d493",
+                "responses": {
+                    "201": {
+                        "description": "Tersimpan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/registration-periods/{id_period}": {
+            "delete": {
+                "tags": [
+                    "Tarif Pendaftaran"
+                ],
+                "summary": "Hapus periode yang belum dipakai",
+                "operationId": "26cfcda5b207aba66ce192c1fcce65b1",
+                "parameters": [
+                    {
+                        "name": "id_period",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dihapus"
+                    },
+                    "409": {
+                        "description": "Sudah dipakai tarif/registrasi"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Tarif Pendaftaran"
+                ],
+                "summary": "Ubah periode pendaftaran",
+                "operationId": "ae138a41ebcb140c86880c0f373076a5",
+                "parameters": [
+                    {
+                        "name": "id_period",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Diperbarui"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
         "/api/registrations/search": {
             "get": {
                 "tags": [
@@ -5590,6 +5777,10 @@
         {
             "name": "Notifikasi",
             "description": "Notifikasi"
+        },
+        {
+            "name": "Pembayaran",
+            "description": "Pembayaran"
         },
         {
             "name": "Verifikasi Pembayaran",

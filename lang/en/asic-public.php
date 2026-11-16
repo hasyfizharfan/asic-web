@@ -35,6 +35,7 @@ return [
     'scope' => 'Scope',
     'faq_short' => 'Common questions',
     'see_all' => 'See all',
+    'channels' => 'Participant communication groups',
     'contacts' => 'Contact persons',
     'sponsors' => 'Sponsorship',
     'gallery' => 'Gallery',

@@ -21,12 +21,12 @@ class PublicPageController extends Controller
         abort_unless(in_array($page, self::PAGES, true), 404);
         $event = $this->content->activeEvent();
 
-        $data = ['page' => $page, 'event' => $event, 'blocks' => collect(), 'items' => collect(), 'legal' => null, 'packages' => collect(), 'contacts' => collect()];
+        $data = ['page' => $page, 'event' => $event, 'blocks' => collect(), 'items' => collect(), 'legal' => null, 'packages' => collect(), 'contacts' => collect(), 'channels' => collect()];
         match ($page) {
             'venue' => $data['blocks'] = $this->content->blocks($event, ['accommodation', 'pickup']),
             'guidelines' => $data['blocks'] = $this->content->blocks($event, ['presentation_oral', 'presentation_poster']),
             'faq' => $data['items'] = $this->content->faqs($event),
-            'contact' => $data['contacts'] = $this->content->contacts($event),
+            'contact' => [$data['contacts'], $data['channels']] = [$this->content->contacts($event), $this->content->channels($event)],
             'sponsorship' => [$data['blocks'], $data['packages']] = [$this->content->blocks($event, ['sponsorship_intro', 'exhibition_intro']), $this->content->packages($event)],
             'travel' => [$data['blocks'], $data['contacts']] = [$this->content->blocks($event, ['visa', 'travel']), $this->content->contacts($event)],
             'gallery' => $data['items'] = $this->content->photos($event),

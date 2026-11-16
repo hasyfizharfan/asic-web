@@ -62,4 +62,5 @@
         <p x-show="!fees.length" class="p-5 text-sm text-on-surface-variant">{{ $t('empty') }}</p>
     </div>
 </main>
+<div class="mt-6">@include('settings._periods_payment')</div>
 @endsection

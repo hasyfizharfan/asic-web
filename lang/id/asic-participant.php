@@ -123,4 +123,10 @@ return [
         'checking' => 'Memeriksa…',
         'checkin_failed' => 'Check-in gagal.',
     ],
+    'pay_info' => [
+        'bank' => 'Bank',
+        'account_name' => 'Atas nama',
+        'account_no' => 'Nomor rekening',
+        'branch' => 'Cabang',
+    ],
 ];

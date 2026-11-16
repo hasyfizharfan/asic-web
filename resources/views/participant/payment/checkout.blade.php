@@ -39,7 +39,8 @@
         event.target.reset();
         window.asicApi.showToast(response.data?.message || 'Bukti transfer berhasil dikirim.', 'success');
     },
-    internationalNote: @js(config('asic.payment.international_note')),
+    paymentInfo: @js(\App\Support\PaymentSettings::current()),
+    internationalNote: @js(\App\Support\PaymentSettings::current()['international_note']),
     formatAmount(value) { return window.asicMoney(value, this.invoice?.mata_uang); }
 }">
     <header class="space-y-1">
@@ -61,6 +62,11 @@
             <div class="rounded-xl bg-surface-container-low p-4 text-sm">
                 <h2 class="font-bold">Instruksi transfer</h2>
                 <p class="mt-1 whitespace-pre-line" x-text="invoice.payment_qr_info || 'Hubungi bendahara untuk mendapatkan informasi rekening pembayaran.'"></p>
+                <dl class="mt-2 grid gap-1 text-xs sm:grid-cols-2">
+                    <template x-for="[key, label] in [['bank_name', @js(__('asic-participant.pay_info.bank'))], ['account_name', @js(__('asic-participant.pay_info.account_name'))], ['account_no', @js(__('asic-participant.pay_info.account_no'))], ['swift_code', 'SWIFT'], ['branch', @js(__('asic-participant.pay_info.branch'))]]" :key="key">
+                        <div x-show="paymentInfo[key]"><dt class="text-on-surface-variant" x-text="label"></dt><dd class="font-mono font-semibold" x-text="paymentInfo[key]"></dd></div>
+                    </template>
+                </dl>
                 <p x-show="invoice.mata_uang === 'USD' && internationalNote" class="mt-2 whitespace-pre-line font-semibold" x-text="internationalNote"></p>
             </div>
             <template x-if="invoice.status_pembayaran === 'Menunggu Pembayaran' || invoice.status_pembayaran === 'Ditolak'">

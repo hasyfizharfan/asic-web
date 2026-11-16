@@ -123,4 +123,10 @@ return [
         'checking' => 'Checking…',
         'checkin_failed' => 'Check-in failed.',
     ],
+    'pay_info' => [
+        'bank' => 'Bank',
+        'account_name' => 'Account name',
+        'account_no' => 'Account number',
+        'branch' => 'Branch',
+    ],
 ];

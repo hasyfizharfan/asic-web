@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Models\CommunicationChannel;
+use App\Models\Event;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -71,6 +72,15 @@ class CommunicationChannelController extends Controller
         $c->delete();
 
         return $this->ok(__('asic-api.messages.kanal_komunikasi_berhasil_dihapus'));
+    }
+
+    /** KF-32: tautan grup untuk pengunjung (event Aktif/Selesai, kanal Aktif, hanya nama/jenis/url). */
+    public function publicIndex(int $id_event): JsonResponse
+    {
+        abort_unless(Event::whereKey($id_event)->whereIn('status_event', ['Aktif', 'Selesai'])->exists(), Response::HTTP_NOT_FOUND);
+
+        return $this->ok(__('asic-api.messages.daftar_kanal_komunikasi_berhasil_dimuat'), CommunicationChannel::where('status', 'Aktif')->where('id_event', $id_event)
+            ->orderBy('id_channel')->get(['id_channel', 'nama_kanal', 'jenis_kanal', 'url']));
     }
 
     /** Untuk peserta/panitia yang login: hanya kanal Aktif. */
