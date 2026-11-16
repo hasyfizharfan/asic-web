@@ -38,3 +38,10 @@ Untuk fitur baru, tambahkan kontrak backend (Form Request, middleware `permissio
 
 - Refund bendahara belum memiliki endpoint backend. Halaman refund menampilkan **Belum tersedia** dengan aksi dinonaktifkan.
 - Skema tarif menyimpan `amount` dan `discount` tanpa kode mata uang. Portal bendahara menampilkan nominal tersebut sebagai IDR; USD belum dapat dibedakan atau dihitung dengan aman.
+
+## Admin
+
+- Arsip belum memiliki API atau skema; halaman arsip dan aksinya tetap nonaktif dengan status **Belum tersedia**.
+- CRUD template dokumen belum tersedia. Kedua kelompok ditampilkan sebagai informasi: LOA, Penolakan, Invoice, Receipt, Sertifikat; serta berkas unduhan Abstrak, Presentasi, Artikel. Aksinya tetap nonaktif.
+- Pengaturan website global belum memiliki API atau model settings. Kontrol perubahan tetap nonaktif dan menampilkan **Belum tersedia**.
+- Tanda tangan digital tersedia melalui `/api/digital-signatures` dan dibatasi capability `manage_digital_signatures`; unggah privat hanya muncul untuk level `full_access`.

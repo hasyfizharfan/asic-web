@@ -67,9 +67,12 @@ class AdminController extends Controller
         return view('admin.permissions');
     }
 
-    public function signatures(): View
+    public function signatures(Request $request): View
     {
-        return view('admin.signatures');
+        return view('admin.signatures', [
+            'canManageSignatures' => app(PermissionMatrix::class)->allows($request->user(), 'manage_digital_signatures'),
+            'signatureRoles' => Role::query()->orderBy('id_role')->get(['id_role', 'nama_role']),
+        ]);
     }
 
     public function templates(): View

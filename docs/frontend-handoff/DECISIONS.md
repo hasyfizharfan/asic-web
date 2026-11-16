@@ -52,3 +52,13 @@ Dijalankan pada branch `feat/fe-be-integration`, dari HEAD awal `4d96ac4` (`dev`
 
 - Pencarian memakai `registration.id_registration` sebagai nomor yang ditampilkan/dicari, serta nama peserta dan email akun.
 - Tidak menambahkan kolom nomor registrasi atau nomor badge karena identitas tersebut belum memiliki aturan penerbitan dan migrasi historis. Pencarian badge memerlukan keputusan produk dan kontrak penomoran tersendiri.
+
+## Portal Admin
+
+- Dashboard Admin menjadi satu-satunya halaman ringkasan. `/admin/overview` tetap tersedia sebagai redirect kompatibilitas ke `/admin/dashboard`.
+- Angka dashboard dihitung dari `ReportService` dan tabel operasional. Bagian pembayaran hanya ditampilkan untuk pengguna dengan akses lihat `verify_payment`; nominal disebut IDR karena skema tidak memiliki kode mata uang.
+- Aktivitas dashboard hanya memakai registrasi, verifikasi pembayaran, dan review yang benar-benar tersimpan. Tidak ada kurva, target, kanal pembayaran, atau aktivitas contoh.
+- Audit perubahan ACL dan akun memakai tabel `acl_audit_log` baru. Baris audit mempertahankan email pelaku setelah akun dihapus; metadata tidak menyimpan password atau kredensial.
+- Akun Admin yang sedang dipakai tidak dapat dihapus, dinonaktifkan, atau diturunkan perannya. Operasi tunggal dan batch juga harus menjaga setidaknya satu Admin aktif.
+- Tanda tangan digital memakai endpoint dan penyimpanan privat yang telah tersedia, dengan capability `manage_digital_signatures`.
+- CRUD arsip, CRUD template dokumen, dan pengaturan website global belum memiliki kontrak backend. Halaman tetap menampilkan **Belum tersedia** dengan aksi nonaktif. Halaman template menyebut kedua kelompok yang diminta: dokumen terbit dan template berkas unduhan.

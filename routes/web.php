@@ -84,7 +84,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/overview', [AdminController::class, 'overview'])->name('overview');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
         Route::get('/permissions', [AdminController::class, 'permissions'])->name('permissions');
-        Route::get('/signatures', [AdminController::class, 'signatures'])->name('signatures');
+        Route::get('/signatures', [AdminController::class, 'signatures'])->middleware('permission:manage_digital_signatures,view_only')->name('signatures');
         Route::get('/templates', [AdminController::class, 'templates'])->name('templates');
         Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
         Route::get('/archive', [AdminController::class, 'archive'])->name('archive');

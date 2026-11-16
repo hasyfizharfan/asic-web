@@ -162,4 +162,37 @@ class AdminPortalControllerTest extends TestCase
             ->assertJsonPath('pagination.per_page', 1)->assertJsonPath('pagination.total', 1);
         $this->as(Role::ROLE_PESERTA)->getJson('/api/admin/roles-permissions/audit-log')->assertForbidden();
     }
+
+    public function test_signature_admin_page_uses_its_capability_and_disables_upload_for_view_only(): void
+    {
+        $admin = $this->user(Role::ROLE_ADMIN, '.signature-view');
+        $matrix = app(PermissionMatrix::class)->activeMatrix();
+        $adminRoleId = (string) $admin->id_role;
+        $matrix['manage_digital_signatures'][$adminRoleId] = 'view_only';
+        DB::table('role_permission_matrix')->where('id', 1)->update(['matrix' => json_encode($matrix)]);
+
+        $this->actingAs($admin, 'sanctum')->get('/admin/signatures')->assertOk()
+            ->assertSee('Akses hanya lihat')->assertDontSee('name="file_ttd"', false);
+    }
+
+    public function test_archive_page_is_explicitly_unavailable_and_has_no_mutating_control(): void
+    {
+        $this->as(Role::ROLE_ADMIN)->get('/admin/archive')->assertOk()->assertSee('Belum tersedia')
+            ->assertSee('disabled', false)->assertDontSee('route(\'fe.', false);
+    }
+
+    public function test_document_templates_show_both_groups_with_unavailable_actions(): void
+    {
+        $this->as(Role::ROLE_ADMIN)->get('/admin/templates')->assertOk()
+            ->assertSee('Dokumen terbit')->assertSee('LOA, Penolakan, Invoice, Receipt, Sertifikat')
+            ->assertSee('Template berkas unduhan')->assertSee('Abstrak, Presentasi, Artikel')
+            ->assertSee('disabled', false)->assertSee('Belum tersedia');
+    }
+
+    public function test_website_settings_are_unavailable_without_backend_data(): void
+    {
+        $this->as(Role::ROLE_ADMIN)->get('/admin/settings')->assertOk()
+            ->assertSee('Pengaturan website')->assertSee('Belum tersedia')->assertSee('disabled', false)
+            ->assertDontSee('TBA');
+    }
 }
