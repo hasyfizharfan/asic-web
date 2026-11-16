@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthPageController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\Portal\ParticipantController;
+use App\Http\Controllers\Portal\TreasurerController;
 use App\Http\Controllers\PublicPortalController;
 use Illuminate\Support\Facades\Route;
 
@@ -57,13 +58,13 @@ Route::middleware('auth:sanctum')->group(function (): void {
     });
 
     Route::prefix('treasurer')->name('portal.treasurer.')->middleware('permission:access_treasurer_portal')->group(function (): void {
-        Route::get('/', fn () => redirect()->route('portal.treasurer.dashboard'));
-        Route::get('/dashboard', [PortalController::class, 'dashboard'])->name('dashboard');
-        Route::view('/tariffs', 'treasurer.tariffs')->name('tariffs');
-        Route::view('/payments', 'treasurer.payments.index')->name('payments.index');
-        Route::get('/payments/{id}', fn (int $id) => view('treasurer.payments.show', ['id' => $id]))->whereNumber('id')->name('payments.show');
-        Route::view('/receipts/preview', 'treasurer.receipts.preview')->name('receipts.preview');
-        Route::view('/refunds', 'treasurer.refunds')->name('refunds');
+        Route::get('/', [TreasurerController::class, 'dashboard']);
+        Route::get('/dashboard', [TreasurerController::class, 'dashboard'])->name('dashboard');
+        Route::get('/tariffs', [TreasurerController::class, 'tariffs'])->name('tariffs');
+        Route::get('/payments', [TreasurerController::class, 'payments'])->name('payments.index');
+        Route::get('/payments/{id}', [TreasurerController::class, 'paymentDetails'])->whereNumber('id')->name('payments.show');
+        Route::get('/receipts/preview', [TreasurerController::class, 'receipts'])->name('receipts.preview');
+        Route::get('/refunds', [TreasurerController::class, 'refunds'])->name('refunds');
     });
 
     Route::prefix('reviewer')->name('portal.reviewer.')->middleware('permission:access_reviewer_portal')->group(function (): void {

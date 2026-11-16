@@ -15,7 +15,7 @@ Fitur berikut belum boleh menampilkan keberhasilan atau mengubah state seolah-ol
 | Archive | Belum tersedia. |
 | CRUD template dokumen | Belum tersedia. |
 | Assignment reviewer | Belum tersedia. |
-| Bendahara create/update tarif satuan | Daftar tarif membaca API; form create/update belum disediakan. Endpoint `POST/PATCH /api/registration-fees` tersedia, sementara tombol UI menjelaskan bahwa update massal tidak didukung. |
+| Mata uang USD pada tarif bendahara | Skema `registration_fee` hanya memiliki kolom `amount` dan `discount` tanpa kode mata uang. UI saat ini menampilkan nominal sebagai IDR; dukungan USD memerlukan perubahan skema dan aturan invoice. |
 | Landing sections selain event/speaker/schedule/tarif aktif | Masih memakai konten presentasi statis. |
 | Pemindaian kamera QR dan pembentukan gambar QR | Check-in menerima token melalui input manual/pemindai keyboard; kamera dan gambar QR belum disediakan. |
 
@@ -25,3 +25,8 @@ Untuk fitur baru, tambahkan kontrak backend (Form Request, middleware `permissio
 - Pengajuan dan pemrosesan refund belum memiliki endpoint backend. Halaman refund menampilkan status **Belum tersedia** dan aksi pengajuan dinonaktifkan.
 - Penerbitan/pengunduhan sertifikat belum memiliki endpoint backend. Halaman sertifikat menampilkan status **Belum tersedia** dan tombol unduh dinonaktifkan.
 - Layanan notifikasi peserta belum memiliki endpoint backend. Halaman notifikasi menampilkan status **Belum tersedia** dan aksinya dinonaktifkan.
+
+## Bendahara
+
+- Refund bendahara belum memiliki endpoint backend. Halaman refund menampilkan **Belum tersedia** dengan aksi dinonaktifkan.
+- Skema tarif menyimpan `amount` dan `discount` tanpa kode mata uang. Portal bendahara menampilkan nominal tersebut sebagai IDR; USD belum dapat dibedakan atau dihitung dengan aman.

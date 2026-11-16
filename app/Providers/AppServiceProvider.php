@@ -59,8 +59,10 @@ class AppServiceProvider extends ServiceProvider
         });
         View::composer('treasurer.*', function ($view): void {
             $view->with('treasurerNav', [
+                ['label' => __('asic-nav.dashboard'), 'route' => 'portal.treasurer.dashboard', 'icon' => 'space_dashboard'],
                 ['label' => __('asic-nav.tariffs'), 'route' => 'portal.treasurer.tariffs', 'icon' => 'price_change'],
                 ['label' => __('asic-nav.payment_queue'), 'route' => 'portal.treasurer.payments.index', 'icon' => 'receipt_long'],
+                ['label' => __('asic-treasurer.receipt.title'), 'route' => 'portal.treasurer.receipts.preview', 'icon' => 'receipt'],
                 ['label' => __('asic-nav.refund_requests'), 'route' => 'portal.treasurer.refunds', 'icon' => 'currency_exchange'],
             ]);
         });
