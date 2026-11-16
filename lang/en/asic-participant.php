@@ -161,6 +161,14 @@ return [
             'field_type' => 'File type', 'type_article' => 'Full paper / Article', 'type_presentation' => 'Presentation', 'field_file' => 'Choose a file (PDF, DOC, DOCX, PPT, PPTX; max 10 MB)',
             'upload' => 'Upload file', 'uploading' => 'Uploading…', 'uploaded_files' => 'Uploaded files', 'empty' => 'No files yet.', 'download' => 'Download',
         ],
+        'checkout' => [
+            'title' => 'Payment', 'heading' => 'Registration payment', 'subtitle' => 'Payment is made by manual transfer and then verified by the treasurer.',
+            'loading' => 'Loading invoice…', 'load_failed' => 'Failed to load registration data.', 'no_registration' => 'No registration to bill yet.', 'invoice_failed' => 'Failed to load the invoice.',
+            'upload_failed' => 'Failed to upload the transfer proof.', 'uploaded' => 'Transfer proof sent.', 'invoice_no' => 'Invoice number', 'status' => 'Status', 'due' => 'Due date',
+            'instructions' => 'Transfer instructions', 'contact_treasurer' => 'Contact the treasurer for payment account information.', 'upload_title' => 'Upload payment proof',
+            'amount' => 'Transfer amount', 'proof' => 'Transfer proof (JPG, PNG, or PDF)', 'note' => 'Note', 'send' => 'Send for verification', 'sending' => 'Sending…',
+            'waiting' => 'Proof sent. Waiting for treasurer verification.', 'verified' => 'Payment verified. The attendance QR (on-site participants) is on the Attendance page.',
+        ],
         'refund' => [
             'title' => 'Refund request', 'submit' => 'Request refund',
             'unavailable' => 'Not available yet. Publication fee refunds are processed manually by the committee; seminar fees are non-refundable.',
