@@ -72,7 +72,7 @@
         <div x-show="mobileOpen" 
              @click.outside="mobileOpen = false"
              x-transition 
-             class="absolute top-full left-4 right-4 mt-2 p-4 rounded-2xl bg-[#0F3D24] border border-white/20 shadow-2xl space-y-3 z-50 md:hidden"
+             class="absolute top-full left-4 right-4 mt-2 p-4 rounded-2xl bg-[#0B5D2E] border border-white/20 shadow-2xl space-y-3 z-50 md:hidden"
              style="display: none;">
             <a @click="mobileOpen = false" href="{{ route('portal.landing') }}" class="block px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10">{{ __('asic-landing.nav_home') }}</a>
             <a @click="mobileOpen = false" href="#about" class="block px-3 py-2 rounded-lg text-sm font-medium text-white hover:bg-white/10">{{ __('asic-landing.nav_about') }}</a>
@@ -170,14 +170,14 @@
 </section>
 
 <!-- Countdown & Date Announcement Strip -->
-<div class="text-white border-t-4 border-[#F5C518] py-6 px-6 lg:px-16 shadow-md" style="background-color: #0F3D24;">
+<div class="text-white border-t-4 border-[#F5C518] py-6 px-6 lg:px-16 shadow-md" style="background-color: #0B5D2E;">
     <div class="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex items-center gap-4">
-            <div class="w-12 h-12 rounded-xl bg-[#0A2B19]/60 border border-[#F5C518]/30 flex items-center justify-center shrink-0 text-[#F5C518]">
+            <div class="w-12 h-12 rounded-xl bg-[#084A26]/60 border border-[#F5C518]/30 flex items-center justify-center shrink-0 text-[#F5C518]">
                 <svg width="28" height="28" viewBox="0 0 30 30" fill="none" stroke="currentColor" stroke-width="1.8">
                     <rect x="3" y="5" width="20" height="19" rx="2"/>
                     <path d="M8 2v5M18 2v5M3 11h20"/>
-                    <circle cx="21" cy="21" r="6" fill="#0F3D24"/>
+                    <circle cx="21" cy="21" r="6" fill="#0B5D2E"/>
                     <path d="M21 18v3.5l2 1.2"/>
                 </svg>
             </div>
@@ -187,7 +187,7 @@
             </div>
         </div>
 
-        <div class="inline-flex items-center gap-2 self-start md:self-auto px-4 py-2 rounded-lg bg-[#0A2B19]/80 border border-[#F5C518]/40 text-[#F5C518] font-mono text-xs font-bold tracking-wider">
+        <div class="inline-flex items-center gap-2 self-start md:self-auto px-4 py-2 rounded-lg bg-[#084A26]/80 border border-[#F5C518]/40 text-[#F5C518] font-mono text-xs font-bold tracking-wider">
             <span class="w-2 h-2 rounded-full bg-[#F5C518] animate-ping"></span>
             <span>{{ $countdownText }}</span>
         </div>
@@ -201,18 +201,18 @@
             {{ __('asic-landing.about_title') }}
         </h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 pt-8 border-t-2 border-[#0F3D24]">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12 pt-8 border-t-2 border-[#0B5D2E]">
             <div class="space-y-1">
-                <small class="block text-xs uppercase font-semibold tracking-wider text-[#0F3D24]/70">{{ __('asic-landing.fact_organizer_label') }}</small>
-                <b class="block text-lg sm:text-xl font-bold font-display text-[#0F3D24]">{{ __('asic-landing.fact_organizer_val') }}</b>
+                <small class="block text-xs uppercase font-semibold tracking-wider text-[#0B5D2E]/70">{{ __('asic-landing.fact_organizer_label') }}</small>
+                <b class="block text-lg sm:text-xl font-bold font-display text-[#0B5D2E]">{{ __('asic-landing.fact_organizer_val') }}</b>
             </div>
             <div class="space-y-1">
-                <small class="block text-xs uppercase font-semibold tracking-wider text-[#0F3D24]/70">{{ __('asic-landing.fact_location_label') }}</small>
-                <b class="block text-lg sm:text-xl font-bold font-display text-[#0F3D24]">{{ __('asic-landing.fact_location_val') }}</b>
+                <small class="block text-xs uppercase font-semibold tracking-wider text-[#0B5D2E]/70">{{ __('asic-landing.fact_location_label') }}</small>
+                <b class="block text-lg sm:text-xl font-bold font-display text-[#0B5D2E]">{{ __('asic-landing.fact_location_val') }}</b>
             </div>
             <div class="space-y-1">
-                <small class="block text-xs uppercase font-semibold tracking-wider text-[#0F3D24]/70">{{ __('asic-landing.fact_format_label') }}</small>
-                <b class="block text-lg sm:text-xl font-bold font-display text-[#0F3D24]">{{ __('asic-landing.fact_format_val') }}</b>
+                <small class="block text-xs uppercase font-semibold tracking-wider text-[#0B5D2E]/70">{{ __('asic-landing.fact_format_label') }}</small>
+                <b class="block text-lg sm:text-xl font-bold font-display text-[#0B5D2E]">{{ __('asic-landing.fact_format_val') }}</b>
             </div>
         </div>
     </div>
@@ -230,7 +230,7 @@
             @foreach($scopeBlocks as $block)
                 <div class="py-4 border-b border-[#c9d6c2]">
                     @if($block->localized('judul'))
-                        <p class="text-lg font-bold text-[#0F3D24] font-display flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-[#F5C518]"></span><span>{{ $block->localized('judul') }}</span></p>
+                        <p class="text-lg font-bold text-[#0B5D2E] font-display flex items-center gap-3"><span class="w-2 h-2 rounded-full bg-[#F5C518]"></span><span>{{ $block->localized('judul') }}</span></p>
                     @endif
                     @if($block->localized('isi'))<p class="mt-2 text-sm text-[#3b4a40]">{!! nl2br(e($block->localized('isi'))) !!}</p>@endif
                 </div>
@@ -238,7 +238,7 @@
         </div>
 
         <div class="mt-10">
-            <a href="{{ route('auth.participant.register') }}" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#0F3D24] font-bold text-base shadow hover:brightness-105 transition">
+            <a href="{{ route('auth.participant.register') }}" class="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#0B5D2E] font-bold text-base shadow hover:brightness-105 transition">
                 <span>{{ __('asic-landing.btn_submit_abstract') }}</span>
                 <span class="material-symbols-outlined text-[18px]">upload_file</span>
             </a>
@@ -257,37 +257,37 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative">
             <!-- Step 1 -->
             <div class="relative pt-12">
-                <div class="absolute top-0 left-0 w-11 h-11 rounded-full bg-[#0F3D24] text-[#F5C518] flex items-center justify-center font-bold text-lg font-display shadow-md">
+                <div class="absolute top-0 left-0 w-11 h-11 rounded-full bg-[#0B5D2E] text-[#F5C518] flex items-center justify-center font-bold text-lg font-display shadow-md">
                     1
                 </div>
-                <h3 class="text-lg font-bold text-[#0F3D24] font-display mb-2">{{ __('asic-landing.step_1_title') }}</h3>
+                <h3 class="text-lg font-bold text-[#0B5D2E] font-display mb-2">{{ __('asic-landing.step_1_title') }}</h3>
                 <p class="text-sm text-[#3b4a40] leading-relaxed">{{ __('asic-landing.step_1_desc') }}</p>
             </div>
 
             <!-- Step 2 -->
             <div class="relative pt-12">
-                <div class="absolute top-0 left-0 w-11 h-11 rounded-full bg-[#0F3D24] text-[#F5C518] flex items-center justify-center font-bold text-lg font-display shadow-md">
+                <div class="absolute top-0 left-0 w-11 h-11 rounded-full bg-[#0B5D2E] text-[#F5C518] flex items-center justify-center font-bold text-lg font-display shadow-md">
                     2
                 </div>
-                <h3 class="text-lg font-bold text-[#0F3D24] font-display mb-2">{{ __('asic-landing.step_2_title') }}</h3>
+                <h3 class="text-lg font-bold text-[#0B5D2E] font-display mb-2">{{ __('asic-landing.step_2_title') }}</h3>
                 <p class="text-sm text-[#3b4a40] leading-relaxed">{{ __('asic-landing.step_2_desc') }}</p>
             </div>
 
             <!-- Step 3 -->
             <div class="relative pt-12">
-                <div class="absolute top-0 left-0 w-11 h-11 rounded-full bg-[#0F3D24] text-[#F5C518] flex items-center justify-center font-bold text-lg font-display shadow-md">
+                <div class="absolute top-0 left-0 w-11 h-11 rounded-full bg-[#0B5D2E] text-[#F5C518] flex items-center justify-center font-bold text-lg font-display shadow-md">
                     3
                 </div>
-                <h3 class="text-lg font-bold text-[#0F3D24] font-display mb-2">{{ __('asic-landing.step_3_title') }}</h3>
+                <h3 class="text-lg font-bold text-[#0B5D2E] font-display mb-2">{{ __('asic-landing.step_3_title') }}</h3>
                 <p class="text-sm text-[#3b4a40] leading-relaxed">{{ __('asic-landing.step_3_desc') }}</p>
             </div>
 
             <!-- Step 4 -->
             <div class="relative pt-12">
-                <div class="absolute top-0 left-0 w-11 h-11 rounded-full bg-[#0F3D24] text-[#F5C518] flex items-center justify-center font-bold text-lg font-display shadow-md">
+                <div class="absolute top-0 left-0 w-11 h-11 rounded-full bg-[#0B5D2E] text-[#F5C518] flex items-center justify-center font-bold text-lg font-display shadow-md">
                     4
                 </div>
-                <h3 class="text-lg font-bold text-[#0F3D24] font-display mb-2">{{ __('asic-landing.step_4_title') }}</h3>
+                <h3 class="text-lg font-bold text-[#0B5D2E] font-display mb-2">{{ __('asic-landing.step_4_title') }}</h3>
                 <p class="text-sm text-[#3b4a40] leading-relaxed">{{ __('asic-landing.step_4_desc') }}</p>
             </div>
         </div>
@@ -297,7 +297,7 @@
 @include('public._landing_content')
 
 <!-- Section: Registration Fees -->
-<section id="fees" class="py-20 lg:py-28 px-6 lg:px-16 text-white" style="background-color: #0F3D24;">
+<section id="fees" class="py-20 lg:py-28 px-6 lg:px-16 text-white" style="background-color: #0B5D2E;">
     <div class="max-w-6xl mx-auto">
         <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold font-display tracking-tight text-white leading-tight mb-8">
             {{ __('asic-landing.fees_title') }}

@@ -8,14 +8,14 @@
 <div class="px-6 py-14 lg:px-16">
     <div class="mx-auto max-w-4xl space-y-6">
         <header>
-            <h1 class="font-display text-3xl font-bold text-[#0F3D24] sm:text-4xl">{{ __('asic-public.pages.'.$page.'.title') }}</h1>
+            <h1 class="font-display text-3xl font-bold text-[#0B5D2E] sm:text-4xl">{{ __('asic-public.pages.'.$page.'.title') }}</h1>
             <p class="mt-2 text-sm text-[#3b4a40]">{{ __('asic-public.pages.'.$page.'.description') }}</p>
         </header>
 
         @switch($page)
             @case('venue')
                 @if($event?->lokasi)
-                    <article class="rounded-2xl border border-[#d9e3d0] bg-white p-6"><p class="text-xs font-bold uppercase tracking-wider text-[#0F3D24]/70">{{ __('asic-public.location') }}</p><p class="mt-2 text-lg font-semibold text-[#0F3D24]">{{ $event->lokasi }}</p></article>
+                    <article class="rounded-2xl border border-[#d9e3d0] bg-white p-6"><p class="text-xs font-bold uppercase tracking-wider text-[#0B5D2E]/70">{{ __('asic-public.location') }}</p><p class="mt-2 text-lg font-semibold text-[#0B5D2E]">{{ $event->lokasi }}</p></article>
                 @endif
                 @include('public._blocks', ['blocks' => $blocks])
                 @if(! $event?->lokasi && $blocks->isEmpty())<p class="rounded-2xl bg-white p-6 text-sm text-[#3b4a40]">{{ __('asic-public.empty_page') }}</p>@endif
@@ -25,8 +25,8 @@
                 @include('public._blocks', ['blocks' => $blocks])
                 @php($guides = $event ? \App\Models\DocumentTemplate::where('id_event', $event->id_event)->where('jenis_dokumen', 'Panduan')->where('status_template', 'Aktif')->get() : collect())
                 @if($guides->isNotEmpty())
-                    <section class="rounded-2xl border border-[#d9e3d0] bg-white p-6"><h2 class="text-lg font-bold text-[#0F3D24]">{{ __('asic-documents.types.Panduan') }}</h2>
-                        <ul class="mt-2 space-y-1 text-sm">@foreach($guides as $guide)<li><a href="{{ route('public.downloads.file', $guide->id_template) }}" class="text-[#005226] underline">{{ $guide->nama_template }}@if($guide->subjenis) · {{ __('asic-documents.subtypes.'.$guide->subjenis) }}@endif @if($guide->bahasa) · {{ strtoupper($guide->bahasa) }}@endif</a></li>@endforeach</ul>
+                    <section class="rounded-2xl border border-[#d9e3d0] bg-white p-6"><h2 class="text-lg font-bold text-[#0B5D2E]">{{ __('asic-documents.types.Panduan') }}</h2>
+                        <ul class="mt-2 space-y-1 text-sm">@foreach($guides as $guide)<li><a href="{{ route('public.downloads.file', $guide->id_template) }}" class="text-[#0B5D2E] underline">{{ $guide->nama_template }}@if($guide->subjenis) · {{ __('asic-documents.subtypes.'.$guide->subjenis) }}@endif @if($guide->bahasa) · {{ strtoupper($guide->bahasa) }}@endif</a></li>@endforeach</ul>
                     </section>
                 @endif
                 @if($blocks->isEmpty() && $guides->isEmpty())<p class="rounded-2xl bg-white p-6 text-sm text-[#3b4a40]">{{ __('asic-public.empty_page') }}</p>@endif
@@ -35,7 +35,7 @@
             @case('faq')
                 @forelse($items as $faq)
                     <details class="rounded-2xl border border-[#d9e3d0] bg-white p-5">
-                        <summary class="cursor-pointer font-semibold text-[#0F3D24]">{{ $faq->localized('pertanyaan') }}</summary>
+                        <summary class="cursor-pointer font-semibold text-[#0B5D2E]">{{ $faq->localized('pertanyaan') }}</summary>
                         <p class="mt-3 text-sm leading-relaxed text-[#2f3d33]">{!! nl2br(e($faq->localized('jawaban'))) !!}</p>
                     </details>
                 @empty
@@ -46,8 +46,8 @@
             @case('contact')
                 @if($channels->isNotEmpty())
                     <section class="rounded-2xl border border-[#d9e3d0] bg-white p-6">
-                        <h2 class="text-lg font-bold text-[#0F3D24]">{{ __('asic-public.channels') }}</h2>
-                        <ul class="mt-2 space-y-2 text-sm">@foreach($channels as $channel)<li>@if(preg_match('#^https://#i', $channel->url))<a href="{{ $channel->url }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-[#005226] underline">{{ $channel->nama_kanal }}</a>@else<span class="font-semibold">{{ $channel->nama_kanal }}</span>@endif <span class="text-[#3b4a40]">· {{ $channel->jenis_kanal }}</span></li>@endforeach</ul>
+                        <h2 class="text-lg font-bold text-[#0B5D2E]">{{ __('asic-public.channels') }}</h2>
+                        <ul class="mt-2 space-y-2 text-sm">@foreach($channels as $channel)<li>@if(preg_match('#^https://#i', $channel->url))<a href="{{ $channel->url }}" target="_blank" rel="noopener noreferrer" class="font-semibold text-[#0B5D2E] underline">{{ $channel->nama_kanal }}</a>@else<span class="font-semibold">{{ $channel->nama_kanal }}</span>@endif <span class="text-[#3b4a40]">· {{ $channel->jenis_kanal }}</span></li>@endforeach</ul>
                     </section>
                 @endif
                 @include('public._contacts', ['contacts' => $contacts])
@@ -60,11 +60,11 @@
                     <section class="grid gap-4 md:grid-cols-2">
                         @foreach($packages as $package)
                             <article class="rounded-2xl border border-[#d9e3d0] bg-white p-6">
-                                <h2 class="text-lg font-bold text-[#0F3D24]">{{ $package->nama }}</h2>
+                                <h2 class="text-lg font-bold text-[#0B5D2E]">{{ $package->nama }}</h2>
                                 @if($package->localized('deskripsi'))<p class="mt-2 text-sm text-[#2f3d33]">{!! nl2br(e($package->localized('deskripsi'))) !!}</p>@endif
                                 @php($benefits = array_values(array_filter(array_map('trim', preg_split('/\R/', (string) $package->localized('manfaat'))))))
                                 @if($benefits)<ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-[#2f3d33]">@foreach($benefits as $benefit)<li>{{ $benefit }}</li>@endforeach</ul>@endif
-                                <p class="mt-3 text-sm font-semibold text-[#0F3D24]">{{ $package->harga_teks }}</p>
+                                <p class="mt-3 text-sm font-semibold text-[#0B5D2E]">{{ $package->harga_teks }}</p>
                                 @if($package->kuota !== null)<p class="text-xs text-[#3b4a40]">{{ __('asic-public.quota', ['count' => $package->kuota]) }}</p>@endif
                             </article>
                         @endforeach
@@ -77,7 +77,7 @@
             @case('travel')
                 @include('public._blocks', ['blocks' => $blocks])
                 @if($blocks->isEmpty())<p class="rounded-2xl bg-white p-6 text-sm text-[#3b4a40]">{{ __('asic-public.empty_page') }}</p>@endif
-                @if($contacts->isNotEmpty())<h2 class="pt-4 text-xl font-bold text-[#0F3D24]">{{ __('asic-public.contacts') }}</h2>@include('public._contacts', ['contacts' => $contacts])@endif
+                @if($contacts->isNotEmpty())<h2 class="pt-4 text-xl font-bold text-[#0B5D2E]">{{ __('asic-public.contacts') }}</h2>@include('public._contacts', ['contacts' => $contacts])@endif
                 @break
 
             @case('gallery')
@@ -100,7 +100,7 @@
             @case('ethics')
                 @if($legal)
                     <article class="rounded-2xl border border-[#d9e3d0] bg-white p-6">
-                        <h2 class="text-xl font-bold text-[#0F3D24]">{{ $legal->localized('judul') }}</h2>
+                        <h2 class="text-xl font-bold text-[#0B5D2E]">{{ $legal->localized('judul') }}</h2>
                         <p class="mt-1 text-xs text-[#3b4a40]">{{ __('asic-public.legal_version', ['version' => $legal->versi, 'date' => $legal->berlaku_mulai?->translatedFormat('d F Y')]) }}</p>
                         <div class="mt-4 text-sm leading-relaxed text-[#2f3d33]">{!! nl2br(e($legal->localized('isi'))) !!}</div>
                     </article>

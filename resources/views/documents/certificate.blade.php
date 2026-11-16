@@ -13,13 +13,13 @@
 <style>
     @page { margin: 18mm; }
     body { font-family: DejaVu Sans, sans-serif; color: #17261D; text-align: center; }
-    .frame { border: 6px double #0F3D24; padding: 18px 28px; height: 150mm; }
-    .title { font-size: 34px; font-weight: bold; letter-spacing: 6px; color: #0F3D24; margin: 6px 0 0; }
+    .frame { border: 6px double #0B5D2E; padding: 18px 28px; height: 150mm; }
+    .title { font-size: 34px; font-weight: bold; letter-spacing: 6px; color: #0B5D2E; margin: 6px 0 0; }
     .sub { font-size: 12px; color: #4a5a50; font-style: italic; margin: 2px 0 10px; }
-    .name { font-size: 28px; font-weight: bold; margin: 8px 0 2px; border-bottom: 1px solid #0F3D24; display: inline-block; padding: 0 24px 4px; }
+    .name { font-size: 28px; font-weight: bold; margin: 8px 0 2px; border-bottom: 1px solid #0B5D2E; display: inline-block; padding: 0 24px 4px; }
     .line { font-size: 13px; margin: 4px 0; }
     .muted { font-size: 11px; color: #4a5a50; font-style: italic; }
-    .event { font-size: 16px; font-weight: bold; color: #0F3D24; margin: 6px 0 2px; }
+    .event { font-size: 16px; font-weight: bold; color: #0B5D2E; margin: 6px 0 2px; }
     .sign { width: 60%; margin: 10px auto 0; }
     .sign img { max-height: 55px; }
     .number { position: absolute; left: 30mm; bottom: 26mm; font-size: 10px; color: #4a5a50; text-align: left; }

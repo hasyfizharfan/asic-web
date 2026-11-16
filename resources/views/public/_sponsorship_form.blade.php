@@ -14,8 +14,8 @@
         this.form = { ...this.form, id_package: '', nama_organisasi: '', nama_kontak: '', email: '', telepon: '', pesan: '' };
     }
 }">
-    <h2 class="text-xl font-bold text-[#0F3D24]">{{ __('asic-public.form.title') }}</h2>
-    <p x-show="success" x-text="success" role="status" class="mt-3 rounded-xl bg-[#d7f5dd] p-3 text-sm text-[#0F3D24]"></p>
+    <h2 class="text-xl font-bold text-[#0B5D2E]">{{ __('asic-public.form.title') }}</h2>
+    <p x-show="success" x-text="success" role="status" class="mt-3 rounded-xl bg-[#d7f5dd] p-3 text-sm text-[#0B5D2E]"></p>
     <p x-show="error" x-text="error" role="alert" class="mt-3 rounded-xl bg-[#fde2e1] p-3 text-sm text-[#7a1c17]"></p>
     <form class="mt-4 grid gap-3 sm:grid-cols-2" @submit.prevent="submit()">
         <label class="text-sm font-semibold">{{ __('asic-public.form.type') }}<select x-model="form.jenis" class="mt-1 block w-full rounded-xl border-[#c9d6c2]"><option value="Sponsorship">Sponsorship</option><option value="Exhibition">Exhibition</option></select></label>
@@ -26,6 +26,6 @@
         <label class="text-sm font-semibold">{{ __('asic-public.form.phone') }}<input x-model="form.telepon" maxlength="30" class="mt-1 block w-full rounded-xl border-[#c9d6c2]"><span x-show="errors.telepon" x-text="errors.telepon?.[0]" class="text-xs text-[#b3261e]"></span></label>
         <label class="text-sm font-semibold sm:col-span-2">{{ __('asic-public.form.message') }}<textarea x-model="form.pesan" required minlength="10" maxlength="3000" rows="4" class="mt-1 block w-full rounded-xl border-[#c9d6c2]"></textarea><span x-show="errors.pesan" x-text="errors.pesan?.[0]" class="text-xs text-[#b3261e]"></span></label>
         <label class="absolute -left-[9999px]" aria-hidden="true">{{ __('asic-public.form.website') }}<input x-model="form.website" tabindex="-1" autocomplete="off"></label>
-        <div class="sm:col-span-2"><button :disabled="sending" class="rounded-xl bg-[#0F3D24] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50" x-text="sending ? i18n.sending : i18n.submit"></button></div>
+        <div class="sm:col-span-2"><button :disabled="sending" class="rounded-xl bg-[#0B5D2E] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50" x-text="sending ? i18n.sending : i18n.submit"></button></div>
     </form>
 </section>

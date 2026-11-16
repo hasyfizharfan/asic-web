@@ -22,7 +22,7 @@
     @vite(['resources/css/asic.css', 'resources/js/asic.js'])
     @stack('styles')
 </head>
-<body class="bg-[#F1F5EC] text-[#17261D] antialiased font-sans selection:bg-[#005226] selection:text-white">
+<body class="bg-[#F1F5EC] text-[#17261D] antialiased font-sans selection:bg-[#0B5D2E] selection:text-white">
     <div class="min-h-screen flex flex-col">
         <!-- Main Content (Hero with Integrated Navbar + Sections) -->
         <main class="flex-1">
@@ -30,7 +30,7 @@
         </main>
 
         <!-- Footer -->
-        <footer id="contact" class="bg-[#0A2B19] text-white/80 border-t border-white/10 pt-16 pb-12">
+        <footer id="contact" class="bg-[#084A26] text-white/80 border-t border-white/10 pt-16 pb-12">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
                     <div class="md:col-span-2 space-y-4">
