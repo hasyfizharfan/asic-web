@@ -2,8 +2,8 @@
 
 @section('content')
 <main class="space-y-5" x-data="{
-    rows: [], roles: [], selected: [], loading: true, error: '', search: '', roleFilter: '', page: 1, lastPage: 1,
-    modal: false, saving: false, formError: '', editing: null,
+    rows: [], roles: [], summary: null, governanceMatrix: null, selected: [], loading: true, error: '', search: '', roleFilter: '', page: 1, lastPage: 1,
+    modal: false, saving: false, formError: '', editing: null, confirmModal: false, confirmAction: null,
     form: { id_role: '', email: '', password: '', full_name: '', affiliation: '', phone: '', job_title: '', status_akun: 'Aktif' },
     async init() { await this.load(); },
     async load() {
@@ -13,6 +13,8 @@
         if (!response.ok) { this.error = response.error || 'Daftar pengguna gagal dimuat.'; return; }
         this.rows = response.data?.users || [];
         this.roles = response.data?.available_roles || [];
+        this.summary = response.data?.summary || null;
+        this.governanceMatrix = response.data?.governance_matrix || null;
         this.lastPage = response.data?.pagination?.last_page || 1;
         this.selected = this.selected.filter(id => this.rows.some(row => row.id_user === id));
     },
@@ -43,10 +45,12 @@
         await this.load();
     },
     async remove(row) {
-        if (!window.confirm('Hapus akun ' + row.email + '?')) return;
-        const response = await window.asicApi.delete('/api/admin/users/' + row.id_user);
-        if (!response.ok) { this.error = response.error || 'Akun gagal dihapus.'; return; }
-        await this.load();
+        this.confirmAction = async () => {
+            const response = await window.asicApi.delete('/api/admin/users/' + row.id_user);
+            if (!response.ok) { this.error = response.error || 'Akun gagal dihapus.'; return; }
+            await this.load();
+        };
+        this.confirmModal = true;
     },
     async batch(action) {
         if (!this.selected.length) return;
@@ -61,6 +65,14 @@
         <div><h1 class="text-2xl font-bold">Manajemen pengguna</h1><p class="mt-1 text-sm text-on-surface-variant">Data akun, peran, status, dan aksi massal dari backend.</p></div>
         <div class="flex gap-2"><a href="/api/admin/users/export-csv" class="rounded-xl border px-4 py-2 text-sm">Ekspor CSV</a><button @click="openCreate()" class="rounded-xl bg-primary px-4 py-2 text-sm font-semibold text-white">Tambah pengguna</button></div>
     </header>
+    <section x-show="summary" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <article class="rounded-xl border p-4"><h2 class="text-xs text-on-surface-variant">Total akun</h2><p class="text-2xl font-bold" x-text="summary?.total_system_users?.count ?? 0"></p></article>
+        <template x-for="(count, role) in (summary?.total_system_users?.breakdown || {})" :key="role"><article class="rounded-xl border p-4"><h2 class="text-xs capitalize text-on-surface-variant" x-text="role.replace('_', ' ')"></h2><p class="text-2xl font-bold" x-text="count"></p></article></template>
+    </section>
+    <section x-show="governanceMatrix" class="space-y-3 rounded-xl border bg-surface-container-lowest p-4">
+        <div><h2 class="font-semibold">Matriks tata kelola</h2><p class="text-sm text-on-surface-variant">Hak akses aktif untuk setiap kapabilitas dan peran.</p></div>
+        <div class="overflow-x-auto"><table class="w-full min-w-[620px] text-left text-xs"><thead><tr class="border-b"><th class="p-2">Kapabilitas</th><template x-for="role in governanceMatrix?.roles || []" :key="role.id_role"><th class="p-2" x-text="role.name"></th></template></tr></thead><tbody><template x-for="capability in governanceMatrix?.capabilities || []" :key="capability.id"><tr class="border-b border-surface-container-highest"><td class="p-2" x-text="capability.title"></td><template x-for="role in governanceMatrix?.roles || []" :key="role.id_role"><td class="p-2" x-text="governanceMatrix?.matrix?.[capability.id]?.[role.id_role] || 'restricted'"></td></template></tr></template></tbody></table></div>
+    </section>
     <div class="flex flex-wrap gap-2"><input x-model="search" @keydown.enter.prevent="page=1; load()" placeholder="Cari nama atau email" class="rounded-lg border-surface-container-highest text-sm"><select x-model="roleFilter" @change="page=1; load()" class="rounded-lg border-surface-container-highest text-sm"><option value="">Semua peran</option><template x-for="role in roles" :key="role.id_role"><option :value="role.id_role" x-text="role.nama_role"></option></template></select><button @click="page=1; load()" class="rounded-lg bg-surface-container px-4 py-2 text-sm">Cari</button></div>
     <p x-show="loading" role="status" class="rounded-xl bg-surface-container-low p-4 text-sm">Memuat pengguna…</p>
     <p x-show="error" x-text="error" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-error"></p>
@@ -70,5 +82,6 @@
     <nav class="flex items-center justify-end gap-3 text-sm"><button :disabled="page <= 1" @click="page--; load()" class="rounded border px-3 py-1 disabled:opacity-40">Sebelumnya</button><span x-text="'Halaman ' + page + ' / ' + lastPage"></span><button :disabled="page >= lastPage" @click="page++; load()" class="rounded border px-3 py-1 disabled:opacity-40">Berikutnya</button></nav>
 
     <div x-show="modal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @click.self="modal=false"><section class="w-full max-w-lg space-y-4 rounded-2xl bg-white p-6"><h2 class="text-lg font-bold" x-text="editing ? 'Ubah pengguna' : 'Tambah pengguna'"></h2><p x-show="formError" x-text="formError" role="alert" class="text-sm text-error"></p><form @submit.prevent="save()" class="grid gap-3 sm:grid-cols-2"><label class="space-y-1 text-sm">Nama lengkap<input required x-model="form.full_name" class="w-full rounded-lg border-surface-container-highest"></label><label class="space-y-1 text-sm">Email<input required type="email" x-model="form.email" class="w-full rounded-lg border-surface-container-highest"></label><label class="space-y-1 text-sm">Peran<select required x-model="form.id_role" class="w-full rounded-lg border-surface-container-highest"><template x-for="role in roles" :key="role.id_role"><option :value="role.id_role" x-text="role.nama_role"></option></template></select></label><label class="space-y-1 text-sm">Status<select x-model="form.status_akun" class="w-full rounded-lg border-surface-container-highest"><option>Aktif</option><option>Nonaktif</option></select></label><label class="space-y-1 text-sm">Afiliasi<input x-model="form.affiliation" class="w-full rounded-lg border-surface-container-highest"></label><label class="space-y-1 text-sm">Telepon<input x-model="form.phone" class="w-full rounded-lg border-surface-container-highest"></label><label class="space-y-1 text-sm">Jabatan<input x-model="form.job_title" class="w-full rounded-lg border-surface-container-highest"></label><label class="space-y-1 text-sm">Kata sandi <span x-show="editing">(kosongkan jika tidak diubah)</span><input :required="!editing" minlength="8" type="password" x-model="form.password" class="w-full rounded-lg border-surface-container-highest"></label><div class="col-span-full flex justify-end gap-2"><button type="button" @click="modal=false" class="rounded-lg border px-4 py-2 text-sm">Batal</button><button :disabled="saving" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white" x-text="saving ? 'Menyimpan…' : 'Simpan'"></button></div></form></section></div>
+    <div x-show="confirmModal" x-cloak class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" @click.self="confirmModal=false"><section role="dialog" aria-modal="true" class="w-full max-w-md space-y-4 rounded-2xl bg-white p-6"><h2 class="text-lg font-bold">Konfirmasi penghapusan</h2><p class="text-sm text-on-surface-variant">Akun yang dipilih akan dihapus jika permintaan berhasil.</p><div class="flex justify-end gap-2"><button type="button" @click="confirmModal=false" class="rounded-lg border px-4 py-2 text-sm">Batal</button><button type="button" @click="confirmModal=false; confirmAction?.()" class="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-white">Hapus akun</button></div></section></div>
 </main>
 @endsection

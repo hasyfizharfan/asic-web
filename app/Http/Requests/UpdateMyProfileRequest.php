@@ -7,7 +7,10 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateMyProfileRequest extends FormRequest
 {
-    public function authorize(): bool { return $this->user()?->role?->nama_role === Role::ROLE_PESERTA; }
+    public function authorize(): bool
+    {
+        return $this->user()?->role?->nama_role === Role::ROLE_PESERTA;
+    }
 
     public function rules(): array
     {

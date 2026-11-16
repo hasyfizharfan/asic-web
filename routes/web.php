@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthPageController;
+use App\Http\Controllers\Portal\AdminController;
 use App\Http\Controllers\Portal\ParticipantController;
 use App\Http\Controllers\Portal\ReviewerController;
 use App\Http\Controllers\Portal\SecretariatController;
@@ -79,14 +80,14 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::prefix('admin')->name('portal.admin.')->middleware('permission:access_admin_portal')->group(function (): void {
         Route::get('/', fn () => redirect()->route('portal.admin.dashboard'));
-        Route::get('/dashboard', [PortalController::class, 'dashboard'])->name('dashboard');
-        Route::view('/overview', 'admin.overview')->name('overview');
-        Route::view('/users', 'admin.users')->name('users');
-        Route::view('/permissions', 'admin.permissions')->name('permissions');
-        Route::view('/signatures', 'admin.signatures')->name('signatures');
-        Route::view('/templates', 'admin.templates')->name('templates');
-        Route::view('/settings', 'admin.settings')->name('settings');
-        Route::view('/archive', 'admin.archive')->name('archive');
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/overview', [AdminController::class, 'overview'])->name('overview');
+        Route::get('/users', [AdminController::class, 'users'])->name('users');
+        Route::get('/permissions', [AdminController::class, 'permissions'])->name('permissions');
+        Route::get('/signatures', [AdminController::class, 'signatures'])->name('signatures');
+        Route::get('/templates', [AdminController::class, 'templates'])->name('templates');
+        Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
+        Route::get('/archive', [AdminController::class, 'archive'])->name('archive');
     });
 });
 

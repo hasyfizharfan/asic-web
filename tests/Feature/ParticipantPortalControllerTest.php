@@ -5,10 +5,9 @@ namespace Tests\Feature;
 use App\Http\Controllers\Portal\ParticipantController;
 use App\Models\Participant;
 use App\Models\Role;
-use App\Models\UserAccount;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Routing\Route as RoutingRoute;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsAsicFixtures;
 use Tests\TestCase;
 

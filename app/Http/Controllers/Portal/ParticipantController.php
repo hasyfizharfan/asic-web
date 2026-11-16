@@ -3,16 +3,18 @@
 namespace App\Http\Controllers\Portal;
 
 use App\Http\Controllers\Controller;
+use App\Models\Event;
+use App\Models\IssuedDocument;
 use App\Models\Registration;
 use App\Models\RegistrationFee;
-use App\Models\IssuedDocument;
 use App\Models\UserAccount;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class ParticipantController extends Controller
 {
-    public function index(): \Illuminate\Http\RedirectResponse
+    public function index(): RedirectResponse
     {
         return redirect()->route('portal.participant.dashboard');
     }
@@ -36,21 +38,68 @@ class ParticipantController extends Controller
             'registrations' => $registrations,
             'registration' => $registrations->first(),
             'documents' => $documents,
-            'events' => $view === 'participant.registration' ? \App\Models\Event::query()->where('status_event', 'Aktif')->get() : collect(),
+            'events' => $view === 'participant.registration' ? Event::query()->where('status_event', 'Aktif')->get() : collect(),
             'fees' => $view === 'participant.registration' ? RegistrationFee::query()->whereHas('event', fn ($q) => $q->where('status_event', 'Aktif'))->whereHas('registrationPeriod', fn ($q) => $q->where('status_periode', 'Aktif'))->with(['event', 'registrationPeriod'])->get() : collect(),
         ]);
     }
 
-    public function dashboard(Request $request): View { return $this->page($request, 'participant.dashboard'); }
-    public function registration(Request $request): View { return $this->page($request, 'participant.registration'); }
-    public function abstract(Request $request): View { return $this->page($request, 'participant.abstract'); }
-    public function checkout(Request $request): View { return $this->page($request, 'participant.payment.checkout'); }
-    public function paymentStatus(Request $request): View { return $this->page($request, 'participant.payment.status'); }
-    public function documents(Request $request): View { return $this->page($request, 'participant.documents'); }
-    public function attendance(Request $request): View { return $this->page($request, 'participant.attendance-qr'); }
-    public function fullPaper(Request $request): View { return $this->page($request, 'participant.full-paper'); }
-    public function profile(Request $request): View { return $this->page($request, 'participant.profile'); }
-    public function refund(Request $request): View { return $this->page($request, 'participant.refund'); }
-    public function notifications(Request $request): View { return $this->page($request, 'participant.notifications'); }
-    public function certificate(Request $request): View { return $this->page($request, 'participant.certificate'); }
+    public function dashboard(Request $request): View
+    {
+        return $this->page($request, 'participant.dashboard');
+    }
+
+    public function registration(Request $request): View
+    {
+        return $this->page($request, 'participant.registration');
+    }
+
+    public function abstract(Request $request): View
+    {
+        return $this->page($request, 'participant.abstract');
+    }
+
+    public function checkout(Request $request): View
+    {
+        return $this->page($request, 'participant.payment.checkout');
+    }
+
+    public function paymentStatus(Request $request): View
+    {
+        return $this->page($request, 'participant.payment.status');
+    }
+
+    public function documents(Request $request): View
+    {
+        return $this->page($request, 'participant.documents');
+    }
+
+    public function attendance(Request $request): View
+    {
+        return $this->page($request, 'participant.attendance-qr');
+    }
+
+    public function fullPaper(Request $request): View
+    {
+        return $this->page($request, 'participant.full-paper');
+    }
+
+    public function profile(Request $request): View
+    {
+        return $this->page($request, 'participant.profile');
+    }
+
+    public function refund(Request $request): View
+    {
+        return $this->page($request, 'participant.refund');
+    }
+
+    public function notifications(Request $request): View
+    {
+        return $this->page($request, 'participant.notifications');
+    }
+
+    public function certificate(Request $request): View
+    {
+        return $this->page($request, 'participant.certificate');
+    }
 }

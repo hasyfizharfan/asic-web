@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AuditLogIndexRequest;
 use App\Http\Requests\Admin\UpdateRolePermissionMatrixRequest;
+use App\Http\Resources\Admin\AuditLogResource;
+use App\Models\AuditLog;
 use App\Models\Role;
 use App\Support\PermissionMatrix as PermissionMatrixService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,25 +47,16 @@ class RolePermissionController extends Controller
         $capabilities = $this->getCapabilitiesDefinition();
         $matrix = $this->getActiveMatrix();
 
+        $latestAudit = AuditLog::query()->latest('created_at')->first();
         $summary = [
             'core_roles_count' => $rolesFromDb->count(),
             'core_roles' => $rolesFromDb->pluck('nama_role'),
             'capability_nodes_count' => count($capabilities),
-            'last_audit' => [
-                'date' => '14 Feb 2026',
-                'auditor' => 'Prof. Dr. Ir. Helmi (General Chair)',
-                'timestamp' => '2026-02-14T08:00:00+07:00',
-            ],
-            'identity_provider' => [
-                'name' => 'UNAND SSO',
-                'protocol' => 'SAML2 / OAuth2 Central Realm',
-                'security_level' => 'SSL 256-Bit Encrypted',
-            ],
-            'compliance' => [
-                'status' => 'Certified',
-                'block_id' => '#ASIC-SEC-09024D',
-                'version' => 'ACL V2.4',
-            ],
+            'last_audit' => $latestAudit ? [
+                'action' => $latestAudit->action,
+                'user' => $latestAudit->user_email,
+                'timestamp' => $latestAudit->created_at?->toIso8601String(),
+            ] : null,
         ];
 
         return response()->json([
@@ -127,12 +120,7 @@ class RolePermissionController extends Controller
             ['matrix' => json_encode($matrix, JSON_THROW_ON_ERROR), 'updated_at' => now()]
         );
 
-        $this->appendAuditTrail([
-            'action' => 'UPDATE_MATRIX',
-            'user' => auth()->user()?->email ?? 'admin',
-            'note' => $validated['audit_note'] ?? 'Updated via Roles & Permissions Matrix UI',
-            'timestamp' => now()->toIso8601String(),
-        ]);
+        $this->recordAudit('UPDATE_MATRIX', $validated['audit_note'] ?? 'Matriks permission diperbarui.');
 
         return response()->json([
             'success' => true,
@@ -175,12 +163,7 @@ class RolePermissionController extends Controller
             ['matrix' => json_encode($defaultMatrix, JSON_THROW_ON_ERROR), 'updated_at' => now()]
         );
 
-        $this->appendAuditTrail([
-            'action' => 'RESET_TO_DEFAULTS',
-            'user' => auth()->user()?->email ?? 'admin',
-            'note' => 'Reset matrix to default settings',
-            'timestamp' => now()->toIso8601String(),
-        ]);
+        $this->recordAudit('RESET_TO_DEFAULTS', 'Matriks permission direset ke nilai bawaan.');
 
         return response()->json([
             'success' => true,
@@ -248,20 +231,18 @@ class RolePermissionController extends Controller
             ),
         ]
     )]
-    public function auditLog(): JsonResponse
+    public function auditLog(AuditLogIndexRequest $request): JsonResponse
     {
-        $auditLogs = Cache::get('asic_acl_audit_trail', [
-            [
-                'action' => 'INITIAL_SYSTEM_SETUP',
-                'user' => 'system@asic.unand.ac.id',
-                'note' => 'Initial installation of 5 roles RBAC architecture',
-                'timestamp' => '2026-02-14T08:00:00+07:00',
-            ],
-        ]);
+        $logs = AuditLog::query()->when($request->filled('action'), fn ($query) => $query->where('action', $request->validated('action')))
+            ->latest('created_at')->latest('id')->paginate($request->integer('per_page', 20));
 
         return response()->json([
             'success' => true,
-            'data' => $auditLogs,
+            'data' => AuditLogResource::collection($logs)->resolve(),
+            'pagination' => [
+                'current_page' => $logs->currentPage(), 'per_page' => $logs->perPage(),
+                'total' => $logs->total(), 'last_page' => $logs->lastPage(),
+            ],
         ], Response::HTTP_OK, [
             'Content-Disposition' => 'attachment; filename="asic-acl-audit-log.json"',
         ]);
@@ -342,13 +323,16 @@ class RolePermissionController extends Controller
         return $normalized;
     }
 
-    /**
-     * Tambahkan catatan ke audit trail cache.
-     */
-    protected function appendAuditTrail(array $entry): void
+    protected function recordAudit(string $action, string $note): void
     {
-        $logs = Cache::get('asic_acl_audit_trail', []);
-        array_unshift($logs, $entry);
-        Cache::forever('asic_acl_audit_trail', array_slice($logs, 0, 100));
+        $user = auth()->user();
+        AuditLog::create([
+            'id_user' => $user?->id_user,
+            'user_email' => $user?->email ?? 'unknown',
+            'action' => $action,
+            'target_type' => 'role_permission_matrix',
+            'target_id' => '1',
+            'note' => $note,
+        ]);
     }
 }

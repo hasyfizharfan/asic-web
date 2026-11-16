@@ -34,9 +34,10 @@ return [
         ['label' => 'asic-reviewer.profile_title', 'route' => 'portal.reviewer.profile', 'icon' => 'account_circle', 'permission' => 'review_abstracts'],
     ],
     'admin' => [
-        ['label' => 'asic-nav.overview', 'route' => 'portal.admin.overview', 'icon' => 'dashboard', 'permission' => 'access_admin_portal'],
+        ['label' => 'asic-nav.dashboard', 'route' => 'portal.admin.dashboard', 'icon' => 'dashboard', 'permission' => 'access_admin_portal'],
         ['label' => 'asic-nav.users_roles', 'route' => 'portal.admin.users', 'icon' => 'group', 'permission' => 'manage_users'],
         ['label' => 'asic-nav.permissions', 'route' => 'portal.admin.permissions', 'icon' => 'verified_user', 'permission' => 'manage_users'],
+        ['label' => 'Tanda tangan digital', 'route' => 'portal.admin.signatures', 'icon' => 'draw', 'permission' => 'manage_digital_signatures'],
         ['label' => 'asic-nav.document_templates', 'route' => 'portal.admin.templates', 'icon' => 'description', 'permission' => 'manage_document_templates'],
         ['label' => 'asic-nav.website_settings', 'route' => 'portal.admin.settings', 'icon' => 'settings', 'permission' => 'manage_website_content'],
         ['label' => 'asic-nav.archive', 'route' => 'portal.admin.archive', 'icon' => 'inventory_2', 'permission' => 'manage_users'],

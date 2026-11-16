@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreUserRequest;
 use App\Http\Requests\Admin\UpdateUserRequest;
 use App\Http\Resources\Admin\UserManagementResource;
+use App\Models\AuditLog;
 use App\Models\Participant;
 use App\Models\Role;
 use App\Models\UserAccount;
+use App\Support\PermissionMatrix;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -83,18 +85,22 @@ class UserManagementController extends Controller
 
         if ($request->filled('search')) {
             $search = '%'.trim($request->string('search')).'%';
-            $query->where(function ($q) use ($search) {
+            $driver = DB::connection()->getDriverName();
+            $fullName = match ($driver) {
+                'mysql' => "CONCAT(COALESCE(prefix, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))",
+                'sqlite' => "COALESCE(prefix, '') || ' ' || COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')",
+                default => "COALESCE(prefix, '') || ' ' || COALESCE(first_name, '') || ' ' || COALESCE(last_name, '')",
+            };
+            $query->where(function ($q) use ($search, $fullName) {
                 $q->where('email', 'like', $search)
                     ->orWhereHas('participant', function ($p) use ($search) {
                         $p->where('first_name', 'like', $search)
                             ->orWhere('last_name', 'like', $search)
-                            ->orWhere(DB::raw("CONCAT(COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))"), 'like', $search)
-                            ->orWhere(DB::raw("CONCAT(COALESCE(prefix, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, ''))"), 'like', $search)
                             ->orWhere('institution', 'like', $search)
                             ->orWhere('passport_no', 'like', $search)
                             ->orWhere('job_title', 'like', $search)
                             ->orWhere('phone', 'like', $search);
-                    });
+                    })->orWhereHas('participant', fn ($p) => $p->whereRaw("TRIM({$fullName}) LIKE ?", [$search]));
             });
         }
 
@@ -128,7 +134,7 @@ class UserManagementController extends Controller
             ], Response::HTTP_OK);
         }
 
-        return response()->view('admin.users.index', compact('users', 'roles', 'summary', 'governanceMatrix'));
+        return redirect()->route('portal.admin.users');
     }
 
     /**
@@ -247,6 +253,7 @@ class UserManagementController extends Controller
         });
 
         $user->load(['role', 'participant']);
+        $this->recordAudit('USER_CREATED', 'Akun pengguna dibuat.', $user->id_user, ['role_id' => $user->id_role, 'status' => $user->status_akun]);
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -256,7 +263,7 @@ class UserManagementController extends Controller
             ], Response::HTTP_CREATED);
         }
 
-        return redirect()->route('api.admin.users.index')->with('success', 'Akun pengguna berhasil ditambahkan.');
+        return redirect()->route('portal.admin.users')->with('success', 'Akun pengguna berhasil ditambahkan.');
     }
 
     /**
@@ -382,6 +389,10 @@ class UserManagementController extends Controller
         $user = UserAccount::findOrFail($id_user);
         $validated = $request->validated();
 
+        if ($blocked = $this->guardAdminMutation($request, $user, $validated['id_role'], $validated['status_akun'])) {
+            return $blocked;
+        }
+
         DB::transaction(function () use ($user, $validated) {
             $userPayload = [
                 'id_role' => $validated['id_role'],
@@ -423,6 +434,11 @@ class UserManagementController extends Controller
                     $participantData
                 );
             }
+
+            $this->recordAudit('USER_UPDATED', 'Data akun pengguna diperbarui.', $user->id_user, [
+                'role_id' => $user->id_role,
+                'status' => $user->status_akun,
+            ]);
         });
 
         $user->load(['role', 'participant']);
@@ -435,7 +451,7 @@ class UserManagementController extends Controller
             ], Response::HTTP_OK);
         }
 
-        return redirect()->route('api.admin.users.index')->with('success', 'Data akun pengguna berhasil diperbarui.');
+        return redirect()->route('portal.admin.users')->with('success', 'Data akun pengguna berhasil diperbarui.');
     }
 
     /**
@@ -480,7 +496,12 @@ class UserManagementController extends Controller
             return back()->withErrors(['error' => $errorMessage]);
         }
 
+        if ($this->wouldRemoveLastActiveAdmin([$user->id_user], 'delete')) {
+            return $this->mutationBlocked($request, 'Sistem harus memiliki setidaknya satu Admin aktif.');
+        }
+
         DB::transaction(function () use ($user) {
+            $this->recordAudit('USER_DELETED', 'Akun pengguna dihapus.', $user->id_user, ['role_id' => $user->id_role]);
             $user->participant()->delete();
             $user->delete();
         });
@@ -492,7 +513,7 @@ class UserManagementController extends Controller
             ], Response::HTTP_OK);
         }
 
-        return redirect()->route('api.admin.users.index')->with('success', 'Akun pengguna berhasil dihapus.');
+        return redirect()->route('portal.admin.users')->with('success', 'Akun pengguna berhasil dihapus.');
     }
 
     /**
@@ -539,7 +560,11 @@ class UserManagementController extends Controller
         }
 
         $newStatus = ($user->status_akun === 'Aktif') ? 'Nonaktif' : 'Aktif';
+        if ($newStatus === 'Nonaktif' && $this->wouldRemoveLastActiveAdmin([$user->id_user], 'deactivate')) {
+            return $this->mutationBlocked($request, 'Sistem harus memiliki setidaknya satu Admin aktif.');
+        }
         $user->update(['status_akun' => $newStatus]);
+        $this->recordAudit('USER_STATUS_TOGGLED', 'Status akun diubah.', $user->id_user, ['status' => $newStatus]);
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -600,8 +625,19 @@ class UserManagementController extends Controller
             'id_role' => ['required_if:action,change_role', 'nullable', 'integer', 'exists:role,id_role'],
         ]);
 
-        $ids = array_diff($validated['user_ids'], [Auth::id()]);
         $action = $validated['action'];
+        $ids = array_values(array_unique(array_map('intval', $validated['user_ids'])));
+        $adminRoleId = Role::where('nama_role', Role::ROLE_ADMIN)->value('id_role');
+        $selfIncluded = in_array((int) Auth::id(), $ids, true);
+        if ($selfIncluded && in_array($action, ['deactivate', 'delete'], true)) {
+            return response()->json(['success' => false, 'message' => 'Akun Admin tidak dapat menonaktifkan atau menghapus akunnya sendiri.'], Response::HTTP_FORBIDDEN);
+        }
+        if ($selfIncluded && $action === 'change_role' && (int) $validated['id_role'] !== (int) $adminRoleId) {
+            return response()->json(['success' => false, 'message' => 'Akun Admin tidak dapat menurunkan perannya sendiri.'], Response::HTTP_FORBIDDEN);
+        }
+        if ($this->wouldRemoveLastActiveAdmin($ids, $action, $validated['id_role'] ?? null)) {
+            return response()->json(['success' => false, 'message' => 'Sistem harus memiliki setidaknya satu Admin aktif.'], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
         $affectedCount = 0;
 
         switch ($action) {
@@ -625,6 +661,12 @@ class UserManagementController extends Controller
             default:
                 $msg = 'Aksi massal tidak dikenali.';
         }
+
+        $this->recordAudit('USER_BATCH_ACTION', 'Aksi massal akun dijalankan.', null, [
+            'action' => $action,
+            'user_ids' => $ids,
+            'affected_count' => $affectedCount,
+        ]);
 
         return response()->json([
             'success' => true,
@@ -684,45 +726,90 @@ class UserManagementController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
+    private function guardAdminMutation(Request $request, UserAccount $target, int $newRoleId, string $newStatus): JsonResponse|RedirectResponse|null
+    {
+        $adminRoleId = (int) Role::where('nama_role', Role::ROLE_ADMIN)->value('id_role');
+        $actor = $request->user();
+        $self = $actor && (int) $actor->id_user === (int) $target->id_user;
+
+        if ($self && $actor->isAdmin() && ($newRoleId !== $adminRoleId || $newStatus !== 'Aktif')) {
+            return $this->mutationBlocked($request, 'Akun Admin tidak dapat menonaktifkan atau menurunkan perannya sendiri.', Response::HTTP_FORBIDDEN);
+        }
+
+        if ($target->status_akun === 'Aktif' && (int) $target->id_role === $adminRoleId
+            && ($newRoleId !== $adminRoleId || $newStatus !== 'Aktif')
+            && $this->wouldRemoveLastActiveAdmin([$target->id_user], 'change_role', $newRoleId, $newStatus)) {
+            return $this->mutationBlocked($request, 'Sistem harus memiliki setidaknya satu Admin aktif.');
+        }
+
+        return null;
+    }
+
+    private function wouldRemoveLastActiveAdmin(array $ids, string $action, ?int $newRoleId = null, ?string $newStatus = null): bool
+    {
+        $adminRoleId = (int) Role::where('nama_role', Role::ROLE_ADMIN)->value('id_role');
+        $removesAdmin = in_array($action, ['delete', 'deactivate'], true)
+            || ($action === 'change_role' && (int) $newRoleId !== $adminRoleId)
+            || ($newStatus === 'Nonaktif');
+
+        if (! $removesAdmin) {
+            return false;
+        }
+
+        $affectedActiveAdmins = UserAccount::query()->whereIn('id_user', $ids)->where('id_role', $adminRoleId)->where('status_akun', 'Aktif')->count();
+
+        return $affectedActiveAdmins > 0
+            && UserAccount::query()->where('id_role', $adminRoleId)->where('status_akun', 'Aktif')->whereNotIn('id_user', $ids)->count() === 0;
+    }
+
+    private function mutationBlocked(Request $request, string $message, int $status = Response::HTTP_UNPROCESSABLE_ENTITY): JsonResponse|RedirectResponse
+    {
+        if ($request->expectsJson()) {
+            return response()->json(['success' => false, 'message' => $message], $status);
+        }
+
+        return back()->withErrors(['error' => $message]);
+    }
+
+    private function recordAudit(string $action, string $note, ?int $targetId = null, array $meta = []): void
+    {
+        $actor = Auth::user();
+        unset($meta['password'], $meta['password_confirmation'], $meta['token'], $meta['secret']);
+        AuditLog::create([
+            'id_user' => $actor?->id_user,
+            'user_email' => $actor?->email ?? 'unknown',
+            'action' => $action,
+            'target_type' => $targetId === null ? 'user_batch' : 'user_account',
+            'target_id' => $targetId === null ? null : (string) $targetId,
+            'note' => $note,
+            'meta' => $meta ?: null,
+        ]);
+    }
+
     /**
-     * Helper untuk menghitung metrik 4 summary cards.
+     * Helper untuk menghitung metrik summary dari data aktual.
      */
     protected function buildSummaryMetrics(): array
     {
-        $totalUsers = UserAccount::count();
-        $partCount = UserAccount::whereHas('role', fn ($q) => $q->where('nama_role', 'Peserta'))->count();
-        $secCount = UserAccount::whereHas('role', fn ($q) => $q->where('nama_role', 'Sekretariat'))->count();
-        $treasCount = UserAccount::whereHas('role', fn ($q) => $q->where('nama_role', 'Bendahara'))->count();
-        $adminCount = UserAccount::whereHas('role', fn ($q) => $q->where('nama_role', 'Admin'))->count();
-        $absTeamCount = UserAccount::whereHas('role', fn ($q) => $q->where('nama_role', 'Tim Abstrak'))->count();
+        $roleCounts = UserAccount::query()->join('role', 'role.id_role', '=', 'user_account.id_role')
+            ->select('role.nama_role', DB::raw('count(*) as total'))
+            ->groupBy('role.nama_role')->pluck('total', 'nama_role');
+        $activeRoles = Role::query()->count();
 
         return [
             'total_system_users' => [
-                'count' => $totalUsers > 0 ? $totalUsers : 412,
+                'count' => UserAccount::query()->count(),
                 'unit' => 'accounts',
                 'breakdown' => [
-                    'participant' => $partCount > 0 ? $partCount : 368,
-                    'secretariat' => $secCount > 0 ? $secCount : 24,
-                    'treasurer' => $treasCount > 0 ? $treasCount : 6,
-                    'admin' => $adminCount > 0 ? $adminCount : 4,
-                    'abstract_team' => $absTeamCount,
+                    'participant' => (int) ($roleCounts[Role::ROLE_PESERTA] ?? 0),
+                    'secretariat' => (int) ($roleCounts[Role::ROLE_SEKRETARIAT] ?? 0),
+                    'treasurer' => (int) ($roleCounts[Role::ROLE_BENDAHARA] ?? 0),
+                    'admin' => (int) ($roleCounts[Role::ROLE_ADMIN] ?? 0),
+                    'abstract_team' => (int) ($roleCounts[Role::ROLE_TIM_ABSTRAK] ?? 0),
                 ],
-                'display_subtext' => "{$partCount} Part. • {$secCount} Sec. • {$treasCount} Treas. • {$adminCount} Admin",
             ],
-            'active_roles' => [
-                'count' => '4 Core Tiers',
-                'acl_status' => 'Granular ACL Active',
-                'matrix_nodes' => '32 Matrix Nodes',
-            ],
-            'two_factor_enforcement' => [
-                'coverage' => '100% Staff Coverage',
-                'policy' => 'Enforced for Admin, Sec.',
-            ],
-            'security_audit_status' => [
-                'standard' => 'SOC-2 / UNAND',
-                'encryption' => 'SSL 256-bit API',
-                'status' => 'COMPLIANT',
-            ],
+            'active_roles' => ['count' => $activeRoles],
+            'permission_capabilities' => count(PermissionMatrix::capabilities()),
         ];
     }
 
@@ -732,76 +819,12 @@ class UserManagementController extends Controller
     protected function buildGovernanceMatrix(): array
     {
         return [
-            'abstract_manuscript_review' => [
-                'group_title' => 'ABSTRACT & MANUSCRIPT REVIEW GROUP',
-                'capabilities' => [
-                    [
-                        'title' => 'Submit & Edit Own Abstract',
-                        'description' => 'Access to submission drafting, topic track assignment, and PDF upload portal.',
-                        'privileges' => ['participant' => 'Full Access', 'secretariat' => 'View Only', 'treasurer' => 'Restricted', 'admin' => 'Full Access'],
-                    ],
-                    [
-                        'title' => 'Peer Review Scoring & Blind Assignment',
-                        'description' => 'Review rubrics, reviewer allocation, and blind manuscript evaluation reports.',
-                        'privileges' => ['participant' => 'Restricted', 'secretariat' => 'Full Access', 'treasurer' => 'Restricted', 'admin' => 'Full Access'],
-                    ],
-                    [
-                        'title' => 'Issue Official LOA & Rejection Letters',
-                        'description' => 'Letter of Acceptance dispatch, QR-authenticated signature dispatch.',
-                        'privileges' => ['participant' => 'Restricted', 'secretariat' => 'Full Access', 'treasurer' => 'Restricted', 'admin' => 'Full Access'],
-                    ],
-                ],
-            ],
-            'treasury_payments_invoicing' => [
-                'group_title' => 'TREASURY, PAYMENTS & INVOICING GROUP',
-                'capabilities' => [
-                    [
-                        'title' => 'View Payment Gateways & Upload Slips',
-                        'description' => 'Bank Mandiri / BNI Virtual Account checkout and proof-of-transfer uploads.',
-                        'privileges' => ['participant' => 'Full Access', 'secretariat' => 'View Only', 'treasurer' => 'View Only', 'admin' => 'Full Access'],
-                    ],
-                    [
-                        'title' => 'Reconcile Slips, Audit Webhooks & Reject Slips',
-                        'description' => 'Manual invoice approval, payment webhook ledger verification, refund marks.',
-                        'privileges' => ['participant' => 'Restricted', 'secretariat' => 'View Only', 'treasurer' => 'Full Access', 'admin' => 'Full Access'],
-                    ],
-                    [
-                        'title' => 'Export Faktur Pajak & Bank Settlement Reports',
-                        'description' => 'UNAND Finance Treasury CSV/XML direct export and tax compliance files.',
-                        'privileges' => ['participant' => 'Restricted', 'secretariat' => 'Restricted', 'treasurer' => 'Full Access', 'admin' => 'Full Access'],
-                    ],
-                ],
-            ],
-            'onsite_operations_accreditation' => [
-                'group_title' => 'ONSITE OPERATIONS & ACCREDITATION GROUP',
-                'capabilities' => [
-                    [
-                        'title' => 'Scan Delegate QR & Print Badges',
-                        'description' => 'Registration hall kiosk station, Zebra badge printer triggers, lanyard handouts.',
-                        'privileges' => ['participant' => 'Own QR Only', 'secretariat' => 'Full Access', 'treasurer' => 'Cashier Desk', 'admin' => 'Full Access'],
-                    ],
-                    [
-                        'title' => 'Manual Accreditation Override (PIN)',
-                        'description' => 'Admit participants with incomplete vouchers or offline cash adjustments.',
-                        'privileges' => ['participant' => 'Restricted', 'secretariat' => 'Supervisor Only', 'treasurer' => 'Restricted', 'admin' => 'Full Access'],
-                    ],
-                ],
-            ],
-            'system_governance_master_data' => [
-                'group_title' => 'SYSTEM GOVERNANCE & MASTER DATA GROUP',
-                'capabilities' => [
-                    [
-                        'title' => 'Edit Document Templates & Digital Signatures',
-                        'description' => 'Kop Surat Fakultas Pertanian UNAND, Dean signature keys, LOA wording.',
-                        'privileges' => ['participant' => 'Restricted', 'secretariat' => 'Preview Only', 'treasurer' => 'Preview Only', 'admin' => 'Full Access'],
-                    ],
-                    [
-                        'title' => 'Manage User Roles & Revoke API Tokens',
-                        'description' => 'Global privilege matrix configuration, OAuth service keys, staff invitation links.',
-                        'privileges' => ['participant' => 'Restricted', 'secretariat' => 'Restricted', 'treasurer' => 'Restricted', 'admin' => 'Full Access'],
-                    ],
-                ],
-            ],
+            'roles' => Role::query()->orderBy('id_role')->get(['id_role', 'nama_role'])->map(fn (Role $role) => [
+                'id_role' => (string) $role->id_role,
+                'name' => $role->nama_role,
+            ])->all(),
+            'capabilities' => PermissionMatrix::capabilities(),
+            'matrix' => app(PermissionMatrix::class)->activeMatrix(),
         ];
     }
 

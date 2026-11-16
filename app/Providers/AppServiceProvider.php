@@ -65,15 +65,11 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
         View::composer('admin.*', function ($view): void {
-            $view->with('adminNav', [
-                ['label' => __('asic-nav.overview'), 'route' => 'portal.admin.overview', 'icon' => 'dashboard'],
-                ['label' => __('asic-nav.users_roles'), 'route' => 'portal.admin.users', 'icon' => 'group'],
-                ['label' => __('asic-nav.permissions'), 'route' => 'portal.admin.permissions', 'icon' => 'verified_user'],
-                ['label' => 'Tanda tangan digital', 'route' => 'portal.admin.signatures', 'icon' => 'draw'],
-                ['label' => __('asic-nav.document_templates'), 'route' => 'portal.admin.templates', 'icon' => 'description'],
-                ['label' => __('asic-nav.website_settings'), 'route' => 'portal.admin.settings', 'icon' => 'settings'],
-                ['label' => __('asic-nav.archive'), 'route' => 'portal.admin.archive', 'icon' => 'inventory_2'],
-            ]);
+            $user = auth()->user();
+            $nav = collect(config('portal-nav.admin', []))
+                ->filter(fn (array $item) => app(PermissionMatrix::class)->allows($user, $item['permission'], 'view_only'))
+                ->map(fn (array $item) => [...$item, 'label' => __($item['label'])])->values()->all();
+            $view->with(['adminNav' => $nav, 'nav' => $nav]);
         });
     }
 }
