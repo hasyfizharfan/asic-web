@@ -73,7 +73,7 @@
         <a href="{{ route('portal.reviewer.queue') }}"
            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-on-surface text-xs font-bold transition shadow-xs">
             <span class="material-symbols-outlined text-[18px]">arrow_back</span>
-            <span>{{ __('asic-reviewer.btn_back') ?? '← Kembali to Assigned Abstracts' }}</span>
+            <span>{{ __('asic-reviewer.btn_back') ?? 'Kembali ke antrean abstrak' }}</span>
         </a>
 
         @if($blindReview ?? false)
@@ -154,7 +154,7 @@
                         {{ __('asic-reviewer.form_title') ?? 'Review Form' }}
                     </h2>
                     <p class="text-xs text-on-surface-variant mt-0.5">
-                        {{ __('asic-reviewer.form_lead') ?? 'Demonstration of reviewer-specific interaction. Decision criteria and authority are subject to analyst approval.' }}
+                        {{ __('asic-reviewer.form_lead') ?? 'Berikan keputusan final atas abstrak ini.' }}
                     </p>
                 </div>
 

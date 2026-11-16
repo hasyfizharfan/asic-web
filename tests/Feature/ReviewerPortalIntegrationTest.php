@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AbstractReview;
 use App\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\BuildsAsicFixtures;
 use Tests\TestCase;
@@ -34,18 +35,24 @@ class ReviewerPortalIntegrationTest extends TestCase
             $this->as(Role::ROLE_TIM_ABSTRAK)->get($uri)->assertOk();
             $this->as(Role::ROLE_PESERTA)->get($uri)->assertForbidden();
             $this->as(Role::ROLE_BENDAHARA)->get($uri)->assertForbidden();
+            $this->as(Role::ROLE_SEKRETARIAT)->get($uri)->assertForbidden();
+            $this->as(Role::ROLE_ADMIN)->get($uri)->assertForbidden();
         }
     }
 
     public function test_dashboard_contains_reviewer_counts_without_author_or_invoice_data(): void
     {
+        Mail::fake();
         $registration = $this->registration('dashboard', [], ['first_name' => 'PrivateAuthor', 'last_name' => 'HiddenName']);
         $this->abstractFor($registration, ['judul_abstrak' => 'Dashboard blinded title']);
+        $invoiceRegistration = $this->registration('invoice', [], ['first_name' => 'PrivateAuthor', 'last_name' => 'HiddenName']);
+        $abstract = $this->abstractFor($invoiceRegistration);
         $this->fee();
+        $this->as(Role::ROLE_TIM_ABSTRAK)->postJson("/api/tim-abstrak/submissions/{$abstract->id_abstract}/review", ['hasil_review' => 'Diterima'])->assertOk();
 
         $response = $this->as(Role::ROLE_TIM_ABSTRAK)->get('/reviewer/dashboard')->assertOk();
         $response->assertSee('Dashboard blinded title')->assertDontSee('PrivateAuthor')->assertDontSee('HiddenName');
-        $response->assertDontSee('pesertadashboard@example.test')->assertDontSee('1500000');
+        $response->assertDontSee('pesertadashboard@example.test')->assertDontSee('1400000')->assertDontSee('1500000');
     }
 
     public function test_api_redacts_author_and_reviewer_identity_only_for_blind_review_role(): void
@@ -61,7 +68,9 @@ class ReviewerPortalIntegrationTest extends TestCase
             $blindShow->assertDontSee($identity);
         }
         $blindShow->assertJsonPath('data.reviewed_by_me', true)->assertJsonPath('data.reviews.0.hasil_review', 'Diterima');
+        $blindShow->assertJsonMissingPath('file_url');
 
+        $this->as(Role::ROLE_SEKRETARIAT)->getJson('/api/tim-abstrak/submissions')->assertOk()->assertSee('BlindFirst')->assertSee('Private University');
         $this->as(Role::ROLE_SEKRETARIAT)->getJson("/api/tim-abstrak/submissions/{$abstract->id_abstract}")
             ->assertOk()->assertSee('BlindFirst')->assertSee('Private University');
     }
@@ -69,7 +78,7 @@ class ReviewerPortalIntegrationTest extends TestCase
     public function test_decision_validation_and_reviewer_file_download_authorization(): void
     {
         $abstract = $this->abstractFor($this->registration('download', [], ['first_name' => 'FileOwnerName']));
-        Storage::disk('public')->put($abstract->file_abstrak = 'abstracts/private-original-name.pdf', '%PDF-test');
+        Storage::disk('local')->put($abstract->file_abstrak = 'abstracts/private-original-name.pdf', '%PDF-test');
         $abstract->save();
 
         $this->as(Role::ROLE_TIM_ABSTRAK)->get("/api/tim-abstrak/submissions/{$abstract->id_abstract}/file")
@@ -90,6 +99,21 @@ class ReviewerPortalIntegrationTest extends TestCase
         $this->assertSame(1, AbstractReview::where('id_abstract', $abstract->id_abstract)->count());
     }
 
+    public function test_reviewer_can_change_password_through_the_profile_endpoint(): void
+    {
+        $this->as(Role::ROLE_TIM_ABSTRAK)->putJson('/api/me/password', [
+            'current_password' => 'secret-pass-123',
+            'password' => 'Reviewer-New9!',
+            'password_confirmation' => 'Reviewer-New9!',
+        ])->assertOk();
+
+        $this->as(Role::ROLE_BENDAHARA)->putJson('/api/me/password', [
+            'current_password' => 'secret-pass-123',
+            'password' => 'Other-New9!',
+            'password_confirmation' => 'Other-New9!',
+        ])->assertForbidden();
+    }
+
     public function test_queue_search_pagination_and_stats_cover_all_rows(): void
     {
         $match = null;
@@ -108,6 +132,8 @@ class ReviewerPortalIntegrationTest extends TestCase
             ->assertJsonPath('data.current_page', 2)->assertJsonCount(2, 'data.data');
         $this->as(Role::ROLE_TIM_ABSTRAK)->getJson('/api/tim-abstrak/submissions?search=Needle')->assertOk()
             ->assertJsonPath('data.total', 1)->assertJsonPath('data.data.0.id_abstract', $abstract->id_abstract);
+        $this->as(Role::ROLE_TIM_ABSTRAK)->getJson('/api/tim-abstrak/submissions?status_abstrak=Diajukan&scope=CP')->assertOk()
+            ->assertJsonPath('data.total', 16);
         $this->as(Role::ROLE_TIM_ABSTRAK)->getJson('/api/tim-abstrak/submissions?reviewed_by_me=true')->assertOk()
             ->assertJsonPath('data.total', 1)->assertJsonPath('data.data.0.reviewed_by_me', true);
         $this->as(Role::ROLE_TIM_ABSTRAK)->getJson('/api/tim-abstrak/submissions?reviewed_by_me=false')->assertOk()->assertJsonPath('data.total', 16);

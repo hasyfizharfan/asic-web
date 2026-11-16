@@ -45,6 +45,10 @@ class AbstractReviewController extends Controller
                 description: 'Filter berdasarkan scope / bidang topik',
                 schema: new OA\Schema(type: 'string', example: 'Agronomy')
             ),
+            new OA\Parameter(name: 'search', in: 'query', required: false, description: 'Cari berdasarkan judul atau kode abstrak.', schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'reviewed_by_me', in: 'query', required: false, description: 'Batasi abstrak yang sudah/belum direview pengguna ini.', schema: new OA\Schema(type: 'boolean')),
+            new OA\Parameter(name: 'per_page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', minimum: 1, maximum: 100, default: 15)),
+            new OA\Parameter(name: 'page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', minimum: 1, default: 1)),
         ],
         responses: [
             new OA\Response(
@@ -161,7 +165,7 @@ class AbstractReviewController extends Controller
         $isReviewer = $request->user()?->role?->nama_role === Role::ROLE_TIM_ABSTRAK;
         $query = AbstractSubmission::with(['registration.event', 'reviews' => fn ($q) => $q->orderBy('tanggal_review')]);
         if (! $isReviewer) {
-            $query->with(['registration.participant.userAccount', 'latestReview.reviewer']);
+            $query->with(['registration.participant.userAccount', 'latestReview.reviewer', 'reviews.reviewer']);
         }
         $abstract = $query->findOrFail($id_abstract);
         if ($request->user()?->role?->nama_role === Role::ROLE_PESERTA) {
@@ -174,17 +178,31 @@ class AbstractReviewController extends Controller
         ], Response::HTTP_OK);
     }
 
+    #[OA\Get(
+        path: '/api/tim-abstrak/submissions/{id_abstract}/file',
+        summary: 'Unduh berkas abstrak untuk reviewer',
+        description: 'Mengunduh naskah melalui pemeriksaan permission review_abstracts. Nama unduhan hanya berisi ID abstrak.',
+        tags: ['Review Abstrak'],
+        security: [['sanctumAuth' => []]],
+        parameters: [new OA\Parameter(name: 'id_abstract', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
+        responses: [
+            new OA\Response(response: 200, description: 'Berkas abstrak berhasil diunduh', content: new OA\MediaType(mediaType: 'application/octet-stream')),
+            new OA\Response(response: 403, description: 'Akses ditolak'),
+            new OA\Response(response: 404, description: 'Berkas abstrak tidak ditemukan'),
+        ]
+    )]
     public function download(Request $request, int $id_abstract)
     {
         $abstract = AbstractSubmission::with('registration')->findOrFail($id_abstract);
         if ($request->user()?->role?->nama_role === Role::ROLE_PESERTA) {
             abort_unless($abstract->registration?->id_participant === $request->user()->participant?->id_participant, Response::HTTP_FORBIDDEN);
         }
-        abort_unless($abstract->file_abstrak && Storage::disk('public')->exists($abstract->file_abstrak), Response::HTTP_NOT_FOUND);
+        $privateDisk = Storage::disk('local');
+        abort_unless($abstract->file_abstrak && $privateDisk->exists($abstract->file_abstrak), Response::HTTP_NOT_FOUND);
         $extension = Str::lower(pathinfo($abstract->file_abstrak, PATHINFO_EXTENSION));
         abort_unless(in_array($extension, ['pdf', 'doc', 'docx'], true), Response::HTTP_NOT_FOUND);
 
-        return Storage::disk('public')->download($abstract->file_abstrak, 'abstract-'.$abstract->id_abstract.'.'.$extension);
+        return $privateDisk->download($abstract->file_abstrak, 'abstract-'.$abstract->id_abstract.'.'.$extension);
     }
 
     /**

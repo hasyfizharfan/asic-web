@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AbstractController extends Controller
 {
@@ -43,7 +44,7 @@ class AbstractController extends Controller
                     properties: [
                         new OA\Property(property: 'success', type: 'boolean', example: true),
                         new OA\Property(property: 'data', type: 'object'),
-                        new OA\Property(property: 'file_url', type: 'string', nullable: true),
+                        new OA\Property(property: 'file_url', type: 'string', nullable: true, description: 'URL endpoint unduhan terotorisasi'),
                     ]
                 )
             ),
@@ -77,14 +78,10 @@ class AbstractController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $fileUrl = $abstract->file_abstrak && Storage::disk('public')->exists($abstract->file_abstrak)
-            ? Storage::disk('public')->url($abstract->file_abstrak)
-            : null;
-
         return response()->json([
             'success' => true,
             'data' => $abstract,
-            'file_url' => $fileUrl,
+            'file_url' => route('api.registrations.abstract.download', $id_registration),
         ], Response::HTTP_OK);
     }
 
@@ -166,11 +163,11 @@ class AbstractController extends Controller
         $validated = $request->validated();
         $file = $request->file('file_abstrak');
 
-        $filePath = $file->store('abstracts', 'public');
+        $filePath = $file->store('abstracts', 'local');
 
         $existingAbstract = $registration->abstractSubmission;
         if ($existingAbstract && $existingAbstract->file_abstrak) {
-            Storage::disk('public')->delete($existingAbstract->file_abstrak);
+            Storage::disk('local')->delete($existingAbstract->file_abstrak);
         }
 
         $abstract = AbstractSubmission::updateOrCreate(
@@ -190,7 +187,7 @@ class AbstractController extends Controller
                 'success' => true,
                 'message' => 'Naskah abstrak berhasil diunggah dengan status Diajukan.',
                 'data' => $abstract,
-                'file_url' => Storage::disk('public')->url($filePath),
+                'file_url' => route('api.registrations.abstract.download', $id_registration),
             ], Response::HTTP_CREATED);
         }
 
@@ -226,7 +223,7 @@ class AbstractController extends Controller
             new OA\Response(response: 404, description: 'Berkas tidak ditemukan'),
         ]
     )]
-    public function download(int $id_registration): BinaryFileResponse|JsonResponse
+    public function download(int $id_registration): BinaryFileResponse|StreamedResponse|JsonResponse
     {
         $registration = Registration::with(['participant.userAccount', 'abstractSubmission'])
             ->findOrFail($id_registration);
@@ -244,13 +241,17 @@ class AbstractController extends Controller
         }
 
         $abstract = $registration->abstractSubmission;
-        if (! $abstract || ! $abstract->file_abstrak || ! Storage::disk('public')->exists($abstract->file_abstrak)) {
+        $privateDisk = Storage::disk('local');
+        if (! $abstract || ! $abstract->file_abstrak || ! $privateDisk->exists($abstract->file_abstrak)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Berkas naskah abstrak tidak ditemukan di server.',
             ], Response::HTTP_NOT_FOUND);
         }
 
-        return Storage::disk('public')->download($abstract->file_abstrak);
+        $extension = strtolower(pathinfo($abstract->file_abstrak, PATHINFO_EXTENSION));
+        abort_unless(in_array($extension, ['pdf', 'doc', 'docx'], true), Response::HTTP_NOT_FOUND);
+
+        return $privateDisk->download($abstract->file_abstrak, 'abstract-'.$abstract->id_abstract.'.'.$extension);
     }
 }
