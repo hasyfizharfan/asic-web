@@ -32,6 +32,9 @@ class PortalController extends Controller
         if ($role === 'reviewer') {
             return redirect()->route('portal.reviewer.dashboard');
         }
+        if ($role === 'secretariat') {
+            return redirect()->route('portal.secretariat.dashboard');
+        }
 
         $registrations = Registration::query()
             ->with(['participant.userAccount', 'event', 'abstractSubmission', 'invoice'])

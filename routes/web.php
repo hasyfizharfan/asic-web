@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthPageController;
 use App\Http\Controllers\Portal\ParticipantController;
 use App\Http\Controllers\Portal\ReviewerController;
+use App\Http\Controllers\Portal\SecretariatController;
 use App\Http\Controllers\Portal\TreasurerController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\PublicPortalController;
@@ -47,15 +48,15 @@ Route::middleware('auth:sanctum')->group(function (): void {
     });
 
     Route::prefix('secretariat')->name('portal.secretariat.')->middleware('permission:access_secretariat_portal')->group(function (): void {
-        Route::get('/', fn () => redirect()->route('portal.secretariat.dashboard'));
-        Route::get('/dashboard', [PortalController::class, 'dashboard'])->name('dashboard');
-        Route::view('/abstracts', 'secretariat.abstracts.index')->name('abstracts.index');
-        Route::get('/abstracts/{id}', fn (int $id) => view('secretariat.abstracts.show', ['id' => $id]))->whereNumber('id')->name('abstracts.show');
-        Route::view('/reregistration', 'secretariat.reregistration')->name('reregistration');
-        Route::view('/attendance', 'secretariat.attendance')->name('attendance');
-        Route::view('/recap', 'secretariat.recap')->name('recap');
-        Route::view('/announcements', 'secretariat.announcements')->name('announcements');
-        Route::view('/content', 'secretariat.content')->name('content');
+        Route::get('/', [SecretariatController::class, 'dashboard']);
+        Route::get('/dashboard', [SecretariatController::class, 'dashboard'])->name('dashboard');
+        Route::get('/abstracts', [SecretariatController::class, 'abstracts'])->name('abstracts.index');
+        Route::get('/abstracts/{id}', [SecretariatController::class, 'showAbstract'])->whereNumber('id')->name('abstracts.show');
+        Route::get('/reregistration', [SecretariatController::class, 'reregistration'])->name('reregistration');
+        Route::get('/attendance', [SecretariatController::class, 'attendance'])->name('attendance');
+        Route::get('/recap', [SecretariatController::class, 'recap'])->name('recap');
+        Route::get('/announcements', [SecretariatController::class, 'announcements'])->name('announcements');
+        Route::get('/content', [SecretariatController::class, 'content'])->name('content');
     });
 
     Route::prefix('treasurer')->name('portal.treasurer.')->middleware('permission:access_treasurer_portal')->group(function (): void {

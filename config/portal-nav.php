@@ -15,6 +15,7 @@ return [
         ['label' => 'asic-nav.profile', 'route' => 'portal.participant.profile', 'icon' => 'account_circle', 'permission' => 'access_participant_portal'],
     ],
     'secretariat' => [
+        ['label' => 'asic-nav.dashboard', 'route' => 'portal.secretariat.dashboard', 'icon' => 'space_dashboard', 'permission' => 'access_secretariat_portal'],
         ['label' => 'asic-nav.abstracts', 'route' => 'portal.secretariat.abstracts.index', 'icon' => 'description', 'permission' => 'view_abstracts'],
         ['label' => 'asic-nav.reregistration', 'route' => 'portal.secretariat.reregistration', 'icon' => 'qr_code_scanner', 'permission' => 'manage_registrations'],
         ['label' => 'asic-nav.attendance_presentation', 'route' => 'portal.secretariat.attendance', 'icon' => 'how_to_reg', 'permission' => 'scan_attendance_qr'],

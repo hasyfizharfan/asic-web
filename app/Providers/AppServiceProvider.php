@@ -49,14 +49,11 @@ class AppServiceProvider extends ServiceProvider
             ]);
         });
         View::composer('secretariat.*', function ($view): void {
-            $view->with('secNav', [
-                ['label' => __('asic-nav.abstracts'), 'route' => 'portal.secretariat.abstracts.index', 'icon' => 'description'],
-                ['label' => __('asic-nav.reregistration'), 'route' => 'portal.secretariat.reregistration', 'icon' => 'qr_code_scanner'],
-                ['label' => __('asic-nav.attendance_presentation'), 'route' => 'portal.secretariat.attendance', 'icon' => 'how_to_reg'],
-                ['label' => __('asic-nav.recap'), 'route' => 'portal.secretariat.recap', 'icon' => 'bar_chart'],
-                ['label' => __('asic-nav.announcements'), 'route' => 'portal.secretariat.announcements', 'icon' => 'campaign'],
-                ['label' => __('asic-nav.website_content'), 'route' => 'portal.secretariat.content', 'icon' => 'public'],
-            ]);
+            $user = auth()->user();
+            $nav = collect(config('portal-nav.secretariat', []))
+                ->filter(fn (array $item) => app(PermissionMatrix::class)->allows($user, $item['permission'], 'view_only'))
+                ->map(fn (array $item) => [...$item, 'label' => __($item['label'])])->values()->all();
+            $view->with(['secNav' => $nav, 'nav' => $nav, 'role' => 'secretariat', 'roleName' => 'Sekretariat']);
         });
         View::composer('treasurer.*', function ($view): void {
             $view->with('treasurerNav', [
