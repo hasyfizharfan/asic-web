@@ -22,6 +22,7 @@ class DocumentRenderer
         'Penolakan' => 'documents.rejection',
         'Invoice' => 'documents.invoice',
         'Receipt' => 'documents.receipt',
+        'Sertifikat' => 'documents.certificate',
     ];
 
     private const SIGNER = [
@@ -29,6 +30,7 @@ class DocumentRenderer
         'Penolakan' => ['chair', Role::ROLE_ADMIN],
         'Invoice' => ['treasurer', Role::ROLE_BENDAHARA],
         'Receipt' => ['treasurer', Role::ROLE_BENDAHARA],
+        'Sertifikat' => ['chair', Role::ROLE_ADMIN],
     ];
 
     /**
@@ -36,7 +38,7 @@ class DocumentRenderer
      */
     public function render(string $jenis, array $c): string
     {
-        return Pdf::loadHTML($this->html($jenis, $c))->setPaper('a4')->output();
+        return Pdf::loadHTML($this->html($jenis, $c))->setPaper('a4', $jenis === 'Sertifikat' ? 'landscape' : 'portrait')->output();
     }
 
     /**

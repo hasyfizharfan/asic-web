@@ -61,4 +61,10 @@ return [
         'branch' => env('ASIC_BANK_BRANCH'),
         'international_note' => env('ASIC_PAYMENT_INTERNATIONAL_NOTE', 'International participants can transfer using PayPal/Wise/Flip.'),
     ],
+
+    // KF-27: syarat sertifikat (lihat App\Services\CertificateEligibility).
+    'certificate' => [
+        'min_attendance_sessions' => (int) env('ASIC_CERT_MIN_SESSIONS', 1),
+        'require_event_ended' => (bool) env('ASIC_CERT_REQUIRE_EVENT_ENDED', false),
+    ],
 ];

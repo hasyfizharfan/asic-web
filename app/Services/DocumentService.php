@@ -21,6 +21,7 @@ class DocumentService
         'Penolakan' => '{SEQ}/{EDITION} ASIC/{YYYY}',
         'Invoice' => '{SEQ}/INV/{EDITION} ASIC/{YYYY}',
         'Receipt' => '{SEQ}/{SCOPE}/{EDITION} ASIC/{YYYY}',
+        'Sertifikat' => '{SEQ}/CERT/{EDITION} ASIC/{YYYY}',
     ];
 
     public function __construct(private DocumentRenderer $renderer) {}

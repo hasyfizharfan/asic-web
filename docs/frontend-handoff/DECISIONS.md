@@ -126,3 +126,28 @@ Dijalankan pada branch `feat/fe-be-integration`, dari HEAD awal `4d96ac4` (`dev`
 ### Ditunda / perlu diisi panitia
 - Isi teks hukum, paket sponsor, konten visa/penginapan/penjemputan, FAQ, kontak, dan foto **tidak** diisi agen; panitia mengisinya lewat `/secretariat/content` atau `/admin/content`. Tidak ada seeder konten karangan.
 - Unduhan berkas panduan presentasi ditambahkan di Fase 2.
+
+## Tahap J — Dokumen, sertifikat, dan arsip
+
+### KF-13 QR kehadiran luring
+- `attendanceQr` kini hanya menerbitkan token untuk registrasi Terdaftar + Luring + Terverifikasi; Daring 403 dengan pesan dari lang file. Token lama milik peserta Daring ditolak `scanParticipantQr` (403). `qr_attendance_token` disembunyikan dari serialisasi `Registration` agar hanya keluar lewat endpoint attendance-qr.
+- **Perbedaan dengan kesepakatan mitra:** Meeting 2 meminta QR untuk semua peserta termasuk daring. Mengikuti PRD KF-13, peserta Daring tidak mendapat QR pribadi, tetapi tetap tercatat hadir lewat QR sesi (`submitSessionQr`) sehingga syarat sertifikat bisa terpenuhi. Test lama `AttendanceQrTest` (perbaikan BUG-013) diganti: Daring 403 untuk QR pribadi dan tetap dapat hadir lewat QR sesi. Perlu dikonfirmasi ke mitra.
+- Halaman peserta menggambar QR di klien dengan paket npm `qrcode` (tanpa layanan luar), tombol unduh PNG, token teks cadangan, dan keterangan bahwa QR ini berbeda dengan QR pembayaran.
+
+### KF-26/KF-06 template dokumen
+- Migration baru: enum `jenis_dokumen` ditambah `Panduan` (cara `->change()` seperti migration 2026_11_12_000004), kolom nullable `subjenis`, `bahasa`, `versi`, `nama_file_asli`, `mime`, `ukuran_file`, `id_user_pengunggah`.
+- Kelompok 1 (LOA, Penolakan, Invoice, Receipt, Sertifikat): tidak ada unggah DOCX; yang dapat diubah format nomor (token {SEQ} {SCOPE} {EDITION} {YYYY} {MM}, {SEQ} wajib) dan status lewat `PUT /api/document-templates/issued/{jenis}` / `PATCH /{id}`. `GET` menampilkan jenis tanpa baris sebagai "bawaan" tanpa menulis ke DB. Pratinjau `GET /api/document-templates/preview/{jenis}` memakai data berlabel CONTOH/SAMPLE dengan watermark dan tidak membuat IssuedDocument. Penanda tangan dan kop tetap dari `config/asic.php` (ditampilkan read-only).
+- Kelompok 2 (Abstrak, Presentasi, Artikel, Panduan): unggah docx/doc/pptx/ppt/pdf maks 10 MB ke disk privat `config('asic.documents_disk')` di `templates/{id_event}/{jenis}/{uuid}.{ext}`; versi baru menonaktifkan versi Aktif dengan event/jenis/subjenis/bahasa sama dalam satu transaksi; tidak ada hapus permanen. Unduhan staf dan publik dialirkan lewat controller dengan nama berkas tersanitasi.
+- Publik: `GET /api/public/downloads`, `/downloads` (daftar per jenis), `/downloads/{id}` (hanya Aktif, event Aktif/Selesai); tautan panduan di `/guidelines`, tautan template di halaman abstrak peserta. Tautan Unduhan dan Arsip di navigasi publik selalu tampil (halaman indeks dengan keadaan kosong yang jelas).
+- Audit: unggah, ubah status, dan ubah format nomor dicatat di `acl_audit_log`.
+
+### KF-27 sertifikat
+- Syarat di `config('asic.certificate')`: `min_attendance_sessions` (bawaan 1), `require_event_ended` (bawaan false). `App\Services\CertificateEligibility::evaluate` adalah satu-satunya sumber kebenaran (Terdaftar; hadir ≥ N sesi; presenter juga status presentasi Sudah).
+- `documents/certificate.blade.php` A4 landscape, dua bahasa (utama Indonesia bila negara peserta Indonesia, selain itu Inggris), isi dari data registrasi/event saja, ditandatangani Ketua (peran Admin) seperti LoA. Format nomor bawaan `{SEQ}/CERT/{EDITION} ASIC/{YYYY}` kecuali template Aktif berbeda.
+- `GET/POST /api/registrations/{id}/certificate` untuk pemilik atau staf `issue_documents`. Penerbitan idempoten (dokumen & nomor sama). Unduh lewat `/api/documents/{id}/download`; Sertifikat ikut daftar dokumen peserta dan memicu notifikasi `certificate_issued`.
+- Nama pada sertifikat tidak berubah setelah terbit; koreksi nama = penerbitan ulang manual oleh Admin (**belum diotomasi**).
+
+### KF-29 arsip
+- `/admin/archive` menampilkan edisi Selesai/Arsip dengan angka nyata (registrasi, presenter, abstrak diterima, peserta hadir) dan aksi Arsipkan (konfirmasi) lewat `PATCH /api/content/events/{id}`; status Arsip hanya dari Selesai (422), dicatat di audit.
+- Publik: `GET /api/public/archive` (q, year, per_page), `/api/public/archive/{id}`, halaman `/archive` dan `/archive/{id}` tanpa data pribadi (hanya agregat jumlah peserta).
+- Ditunda: prosiding/DOI/manifest (tidak ada skema) dan seminar lain Fakultas Pertanian (opsional di PRD) — keduanya tampil "Belum tersedia".

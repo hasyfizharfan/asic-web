@@ -35,6 +35,7 @@
     <section x-show="registration" class="space-y-4 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5">
         <p class="text-sm">Registrasi <strong x-text="registration?.id_registration"></strong> · Pembayaran <strong x-text="registration?.invoice?.status_pembayaran || @js(__('asic-participant.flow.invoice_after_acceptance'))"></strong></p>
         <p x-show="!registration?.invoice" class="text-xs text-on-surface-variant">{{ __('asic-participant.flow.abstract_payment_note') }}</p>
+        <p class="text-xs"><a href="{{ route('public.downloads') }}" target="_blank" rel="noopener" class="font-semibold text-primary underline">{{ __('asic-documents.public.title') }}</a></p>
         <template x-if="abstractSubmission">
             <div class="space-y-3 rounded-xl bg-surface-container-low p-4">
                 <p class="text-sm">Judul: <strong x-text="abstractSubmission.judul_abstrak"></strong></p>

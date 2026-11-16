@@ -7,6 +7,7 @@ use App\Models\AbstractReview;
 use App\Models\Registration;
 use App\Models\RegistrationPeriod;
 use App\Models\Role;
+use App\Services\ArchiveService;
 use App\Services\ReportService;
 use App\Support\PermissionMatrix;
 use Illuminate\Http\RedirectResponse;
@@ -91,8 +92,10 @@ class AdminController extends Controller
         return view('admin.content');
     }
 
-    public function archive(): View
+    public function archive(ArchiveService $archive): View
     {
-        return view('admin.archive');
+        $editions = $archive->query()->get()->map(fn ($event) => ['event' => $event, 'stats' => $archive->stats($event)]);
+
+        return view('admin.archive', ['editions' => $editions]);
     }
 }

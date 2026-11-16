@@ -7,11 +7,13 @@ use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\CommunicationChannelController;
 use App\Http\Controllers\ContentItemController;
 use App\Http\Controllers\ContentPhotoController;
 use App\Http\Controllers\DigitalSignatureController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentTemplateController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventScheduleController;
 use App\Http\Controllers\EventSessionController;
@@ -24,7 +26,9 @@ use App\Http\Controllers\ParticipantFileController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentProofController;
 use App\Http\Controllers\PaymentVerificationController;
+use App\Http\Controllers\PublicArchiveController;
 use App\Http\Controllers\PublicContentController;
+use App\Http\Controllers\PublicDownloadController;
 use App\Http\Controllers\RecapController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegistrationFeeController;
@@ -58,6 +62,9 @@ foreach (['content', 'important-dates', 'faqs', 'contacts', 'photos', 'sponsorsh
         ->defaults('content_type', $publicType)->name('api.public.'.$publicType.'.index');
 }
 Route::get('/public/legal-documents/{jenis}', [LegalDocumentController::class, 'publicShow'])->name('api.public.legal-documents.show');
+Route::get('/public/downloads', [PublicDownloadController::class, 'index'])->name('api.public.downloads.index');
+Route::get('/public/archive', [PublicArchiveController::class, 'index'])->name('api.public.archive.index');
+Route::get('/public/archive/{id_event}', [PublicArchiveController::class, 'show'])->whereNumber('id_event')->name('api.public.archive.show');
 Route::post('/public/sponsorship-inquiries', [SponsorshipInquiryController::class, 'publicStore'])->middleware('throttle:5,1')->name('api.public.sponsorship-inquiries.store');
 
 // =========================================================================
@@ -69,6 +76,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/me', [AuthController::class, 'me'])->name('api.me');
     Route::put('/me/profile', [MyProfileController::class, 'update'])->middleware('permission:access_participant_portal')->name('api.me.profile.update');
     Route::put('/me/password', [MyProfileController::class, 'updatePassword'])->name('api.me.password.update');
+    // Fase 2: template dokumen (KF-26) dan sertifikat (KF-27)
+    Route::middleware('permission:manage_document_templates,view_only')->group(function () {
+        Route::get('/document-templates', [DocumentTemplateController::class, 'index'])->name('api.document-templates.index');
+        Route::get('/document-templates/preview/{jenis}', [DocumentTemplateController::class, 'preview'])->name('api.document-templates.preview');
+        Route::get('/document-templates/{id_template}', [DocumentTemplateController::class, 'show'])->whereNumber('id_template')->name('api.document-templates.show');
+        Route::get('/document-templates/{id_template}/download', [DocumentTemplateController::class, 'download'])->whereNumber('id_template')->name('api.document-templates.download');
+    });
+    Route::middleware('permission:manage_document_templates')->group(function () {
+        Route::post('/document-templates', [DocumentTemplateController::class, 'store'])->name('api.document-templates.store');
+        Route::put('/document-templates/issued/{jenis}', [DocumentTemplateController::class, 'upsertIssued'])->name('api.document-templates.issued');
+        Route::patch('/document-templates/{id_template}', [DocumentTemplateController::class, 'update'])->whereNumber('id_template')->name('api.document-templates.update');
+    });
+    Route::get('/registrations/{id_registration}/certificate', [CertificateController::class, 'show'])->whereNumber('id_registration')->name('api.registrations.certificate.show');
+    Route::post('/registrations/{id_registration}/certificate', [CertificateController::class, 'store'])->whereNumber('id_registration')->name('api.registrations.certificate.store');
+
     // KF-30: notifikasi dalam situs milik pengguna sendiri
     Route::get('/me/notifications', [MyNotificationController::class, 'index'])->name('api.me.notifications.index');
     Route::get('/me/notifications/unread-count', [MyNotificationController::class, 'unreadCount'])->name('api.me.notifications.unread-count');

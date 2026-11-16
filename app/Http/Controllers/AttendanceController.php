@@ -131,7 +131,7 @@ class AttendanceController extends Controller
     #[OA\Get(
         path: '/api/registrations/{id_registration}/attendance-qr',
         summary: 'Buat atau Tampilkan Token QR Kehadiran Pendaftaran',
-        description: 'Mengembalikan token QR milik pendaftaran peserta Luring atau Daring dengan pembayaran terverifikasi.',
+        description: 'Mengembalikan token QR milik pendaftaran peserta Luring, Terdaftar, dengan pembayaran Terverifikasi. Peserta Daring ditolak 403 (kehadiran lewat QR sesi).',
         tags: ['Kehadiran'],
         security: [['sanctumAuth' => []]],
         parameters: [new OA\Parameter(name: 'id_registration', in: 'path', required: true, schema: new OA\Schema(type: 'integer'))],
@@ -149,8 +149,16 @@ class AttendanceController extends Controller
         $canManageAttendance = app(PermissionMatrix::class)->allows($user, 'scan_attendance_qr');
         abort_unless($isOwner || $canManageAttendance, Response::HTTP_FORBIDDEN);
 
+        // KF-13: QR kehadiran pribadi hanya untuk peserta Luring, Terdaftar, dan Terverifikasi.
+        // Peserta Daring mencatat kehadiran lewat QR sesi (submitSessionQr).
+        if ($registration->registration_status !== 'Terdaftar') {
+            return response()->json(['success' => false, 'message' => __('asic-api.attendance.not_registered')], Response::HTTP_FORBIDDEN);
+        }
+        if (! $registration->isLuring()) {
+            return response()->json(['success' => false, 'message' => __('asic-api.attendance.qr_offline_only')], Response::HTTP_FORBIDDEN);
+        }
         if (! $registration->invoice || $registration->invoice->status_pembayaran !== 'Terverifikasi') {
-            return response()->json(['success' => false, 'message' => 'QR kehadiran hanya tersedia bagi peserta dengan pembayaran Terverifikasi.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.attendance.payment_unverified')], Response::HTTP_FORBIDDEN);
         }
 
         if (! $registration->qr_attendance_token) {
@@ -175,6 +183,10 @@ class AttendanceController extends Controller
     {
         $validated = $request->validate(['qr_token' => ['required', 'string']]);
         $registration = Registration::where('qr_attendance_token', $validated['qr_token'])->firstOrFail();
+        // Token lama milik peserta Daring tidak lagi berlaku (KF-13).
+        if (! $registration->isLuring()) {
+            return response()->json(['success' => false, 'message' => __('asic-api.attendance.qr_offline_only')], Response::HTTP_FORBIDDEN);
+        }
 
         return $this->checkInRegistration($registration, $id_session);
     }

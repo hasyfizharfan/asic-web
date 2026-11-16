@@ -28,9 +28,11 @@
     .sign .stempel { position: absolute; left: 0; top: 0; max-height: 80px; max-width: 80px; opacity: 0.85; }
     .sign .name { font-weight: bold; text-decoration: underline; }
     .note { font-size: 10pt; }
+    .sample-watermark { position: fixed; top: 40%; left: 0; right: 0; text-align: center; font-size: 64px; font-weight: bold; color: rgba(200, 0, 0, 0.18); transform: rotate(-30deg); z-index: 1000; }
 </style>
 </head>
 <body>
+@if(! empty($sample))<div class="sample-watermark">CONTOH / SAMPLE</div>@endif
 <table class="kop">
     <tr>
         <td class="logo">@if($logoLeft)<img src="{{ $logoLeft }}">@endif</td>

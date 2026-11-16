@@ -65,6 +65,18 @@ class DocumentTemplate extends Model
 
     public const JENIS_SERTIFIKAT = 'Sertifikat';
 
+    public const JENIS_PANDUAN = 'Panduan';
+
+    /** Kelompok 1: dokumen terbit (dirender Blade; yang diatur hanya format nomor & status). */
+    public const ISSUED = ['LOA', 'Penolakan', 'Invoice', 'Receipt', 'Sertifikat'];
+
+    /** Kelompok 2: berkas unduhan (unggah DOCX/PPTX/PDF, satu Aktif per event/jenis/subjenis/bahasa). */
+    public const DOWNLOADS = ['Abstrak', 'Presentasi', 'Artikel', 'Panduan'];
+
+    public const SUBJENIS = ['oral', 'poster', 'umum'];
+
+    public const NUMBER_TOKENS = ['{SEQ}', '{SCOPE}', '{EDITION}', '{YYYY}', '{MM}'];
+
     /**
      * Atribut yang dapat diisi massal.
      *
@@ -78,6 +90,13 @@ class DocumentTemplate extends Model
         'file_template',
         'tanggal_upload',
         'status_template',
+        'subjenis',
+        'bahasa',
+        'versi',
+        'nama_file_asli',
+        'mime',
+        'ukuran_file',
+        'id_user_pengunggah',
     ];
 
     /**
@@ -89,6 +108,7 @@ class DocumentTemplate extends Model
     {
         return [
             'tanggal_upload' => 'datetime',
+            'ukuran_file' => 'integer',
         ];
     }
 

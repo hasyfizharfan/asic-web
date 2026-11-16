@@ -15,4 +15,9 @@ return [
         'addons_idr_only' => 'Layanan tambahan (add-on) hanya tersedia untuk tarif IDR.',
         'presenter_abstract_not_accepted' => 'Bukti bayar presenter baru dapat diunggah setelah abstrak diterima.',
     ],
+    'attendance' => [
+        'qr_offline_only' => 'QR kehadiran pribadi hanya untuk peserta Luring. Peserta Daring mencatat kehadiran lewat QR sesi.',
+        'not_registered' => 'Status pendaftaran bukan Terdaftar.',
+        'payment_unverified' => 'QR kehadiran tersedia setelah pembayaran Terverifikasi.',
+    ],
 ];

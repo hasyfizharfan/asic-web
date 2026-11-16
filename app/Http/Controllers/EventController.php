@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Models\Event;
+use App\Support\Audit;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -85,7 +86,15 @@ class EventController extends Controller
         if ($err = $this->datesOrder($data, $event)) {
             return $err;
         }
+        // KF-29: status Arsip hanya dari Selesai.
+        $archiving = ($data['status_event'] ?? null) === 'Arsip' && $event->status_event !== 'Arsip';
+        if ($archiving && $event->status_event !== 'Selesai') {
+            return response()->json(['success' => false, 'message' => __('asic-documents.archive.only_from_finished'), 'errors' => ['status_event' => [__('asic-documents.archive.only_from_finished')]]], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
         $event->update($data);
+        if ($archiving) {
+            Audit::log('event.archived', 'event', $event->id_event, null, ['from' => 'Selesai']);
+        }
 
         return $this->ok('Event berhasil diperbarui.', $event->fresh());
     }

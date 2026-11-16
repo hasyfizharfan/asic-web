@@ -3,6 +3,8 @@
         <a href="{{ route('portal.landing') }}" class="font-display text-lg font-bold">ASIC 2027</a>
         <div class="flex flex-wrap items-center gap-4 text-sm">
             <a href="{{ route('portal.landing') }}" class="text-white/85 hover:text-white">{{ __('asic-public.nav.home') }}</a>
+            <a href="{{ route('public.downloads') }}" class="text-white/85 hover:text-white">{{ __('asic-documents.public.title') }}</a>
+            <a href="{{ route('public.archive') }}" class="text-white/85 hover:text-white">{{ __('asic-documents.archive.title') }}</a>
             @foreach(($publicPages ?? []) as $name => $available)
                 @if($available)<a href="{{ route('public.'.$name) }}" class="text-white/85 hover:text-white">{{ __('asic-public.nav.'.$name) }}</a>@endif
             @endforeach

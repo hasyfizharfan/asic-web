@@ -15,4 +15,9 @@ return [
         'addons_idr_only' => 'Add-on services are only available for IDR fees.',
         'presenter_abstract_not_accepted' => 'Presenter payment proof can only be uploaded after the abstract has been accepted.',
     ],
+    'attendance' => [
+        'qr_offline_only' => 'The personal attendance QR is only for on-site participants. Online participants record attendance with the session QR.',
+        'not_registered' => 'The registration status is not Registered.',
+        'payment_unverified' => 'The attendance QR is available after the payment is verified.',
+    ],
 ];

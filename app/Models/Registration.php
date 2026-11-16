@@ -53,6 +53,9 @@ class Registration extends Model
      *
      * @var list<string>
      */
+    /** Token QR kehadiran hanya keluar lewat endpoint attendance-qr (aturan KF-13), tidak lewat serialisasi umum. */
+    protected $hidden = ['qr_attendance_token'];
+
     protected $fillable = [
         'reregistered_at',
         'reregistered_by',

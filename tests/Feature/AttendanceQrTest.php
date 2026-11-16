@@ -39,13 +39,20 @@ class AttendanceQrTest extends TestCase
         ])->assertConflict();
     }
 
-    public function test_online_participant_can_get_their_attendance_qr_after_payment_verification(): void
+    /**
+     * KF-13 (Fase 2): QR kehadiran pribadi hanya untuk peserta Luring. Peserta Daring yang
+     * Terverifikasi tetap dapat hadir lewat QR sesi (BUG-013 tetap teratasi).
+     */
+    public function test_online_participant_gets_no_personal_qr_but_can_attend_with_session_qr(): void
     {
         $registration = $this->verifiedOnlineRegistration();
 
         $this->as(Role::ROLE_PESERTA, '1')
             ->getJson("/api/registrations/{$registration->id_registration}/attendance-qr")
-            ->assertOk()->assertJsonStructure(['data' => ['qr_token']]);
+            ->assertForbidden();
+
+        $session = $this->createSession(now()->subMinutes(10)->toDateTimeString(), now()->addHour()->toDateTimeString());
+        $this->as(Role::ROLE_PESERTA, '1')->postJson('/api/attendance/scan', ['qr_token' => $session->qr_token])->assertOk();
     }
 
     public function test_session_qr_scan_rejects_a_token_for_another_session(): void

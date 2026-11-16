@@ -176,18 +176,19 @@ class AdminPortalControllerTest extends TestCase
             ->assertSee('Akses hanya lihat')->assertDontSee('name="file_ttd"', false);
     }
 
-    public function test_archive_page_is_explicitly_unavailable_and_has_no_mutating_control(): void
+    /** Fase 2 (KF-29): arsip nyata; prosiding/DOI tetap "Belum tersedia". */
+    public function test_archive_page_lists_editions_and_keeps_proceedings_unavailable(): void
     {
-        $this->as(Role::ROLE_ADMIN)->get('/admin/archive')->assertOk()->assertSee('Belum tersedia')
-            ->assertSee('disabled', false)->assertDontSee('route(\'fe.', false);
+        $this->as(Role::ROLE_ADMIN)->get('/admin/archive')->assertOk()
+            ->assertSee(__('asic-documents.archive.proceedings_unavailable'))->assertDontSee("route('fe.", false);
     }
 
-    public function test_document_templates_show_both_groups_with_unavailable_actions(): void
+    /** Fase 2 (KF-26): dua kelompok template terhubung ke API (tidak lagi "Belum tersedia"). */
+    public function test_document_templates_show_both_groups(): void
     {
         $this->as(Role::ROLE_ADMIN)->get('/admin/templates')->assertOk()
-            ->assertSee('Dokumen terbit')->assertSee('LOA, Penolakan, Invoice, Receipt, Sertifikat')
-            ->assertSee('Template berkas unduhan')->assertSee('Abstrak, Presentasi, Artikel')
-            ->assertSee('disabled', false)->assertSee('Belum tersedia');
+            ->assertSee(__('asic-documents.admin.tab_issued'))->assertSee(__('asic-documents.admin.tab_downloads'))
+            ->assertSee('/api/document-templates', false);
     }
 
     public function test_website_settings_are_unavailable_without_backend_data(): void

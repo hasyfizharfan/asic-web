@@ -21,6 +21,17 @@
                 @if(! $event?->lokasi && $blocks->isEmpty())<p class="rounded-2xl bg-white p-6 text-sm text-[#3b4a40]">{{ __('asic-public.empty_page') }}</p>@endif
                 @break
 
+            @case('guidelines')
+                @include('public._blocks', ['blocks' => $blocks])
+                @php($guides = $event ? \App\Models\DocumentTemplate::where('id_event', $event->id_event)->where('jenis_dokumen', 'Panduan')->where('status_template', 'Aktif')->get() : collect())
+                @if($guides->isNotEmpty())
+                    <section class="rounded-2xl border border-[#d9e3d0] bg-white p-6"><h2 class="text-lg font-bold text-[#0F3D24]">{{ __('asic-documents.types.Panduan') }}</h2>
+                        <ul class="mt-2 space-y-1 text-sm">@foreach($guides as $guide)<li><a href="{{ route('public.downloads.file', $guide->id_template) }}" class="text-[#005226] underline">{{ $guide->nama_template }}@if($guide->subjenis) · {{ __('asic-documents.subtypes.'.$guide->subjenis) }}@endif @if($guide->bahasa) · {{ strtoupper($guide->bahasa) }}@endif</a></li>@endforeach</ul>
+                    </section>
+                @endif
+                @if($blocks->isEmpty() && $guides->isEmpty())<p class="rounded-2xl bg-white p-6 text-sm text-[#3b4a40]">{{ __('asic-public.empty_page') }}</p>@endif
+                @break
+
             @case('faq')
                 @forelse($items as $faq)
                     <details class="rounded-2xl border border-[#d9e3d0] bg-white p-5">

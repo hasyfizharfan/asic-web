@@ -7,6 +7,8 @@ use App\Http\Controllers\Portal\ReviewerController;
 use App\Http\Controllers\Portal\SecretariatController;
 use App\Http\Controllers\Portal\TreasurerController;
 use App\Http\Controllers\PortalController;
+use App\Http\Controllers\PublicArchiveController;
+use App\Http\Controllers\PublicDownloadController;
 use App\Http\Controllers\PublicPageController;
 use App\Http\Controllers\PublicPortalController;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +18,12 @@ Route::get('/', [PublicPortalController::class, 'index'])->name('portal.landing'
 foreach (PublicPageController::PAGES as $publicPage) {
     Route::get('/'.$publicPage, [PublicPageController::class, 'show'])->defaults('page', $publicPage)->name('public.'.$publicPage);
 }
+
+// Fase 2: unduhan template publik (KF-06) dan arsip seminar (KF-29)
+Route::get('/downloads', [PublicDownloadController::class, 'page'])->name('public.downloads');
+Route::get('/downloads/{id_template}', [PublicDownloadController::class, 'file'])->whereNumber('id_template')->name('public.downloads.file');
+Route::get('/archive', [PublicArchiveController::class, 'page'])->name('public.archive');
+Route::get('/archive/{id_event}', [PublicArchiveController::class, 'detailPage'])->whereNumber('id_event')->name('public.archive.show');
 
 Route::get('/lang/{locale}', function (string $locale) {
     abort_unless(in_array($locale, ['id', 'en'], true), 404);

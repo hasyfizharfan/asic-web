@@ -1499,7 +1499,7 @@
                     "Kehadiran"
                 ],
                 "summary": "Buat atau Tampilkan Token QR Kehadiran Pendaftaran",
-                "description": "Mengembalikan token QR milik pendaftaran peserta Luring atau Daring dengan pembayaran terverifikasi.",
+                "description": "Mengembalikan token QR milik pendaftaran peserta Luring, Terdaftar, dengan pembayaran Terverifikasi. Peserta Daring ditolak 403 (kehadiran lewat QR sesi).",
                 "operationId": "19ff936acdafb279466614c286cb8de8",
                 "parameters": [
                     {
@@ -2068,6 +2068,71 @@
                     },
                     "401": {
                         "description": "Belum terautentikasi"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/registrations/{id_registration}/certificate": {
+            "get": {
+                "tags": [
+                    "Sertifikat"
+                ],
+                "summary": "Status kelayakan & dokumen sertifikat",
+                "operationId": "3f26527323ae8b56c2791fe19acab993",
+                "parameters": [
+                    {
+                        "name": "id_registration",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "{ eligible, reasons, checks, document|null }"
+                    },
+                    "403": {
+                        "description": "Bukan pemilik/staf"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Sertifikat"
+                ],
+                "summary": "Terbitkan sertifikat bila syarat terpenuhi",
+                "operationId": "db9af1175f52bff7d4fabd69c780749a",
+                "parameters": [
+                    {
+                        "name": "id_registration",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sertifikat terbit (atau sudah terbit sebelumnya)"
+                    },
+                    "422": {
+                        "description": "Syarat belum terpenuhi beserta alasannya"
+                    },
+                    "403": {
+                        "description": "Bukan pemilik/staf"
                     }
                 },
                 "security": [
@@ -2796,6 +2861,281 @@
                     },
                     "404": {
                         "description": "Tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/document-templates": {
+            "get": {
+                "tags": [
+                    "Template Dokumen"
+                ],
+                "summary": "Daftar template dokumen",
+                "description": "Dokumen terbit yang belum punya baris tampil sebagai \"bawaan\" tanpa membuat baris baru.",
+                "operationId": "41d312eab5a4b14802303ad16a347d8b",
+                "parameters": [
+                    {
+                        "name": "id_event",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "kelompok",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "issued",
+                                "downloads"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "jenis_dokumen",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status_template",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "Aktif",
+                                "Tidak Aktif"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "subjenis",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "bahasa",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "en"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar template"
+                    },
+                    "403": {
+                        "description": "Tanpa izin"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Template Dokumen"
+                ],
+                "summary": "Unggah berkas unduhan (Abstrak, Presentasi, Artikel, Panduan)",
+                "description": "Multipart: file (docx/doc/pptx/ppt/pdf, maks 10 MB). Versi Aktif sebelumnya untuk kombinasi yang sama menjadi Tidak Aktif.",
+                "operationId": "adf37dd86335a0dc866926aa4a5c7b71",
+                "responses": {
+                    "201": {
+                        "description": "Tersimpan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/document-templates/{id_template}": {
+            "get": {
+                "tags": [
+                    "Template Dokumen"
+                ],
+                "summary": "Detail template",
+                "operationId": "1678dc992055cca16ac2a2b90e89cf79",
+                "parameters": [
+                    {
+                        "name": "id_template",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            },
+            "patch": {
+                "tags": [
+                    "Template Dokumen"
+                ],
+                "summary": "Ubah template",
+                "description": "Terbit: format_nomor/status_template. Unduhan: nama_template/status_template/subjenis/bahasa/versi.",
+                "operationId": "cb1a8fbdabcc0b31e14d22af02a64634",
+                "parameters": [
+                    {
+                        "name": "id_template",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Diperbarui"
+                    },
+                    "422": {
+                        "description": "Format nomor tidak valid"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/document-templates/issued/{jenis}": {
+            "put": {
+                "tags": [
+                    "Template Dokumen"
+                ],
+                "summary": "Atur format nomor dokumen terbit",
+                "description": "Membuat baris Aktif bila jenis masih bawaan, atau memperbarui baris Aktif yang ada.",
+                "operationId": "6451ac36e7f8903f50cb239b69fed125",
+                "parameters": [
+                    {
+                        "name": "jenis",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "LOA",
+                                "Penolakan",
+                                "Invoice",
+                                "Receipt",
+                                "Sertifikat"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tersimpan"
+                    },
+                    "422": {
+                        "description": "Format tidak valid"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/document-templates/{id_template}/download": {
+            "get": {
+                "tags": [
+                    "Template Dokumen"
+                ],
+                "summary": "Unduh berkas template (staf)",
+                "operationId": "b99c1d25c22c75aee0d495301aa38cfc",
+                "parameters": [
+                    {
+                        "name": "id_template",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berkas"
+                    },
+                    "404": {
+                        "description": "Tidak ada berkas"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctumAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/document-templates/preview/{jenis}": {
+            "get": {
+                "tags": [
+                    "Template Dokumen"
+                ],
+                "summary": "Pratinjau dokumen terbit dengan data CONTOH",
+                "description": "HTML berwatermark CONTOH/SAMPLE; tidak membuat IssuedDocument.",
+                "operationId": "8abb13bb8ca91ce806d18788fc372571",
+                "parameters": [
+                    {
+                        "name": "jenis",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "LOA",
+                                "Penolakan",
+                                "Invoice",
+                                "Receipt",
+                                "Sertifikat"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "HTML pratinjau"
                     }
                 },
                 "security": [
@@ -4143,6 +4483,73 @@
                 ]
             }
         },
+        "/api/public/archive": {
+            "get": {
+                "tags": [
+                    "Publik"
+                ],
+                "summary": "Daftar edisi seminar terarsip",
+                "operationId": "ab0a05c81214b0072a2f766741606895",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar edisi"
+                    }
+                }
+            }
+        },
+        "/api/public/archive/{id_event}": {
+            "get": {
+                "tags": [
+                    "Publik"
+                ],
+                "summary": "Detail edisi terarsip",
+                "operationId": "6851ca8603180c219088505a433d58d0",
+                "parameters": [
+                    {
+                        "name": "id_event",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail"
+                    },
+                    "404": {
+                        "description": "Bukan edisi terarsip"
+                    }
+                }
+            }
+        },
         "/api/public/events/{id_event}/{content_type}": {
             "get": {
                 "tags": [
@@ -4191,6 +4598,57 @@
                     },
                     "404": {
                         "description": "Event tidak publik"
+                    }
+                }
+            }
+        },
+        "/api/public/downloads": {
+            "get": {
+                "tags": [
+                    "Publik"
+                ],
+                "summary": "Daftar berkas template publik",
+                "operationId": "9199a1be88f2013ebb9fa221cf0f4a35",
+                "parameters": [
+                    {
+                        "name": "id_event",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar berkas Aktif"
+                    }
+                }
+            }
+        },
+        "/downloads/{id_template}": {
+            "get": {
+                "tags": [
+                    "Publik"
+                ],
+                "summary": "Unduh berkas template publik",
+                "operationId": "45e6436dd7232fc6c3b93bb59c3fa494",
+                "parameters": [
+                    {
+                        "name": "id_template",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berkas"
+                    },
+                    "404": {
+                        "description": "Tidak tersedia"
                     }
                 }
             }
@@ -5110,12 +5568,20 @@
             "description": "Endpoint Pengaturan Matriks Peran dan Izin Akses (RBAC)"
         },
         {
+            "name": "Sertifikat",
+            "description": "Sertifikat"
+        },
+        {
             "name": "Konten Publik",
             "description": "Konten Publik"
         },
         {
             "name": "Dokumen",
             "description": "Dokumen"
+        },
+        {
+            "name": "Template Dokumen",
+            "description": "Template Dokumen"
         },
         {
             "name": "Publik",

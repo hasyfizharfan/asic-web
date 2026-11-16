@@ -1,5 +1,6 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
+import QRCode from 'qrcode';
 
 if (!window.Alpine) {
     window.Alpine = Alpine;
@@ -39,6 +40,19 @@ window.asicMoney = function (value, currency = 'IDR') {
         minimumFractionDigits: code === 'USD' ? 2 : 0,
         maximumFractionDigits: code === 'USD' ? 2 : 0,
     }).format(Number(value || 0));
+};
+
+/** Gambar QR di klien (paket npm qrcode); token tidak dikirim ke layanan luar. */
+window.asicQr = {
+    render(canvas, text) {
+        return QRCode.toCanvas(canvas, String(text || ''), { width: 240, margin: 2, errorCorrectionLevel: 'M' });
+    },
+    download(canvas, filename) {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = filename;
+        link.click();
+    },
 };
 
 window.asicApi = {
