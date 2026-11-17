@@ -7,6 +7,8 @@ return [
     'confirm' => 'Confirm',
     'delete' => 'Delete',
     'edit' => 'Edit',
+    'preview' => 'View',
+    'open_new_tab' => 'Open in new tab',
     'download' => 'Download',
     'upload' => 'Upload',
     'submit' => 'Submit',

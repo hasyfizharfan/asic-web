@@ -36,7 +36,10 @@ class ReviewerController extends Controller
 
     public function show(int $id): View
     {
-        return view('reviewer.detail', ['id' => $id, 'blindReview' => config('asic.blind_review_active', false)]);
+        $file = AbstractSubmission::whereKey($id)->value('file_abstrak');
+
+        return view('reviewer.detail', ['id' => $id, 'blindReview' => config('asic.blind_review_active', false),
+            'abstractIsPdf' => $file && strtolower(pathinfo($file, PATHINFO_EXTENSION)) === 'pdf']);
     }
 
     public function profile(): View

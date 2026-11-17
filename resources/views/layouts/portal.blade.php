@@ -61,6 +61,7 @@
 
     <!-- Global Toast Component -->
     <x-ui.toast />
+    <x-ui.pdf-viewer />
     @stack('scripts')
 </body>
 </html>

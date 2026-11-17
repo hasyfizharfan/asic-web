@@ -132,6 +132,16 @@ window.asicScanner = {
     },
 };
 
+/** Pratinjau PDF: jendela di dalam halaman; HP tanpa penampil PDF bawaan membuka tab baru. */
+window.asicPreview = (url, title = '') => {
+    const small = window.matchMedia('(max-width: 640px)').matches;
+    if (navigator.pdfViewerEnabled === false || small) {
+        window.open(url + (url.includes('?') ? '&' : '?') + 'inline=1', '_blank', 'noopener');
+        return;
+    }
+    window.dispatchEvent(new CustomEvent('asic-preview', { detail: { url, title } }));
+};
+
 /** Teks UI untuk JavaScript disuntikkan dari layout (window.asicI18n, lang/{id,en}/asic-common.php 'js'). */
 const asicT = (key, fallback = '') => (window.asicI18n && window.asicI18n[key]) || fallback || key;
 

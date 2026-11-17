@@ -96,6 +96,9 @@ class DocumentController extends Controller
             return $this->fail(__('asic-api.messages.berkas_dokumen_tidak_tersedia_di_penyimpanan'), Response::HTTP_NOT_FOUND);
         }
 
-        return $disk->download($doc->file_document, $doc->jenis_dokumen.'-'.str_replace('/', '-', (string) $doc->nomor_dokumen).'.pdf', ['Content-Type' => 'application/pdf']);
+        $name = $doc->jenis_dokumen.'-'.str_replace('/', '-', (string) $doc->nomor_dokumen).'.pdf';
+
+        // ?inline=1: ditampilkan di jendela pratinjau browser, bukan diunduh.
+        return $disk->response($doc->file_document, $name, ['Content-Type' => 'application/pdf'], request()->boolean('inline') ? 'inline' : 'attachment');
     }
 }

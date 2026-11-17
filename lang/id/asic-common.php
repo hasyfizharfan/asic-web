@@ -7,6 +7,8 @@ return [
     'confirm' => 'Konfirmasi',
     'delete' => 'Hapus',
     'edit' => 'Ubah',
+    'preview' => 'Lihat',
+    'open_new_tab' => 'Buka di tab baru',
     'download' => 'Unduh',
     'upload' => 'Unggah',
     'submit' => 'Kirim',

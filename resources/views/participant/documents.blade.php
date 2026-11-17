@@ -27,7 +27,7 @@
         <template x-for="document in documents" :key="document.id_document">
             <article class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5">
                 <div><h2 class="font-bold" x-text="types[document.jenis_dokumen] || document.jenis_dokumen"></h2><p class="mt-1 text-xs text-on-surface-variant"><span>{{ $t['number'] }}</span> <span x-text="document.nomor_dokumen || '—'"></span> · <span>{{ $t['issued'] }}</span> <span x-text="asicDate(document.tanggal_terbit)"></span> · <span>{{ $t['registration'] }}</span> <span x-text="document.id_registration"></span></p></div>
-                <a :href="'/api/documents/' + document.id_document + '/download'" class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">{{ $t['download'] }}</a>
+                <div class="flex flex-wrap gap-2"><button type="button" @click="window.asicPreview('/api/documents/' + document.id_document + '/download', (types[document.jenis_dokumen] || document.jenis_dokumen) + ' ' + (document.nomor_dokumen || ''))" class="inline-flex items-center gap-1.5 rounded-xl border border-primary px-4 py-2 text-sm font-bold text-primary hover:bg-[#E6F4EA]"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">visibility</span>{{ __('asic-common.preview') }}</button><a :href="'/api/documents/' + document.id_document + '/download'" class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">download</span>{{ $t['download'] }}</a></div>
             </article>
         </template>
     </div>

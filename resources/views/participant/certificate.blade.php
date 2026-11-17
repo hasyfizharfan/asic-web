@@ -42,7 +42,8 @@
         <p class="text-xs text-on-surface-variant">{{ $t['name_note'] }}</p>
         <div class="flex flex-wrap gap-3">
             <button type="button" x-show="!status?.document" @click="issue()" :disabled="issuing || !status?.eligible" class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-40" x-text="issuing ? i18n.issuing : i18n.issue"></button>
-            <a x-show="status?.document" :href="status?.document?.download_url" class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">{{ $t['download'] }}</a>
+            <template x-if="status?.document"><button type="button" @click="window.asicPreview(status.document.download_url, status.document.nomor_dokumen || '')" class="inline-flex items-center gap-1.5 rounded-xl border border-primary px-4 py-2 text-sm font-bold text-primary hover:bg-[#E6F4EA]"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">visibility</span>{{ __('asic-common.preview') }}</button></template>
+            <a x-show="status?.document" :href="status?.document?.download_url" class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white"><span class="material-symbols-outlined text-[18px]" aria-hidden="true">download</span>{{ $t['download'] }}</a>
         </div>
         <p x-show="status?.document" class="text-sm" x-text="i18n.issued.replace(':number', status?.document?.nomor_dokumen || '')"></p>
     </section>

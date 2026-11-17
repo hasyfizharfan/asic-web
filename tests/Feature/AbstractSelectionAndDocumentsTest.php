@@ -231,6 +231,16 @@ class AbstractSelectionAndDocumentsTest extends TestCase
             ->assertOk()->assertJsonCount(2, 'data'); // LOA + Invoice
         $res = $this->as(Role::ROLE_PESERTA, '1')->get("/api/documents/{$loa->id_document}/download");
         $res->assertOk()->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('attachment', (string) $res->headers->get('content-disposition'));
+
+        // Tombol "Lihat": ?inline=1 menampilkan PDF di browser, hak akses tetap sama.
+        $inline = $this->as(Role::ROLE_PESERTA, '1')->get("/api/documents/{$loa->id_document}/download?inline=1");
+        $inline->assertOk()->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('inline', (string) $inline->headers->get('content-disposition'));
+        $this->registration('2');
+        $this->as(Role::ROLE_PESERTA, '2')->get("/api/documents/{$loa->id_document}/download?inline=1")->assertForbidden();
+
+        $this->as(Role::ROLE_PESERTA, '1')->get('/participant/documents')->assertOk()->assertSee('window.asicPreview', false)->assertSee(__('asic-common.preview'));
     }
 
     public function test_other_participant_cannot_access_documents(): void

@@ -218,7 +218,12 @@ class AbstractReviewController extends Controller
         $extension = Str::lower(pathinfo($abstract->file_abstrak, PATHINFO_EXTENSION));
         abort_unless(in_array($extension, ['pdf', 'doc', 'docx'], true), Response::HTTP_NOT_FOUND);
 
-        return $privateDisk->download($abstract->file_abstrak, 'abstract-'.$abstract->id_abstract.'.'.$extension);
+        $name = 'abstract-'.$abstract->id_abstract.'.'.$extension;
+        if ($extension === 'pdf' && $request->boolean('inline')) {
+            return $privateDisk->response($abstract->file_abstrak, $name, ['Content-Type' => 'application/pdf'], 'inline');
+        }
+
+        return $privateDisk->download($abstract->file_abstrak, $name);
     }
 
     /**
