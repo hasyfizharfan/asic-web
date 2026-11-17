@@ -42,7 +42,10 @@ class AppServiceProvider extends ServiceProvider
                 Role::ROLE_PESERTA => 'participant', Role::ROLE_SEKRETARIAT => 'secretariat',
                 Role::ROLE_BENDAHARA => 'treasurer', Role::ROLE_TIM_ABSTRAK => 'reviewer', Role::ROLE_ADMIN => 'admin', default => null,
             };
+            $hasPresenter = $roleKey === 'participant' && $user?->participant
+                && Registration::where('id_participant', $user->participant->id_participant)->whereIn('participation_type', ['Oral Presenter', 'Poster Presenter'])->exists();
             $nav = collect(config('portal-nav.'.$roleKey, []))->filter(fn (array $item) => $roleKey !== 'participant' || app(PermissionMatrix::class)->allows($user, $item['permission'], 'view_only'))
+                ->reject(fn (array $item) => $roleKey === 'participant' && ! $hasPresenter && in_array($item['route'] ?? '', ['portal.participant.full-paper', 'portal.participant.abstract'], true))
                 ->map(fn (array $item) => [...$item, 'label' => __($item['label'])])->values()->all();
             $view->with(['participantNav' => $nav, 'nav' => $nav]);
         });

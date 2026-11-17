@@ -11,13 +11,15 @@
         if (!response.ok) { this.loadError = response.error || this.i18n.load_failed; this.loading = false; return; }
         this.registrations = response.data?.data?.data || [];
         const id = new URLSearchParams(window.location.search).get('id_registration');
-        this.registration = this.registrations.find(row => String(row.id_registration) === String(id)) || this.registrations[0] || null;
+        this.registration = this.registrations.find(row => String(row.id_registration) === String(id)) || this.registrations.find(row => row.participation_type !== 'Listener') || this.registrations[0] || null;
         if (!this.registration) { this.loadError = this.i18n.no_registration; this.files = []; this.loading = false; return; }
         const fileResponse = await window.asicApi.get('/api/registrations/' + this.registration.id_registration + '/files');
         this.loading = false;
         if (!fileResponse.ok) { this.loadError = fileResponse.error || this.i18n.load_failed; return; }
         this.files = fileResponse.data?.data || [];
     },
+    get isListener() { return this.registration?.participation_type === 'Listener'; },
+    get canUpload() { return !!this.registration && !this.isListener && this.registration?.abstract_submission?.status_abstrak === 'Diterima'; },
     async upload(event) {
         this.fieldErrors = {}; this.uploading = true;
         const response = await window.asicApi.upload('/api/registrations/' + this.registration.id_registration + '/files', new FormData(event.target));
@@ -31,7 +33,11 @@
     <p x-show="loading" role="status" class="rounded-xl bg-surface-container-low p-4 text-sm">{{ $t['loading'] }}</p>
     <p x-show="loadError" x-text="loadError" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-on-error-container"></p>
     <section x-show="registration" class="space-y-5">
-        <form class="grid gap-4 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5 sm:grid-cols-2" @submit.prevent="upload($event)">
+        <div x-show="!canUpload" class="flex gap-3 rounded-2xl border border-[#f5e3a3] bg-[#FEF6D8] p-5 text-sm text-[#5c4700]" role="status">
+            <span class="material-symbols-outlined text-[22px]">info</span>
+            <p x-text="isListener ? i18n.listener_note : i18n.not_accepted_note"></p>
+        </div>
+        <form x-show="canUpload" class="grid gap-4 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5 sm:grid-cols-2" @submit.prevent="upload($event)">
             <label class="block text-sm font-semibold">{{ $t['field_type'] }}
                 <select name="jenis_file" required class="mt-1 block w-full rounded-xl border-surface-container-highest"><option value="Artikel">{{ $t['type_article'] }}</option><option value="Presentasi">{{ $t['type_presentation'] }}</option></select>
             </label>

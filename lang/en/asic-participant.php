@@ -181,6 +181,8 @@ return [
             'field_file' => 'Abstract file (PDF/DOC/DOCX, max 10 MB)', 'submit' => 'Submit abstract', 'submitting' => 'Submitting…',
         ],
         'full_paper' => [
+            'listener_note' => 'This registration is a Listener registration. Listeners do not need to upload a full paper or presentation file.',
+            'not_accepted_note' => 'You can upload your full paper and presentation once the Abstract Team has accepted your abstract.',
             'title' => 'Participant files', 'heading' => 'Full paper and presentation', 'subtitle' => 'Participant files are stored privately and can only be opened by their owner and authorised committee members.', 'loading' => 'Loading files…',
             'load_failed' => 'Failed to load files.', 'no_registration' => 'No registration to upload files to yet.', 'upload_failed' => 'Failed to upload the file.', 'uploaded' => 'File uploaded.',
             'field_type' => 'File type', 'type_article' => 'Full paper / Article', 'type_presentation' => 'Presentation', 'field_file' => 'Choose a file (PDF, DOC, DOCX, PPT, PPTX; max 10 MB)',

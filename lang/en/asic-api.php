@@ -45,6 +45,8 @@ return [
         'anda_tidak_memiliki_hak_akses_untuk_mengunduh_doku' => 'You do not have permission to download this document.',
         'anda_tidak_memiliki_hak_akses_untuk_mengunduh_nask' => 'You do not have permission to download this abstract manuscript.',
         'anda_tidak_memiliki_hak_akses_untuk_mengunggah_abs' => 'You do not have permission to upload an abstract for this registration.',
+        'files_presenter_only' => 'Full papers and presentation files are for presenters (Oral/Poster) only. Listeners do not upload files.',
+        'files_abstract_not_accepted' => 'Full papers and presentation files can be uploaded once the abstract is accepted.',
         'anda_tidak_memiliki_hak_akses_untuk_mengunggah_ber' => 'You do not have permission to upload files for this registration.',
         'batas_waktu_jatuh_tempo_invoice_berhasil_diperpanj' => 'The invoice due date has been extended.',
         'batas_waktu_pembayaran_invoice_sudah_terlewat' => 'The invoice payment deadline has passed.',

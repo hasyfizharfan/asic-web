@@ -142,6 +142,15 @@ class ParticipantFileController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
+        // Full paper & berkas presentasi hanya untuk pemakalah (Oral/Poster) yang abstraknya sudah diterima.
+        $registration->loadMissing('abstractSubmission');
+        if (! $registration->isPresenter()) {
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.files_presenter_only')], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+        if ($registration->abstractSubmission?->status_abstrak !== 'Diterima') {
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.files_abstract_not_accepted')], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
         $validated = $request->validated();
         $file = $request->file('file');
 

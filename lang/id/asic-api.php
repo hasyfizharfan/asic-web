@@ -45,6 +45,8 @@ return [
         'anda_tidak_memiliki_hak_akses_untuk_mengunduh_doku' => 'Anda tidak memiliki hak akses untuk mengunduh dokumen ini.',
         'anda_tidak_memiliki_hak_akses_untuk_mengunduh_nask' => 'Anda tidak memiliki hak akses untuk mengunduh naskah abstrak ini.',
         'anda_tidak_memiliki_hak_akses_untuk_mengunggah_abs' => 'Anda tidak memiliki hak akses untuk mengunggah abstrak pada pendaftaran ini.',
+        'files_presenter_only' => 'Full paper dan berkas presentasi hanya untuk pemakalah (Oral/Poster). Peserta Listener tidak mengunggah berkas.',
+        'files_abstract_not_accepted' => 'Full paper dan berkas presentasi baru bisa diunggah setelah abstrak diterima.',
         'anda_tidak_memiliki_hak_akses_untuk_mengunggah_ber' => 'Anda tidak memiliki hak akses untuk mengunggah berkas pada pendaftaran ini.',
         'batas_waktu_jatuh_tempo_invoice_berhasil_diperpanj' => 'Batas waktu jatuh tempo invoice berhasil diperpanjang.',
         'batas_waktu_pembayaran_invoice_sudah_terlewat' => 'Batas waktu pembayaran invoice sudah terlewat.',

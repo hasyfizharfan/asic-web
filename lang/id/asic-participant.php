@@ -181,6 +181,8 @@ return [
             'field_file' => 'Berkas abstrak (PDF/DOC/DOCX, maks. 10 MB)', 'submit' => 'Kirim abstrak', 'submitting' => 'Mengirim…',
         ],
         'full_paper' => [
+            'listener_note' => 'Registrasi ini sebagai Listener. Listener tidak perlu mengunggah full paper atau berkas presentasi.',
+            'not_accepted_note' => 'Full paper dan berkas presentasi bisa diunggah setelah abstrak Anda diterima Tim Abstrak.',
             'title' => 'Berkas peserta', 'heading' => 'Full paper dan presentasi', 'subtitle' => 'Berkas peserta disimpan privat dan hanya dapat dibuka pemiliknya dan panitia berwenang.', 'loading' => 'Memuat berkas…',
             'load_failed' => 'Berkas gagal dimuat.', 'no_registration' => 'Belum ada registrasi untuk mengunggah berkas.', 'upload_failed' => 'Berkas gagal diunggah.', 'uploaded' => 'Berkas berhasil diunggah.',
             'field_type' => 'Jenis berkas', 'type_article' => 'Full paper / Artikel', 'type_presentation' => 'Presentasi', 'field_file' => 'Pilih berkas (PDF, DOC, DOCX, PPT, PPTX; maks. 10 MB)',
