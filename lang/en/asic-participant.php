@@ -205,7 +205,7 @@ return [
             'loading' => 'Loading invoice…', 'load_failed' => 'Failed to load registration data.', 'no_registration' => 'No registration to bill yet.', 'invoice_failed' => 'Failed to load the invoice.',
             'upload_failed' => 'Failed to upload the transfer proof.', 'uploaded' => 'Transfer proof sent.', 'invoice_no' => 'Invoice number', 'status' => 'Status', 'due' => 'Due date',
             'instructions' => 'Transfer instructions', 'contact_treasurer' => 'Contact the treasurer for payment account information.', 'upload_title' => 'Upload payment proof',
-            'amount' => 'Transfer amount', 'proof' => 'Transfer proof (JPG, PNG, or PDF)', 'note' => 'Note', 'send' => 'Send for verification', 'sending' => 'Sending…',
+            'amount' => 'Amount to transfer', 'amount_note' => 'Transfer exactly this invoice amount, then upload the transfer proof. The treasurer will match the proof with the funds received.', 'proof' => 'Transfer proof (JPG, PNG, or PDF)', 'note' => 'Note', 'send' => 'Send for verification', 'sending' => 'Sending…',
             'waiting' => 'Proof sent. Waiting for treasurer verification.', 'verified' => 'Payment verified. The attendance QR (on-site participants) is on the Attendance page.',
         ],
         'reg' => [

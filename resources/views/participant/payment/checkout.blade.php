@@ -73,10 +73,11 @@
             <template x-if="invoice.status_pembayaran === 'Menunggu Pembayaran' || invoice.status_pembayaran === 'Ditolak'">
                 <form class="space-y-4 border-t border-surface-container-highest pt-5" @submit.prevent="uploadProof($event)">
                     <h2 class="font-bold">{{ $t['upload_title'] }}</h2>
-                    <label class="block text-sm font-semibold">{{ $t['amount'] }}
-                        <input type="number" name="nominal_transfer" min="0" inputmode="decimal" :step="invoice.mata_uang === 'USD' ? '0.01' : '1'" :value="invoice.total_tagihan ? Number(invoice.total_tagihan) : ''" required class="mt-1 block w-full rounded-xl border-surface-container-highest">
-                    </label>
-                    <p x-show="fieldErrors.nominal_transfer" x-text="fieldErrors.nominal_transfer?.[0]" class="text-sm text-error"></p>
+                    <div class="rounded-xl border border-[#cfe3d5] bg-[#E6F4EA] px-4 py-3">
+                        <p class="text-sm font-semibold text-on-surface">{{ $t['amount'] }}</p>
+                        <p class="mt-0.5 text-2xl font-bold text-primary" x-text="formatAmount(invoice.total_tagihan)"></p>
+                        <p class="mt-1 text-xs text-on-surface-variant">{{ $t['amount_note'] }}</p>
+                    </div>
                     <label class="block text-sm font-semibold">{{ $t['proof'] }}
                         <input type="file" name="file_bukti" accept=".jpg,.jpeg,.png,.pdf" required class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
                     </label>

@@ -63,7 +63,8 @@ class ParticipantFilePrivacyTest extends TestCase
         $this->assertStringNotContainsString('href="'.route('portal.participant.abstract').'"', $html);
 
         $checkout = $this->as(Role::ROLE_PESERTA, 'menu-listener')->get(route('portal.participant.payment.checkout'))->assertOk()->getContent();
-        $this->assertStringContainsString('name="nominal_transfer" min="0"', $checkout);
-        $this->assertStringNotContainsString('min="0.01"', $checkout);
+        // Nominal hanya ditampilkan (tidak bisa diubah peserta).
+        $this->assertStringNotContainsString('name="nominal_transfer"', $checkout);
+        $this->assertStringContainsString(__('asic-participant.portal.checkout.amount_note'), $checkout);
     }
 }

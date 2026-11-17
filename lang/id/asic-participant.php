@@ -205,7 +205,7 @@ return [
             'loading' => 'Memuat invoice…', 'load_failed' => 'Data pendaftaran gagal dimuat.', 'no_registration' => 'Belum ada pendaftaran untuk ditagihkan.', 'invoice_failed' => 'Invoice gagal dimuat.',
             'upload_failed' => 'Bukti transfer gagal diunggah.', 'uploaded' => 'Bukti transfer berhasil dikirim.', 'invoice_no' => 'Nomor invoice', 'status' => 'Status', 'due' => 'Jatuh tempo',
             'instructions' => 'Instruksi transfer', 'contact_treasurer' => 'Hubungi bendahara untuk informasi rekening pembayaran.', 'upload_title' => 'Unggah bukti pembayaran',
-            'amount' => 'Nominal transfer', 'proof' => 'Bukti transfer (JPG, PNG, atau PDF)', 'note' => 'Catatan', 'send' => 'Kirim untuk verifikasi', 'sending' => 'Mengirim…',
+            'amount' => 'Jumlah yang harus ditransfer', 'amount_note' => 'Transfer sesuai jumlah tagihan ini, lalu unggah bukti transfernya. Bendahara akan mencocokkan bukti dengan dana yang masuk.', 'proof' => 'Bukti transfer (JPG, PNG, atau PDF)', 'note' => 'Catatan', 'send' => 'Kirim untuk verifikasi', 'sending' => 'Mengirim…',
             'waiting' => 'Bukti sudah dikirim. Menunggu verifikasi bendahara.', 'verified' => 'Pembayaran terverifikasi. QR kehadiran (peserta luring) tersedia di halaman Kehadiran.',
         ],
         'reg' => [

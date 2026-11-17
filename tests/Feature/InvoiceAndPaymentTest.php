@@ -164,6 +164,16 @@ class InvoiceAndPaymentTest extends TestCase
         return [$inv->fresh(), PaymentProof::where('id_invoice', $inv->id_invoice)->latest('id_payment_proof')->firstOrFail()];
     }
 
+    /** Nominal tidak bisa diubah peserta: yang tercatat selalu total tagihan invoice. */
+    public function test_participant_cannot_change_the_recorded_transfer_amount(): void
+    {
+        $inv = $this->listenerInvoice();
+        $this->upload($inv, '1', ['nominal_transfer' => 1])->assertCreated();
+
+        $proof = PaymentProof::where('id_invoice', $inv->id_invoice)->firstOrFail();
+        $this->assertSame((string) $inv->fresh()->total_tagihan, (string) $proof->nominal_transfer);
+    }
+
     public function test_participant_uploads_proof_and_status_becomes_waiting_verification(): void
     {
         $inv = $this->listenerInvoice();
