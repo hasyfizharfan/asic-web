@@ -14,6 +14,7 @@ use App\Models\Speaker;
 use App\Models\SponsorshipPackage;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Data contoh untuk landing (uji coba/UAT). Semua baris yang dibuat dicatat di app_setting 'demo_landing'
@@ -38,8 +39,12 @@ class DemoLandingContent extends Command
 
     private function seed(): int
     {
-        if (DB::table('app_setting')->where('key', self::KEY)->exists()) {
-            $this->warn('Data contoh sudah ada. Jalankan dengan --remove dulu bila ingin mengisi ulang.');
+        if ($row = DB::table('app_setting')->where('key', self::KEY)->first()) {
+            // Data contoh lama: cukup lengkapi foto pembicara contoh yang belum punya foto.
+            $this->created = json_decode((string) $row->value, true) ?: [];
+            $added = $this->attachSpeakerPhotos($this->created['speaker'] ?? []);
+            DB::table('app_setting')->where('key', self::KEY)->update(['value' => json_encode($this->created), 'updated_at' => now()]);
+            $this->warn('Data contoh sudah ada; foto pembicara ditambahkan: '.$added.'. Jalankan --remove dulu bila ingin mengisi ulang semuanya.');
 
             return self::SUCCESS;
         }
@@ -118,6 +123,9 @@ class DemoLandingContent extends Command
                     $model::whereKey($ids)->get()->each->delete();
                 }
             }
+            foreach ($created['file'] ?? [] as $file) {
+                Storage::disk('public')->delete($file);
+            }
             DB::table('app_setting')->where('key', self::KEY)->delete();
         });
         $this->info('Data contoh landing dihapus.');
@@ -171,6 +179,31 @@ class DemoLandingContent extends Command
         foreach ($rows as [$name, $institution, $country, $topic]) {
             $this->track('speaker', Speaker::create(['id_event' => $event, 'nama_speaker' => $name, 'institusi' => $institution, 'negara' => $country, 'deskripsi' => $topic])->id_speaker);
         }
+        $this->attachSpeakerPhotos($this->created['speaker'] ?? []);
+    }
+
+    /**
+     * Foto potret stok (Pexels, lihat resources/demo/speakers/CREDITS.md) untuk pembicara contoh yang belum berfoto.
+     *
+     * @param  list<int>  $speakerIds
+     */
+    private function attachSpeakerPhotos(array $speakerIds): int
+    {
+        $added = 0;
+        foreach (array_values($speakerIds) as $i => $id) {
+            $speaker = Speaker::find($id);
+            $source = resource_path('demo/speakers/speaker-'.($i + 1).'.jpg');
+            if (! $speaker || $speaker->foto || ! is_file($source)) {
+                continue;
+            }
+            $path = 'speakers/demo-speaker-'.($i + 1).'.jpg';
+            Storage::disk('public')->put($path, file_get_contents($source));
+            $speaker->update(['foto' => $path]);
+            $this->created['file'][] = $path;
+            $added++;
+        }
+
+        return $added;
     }
 
     private function program(int $event): void

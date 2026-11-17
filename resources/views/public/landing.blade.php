@@ -179,20 +179,30 @@
         <h2 class="mt-4 font-serif text-4xl font-semibold sm:text-5xl">{{ $L['speakers_title'] }}</h2>
         <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             @foreach($speakers as $speaker)
-                <article class="rounded-[24px] bg-white/[0.06] p-6 ring-1 ring-white/10 transition hover:bg-white/[0.1]">
-                    <div class="flex items-center gap-4">
-                        @if($speaker->foto)
-                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($speaker->foto) }}" alt="" class="h-16 w-16 rounded-2xl object-cover">
-                        @else
-                            <span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F5C518] to-[#e0a800] font-serif text-xl font-semibold text-[#0f3d24]" aria-hidden="true">{{ $initials($speaker->nama_speaker) }}</span>
-                        @endif
-                        <div>
-                            <h3 class="text-lg font-bold leading-tight">{{ $speaker->nama_speaker }}</h3>
-                            <p class="mt-0.5 text-sm text-white/70">{{ collect([$speaker->institusi, $speaker->negara])->filter()->implode(', ') }}</p>
+                @if($speaker->foto)
+                    <article class="group overflow-hidden rounded-[28px] bg-white/[0.06] ring-1 ring-white/10">
+                        <div class="relative aspect-[4/3] overflow-hidden">
+                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($speaker->foto) }}" alt="{{ $speaker->nama_speaker }}" class="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105" loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#072b1b] via-[#072b1b]/20 to-transparent" aria-hidden="true"></div>
+                            <div class="absolute inset-x-0 bottom-0 p-5">
+                                <h3 class="text-lg font-bold leading-tight">{{ $speaker->nama_speaker }}</h3>
+                                <p class="mt-0.5 text-sm text-white/80">{{ collect([$speaker->institusi, $speaker->negara])->filter()->implode(', ') }}</p>
+                            </div>
                         </div>
-                    </div>
-                    @if($speaker->deskripsi)<p class="mt-5 border-t border-white/10 pt-4 font-serif text-lg italic leading-snug text-[#F5C518]">“{{ $speaker->deskripsi }}”</p>@endif
-                </article>
+                        @if($speaker->deskripsi)<p class="p-5 font-serif text-lg italic leading-snug text-[#F5C518]">“{{ $speaker->deskripsi }}”</p>@endif
+                    </article>
+                @else
+                    <article class="rounded-[28px] bg-white/[0.06] p-6 ring-1 ring-white/10">
+                        <div class="flex items-center gap-4">
+                            <span class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#F5C518] to-[#e0a800] font-serif text-xl font-semibold text-[#0f3d24]" aria-hidden="true">{{ $initials($speaker->nama_speaker) }}</span>
+                            <div>
+                                <h3 class="text-lg font-bold leading-tight">{{ $speaker->nama_speaker }}</h3>
+                                <p class="mt-0.5 text-sm text-white/70">{{ collect([$speaker->institusi, $speaker->negara])->filter()->implode(', ') }}</p>
+                            </div>
+                        </div>
+                        @if($speaker->deskripsi)<p class="mt-5 border-t border-white/10 pt-4 font-serif text-lg italic leading-snug text-[#F5C518]">“{{ $speaker->deskripsi }}”</p>@endif
+                    </article>
+                @endif
             @endforeach
         </div>
     </div>
