@@ -442,6 +442,9 @@ body {
         white-space: nowrap; border-radius: 8px; background: #182820; color: #fff; padding: 4px 8px; font-size: 12px; font-weight: 600;
         pointer-events: none; z-index: 30;
     }
+    /* Tooltip di bawah tombol (mis. tombol di tepi atas jendela) dan rata kanan untuk tombol paling kanan. */
+    .icon-btn.tip-below[aria-label]:hover::after, .icon-btn.tip-below[aria-label]:focus-visible::after { bottom: auto; top: calc(100% + 6px); }
+    .icon-btn.tip-end[aria-label]:hover::after, .icon-btn.tip-end[aria-label]:focus-visible::after { left: auto; right: 0; transform: none; }
     .icon-btn-group { display: inline-flex; align-items: center; gap: 4px; }
     /* Sel tabel berisi tombol ikon: jangan dilipat, beri jarak antar tombol. */
     :where(td, div, span):has(> .icon-btn) { white-space: nowrap; }
