@@ -34,3 +34,5 @@ Artisan::command('asic:session-qr-refresh', function () {
 })->purpose('Perbarui gambar QR sesi agar berisi tautan check-in');
 
 Schedule::command('registration-periods:close-expired')->hourly();
+// Email notifikasi (QUEUE_CONNECTION=database): diproses tiap menit, berhenti saat antrean kosong.
+Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')->everyMinute()->withoutOverlapping();

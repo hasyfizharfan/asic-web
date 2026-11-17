@@ -10,7 +10,7 @@ use Throwable;
 
 /**
  * Satu pintu pengiriman notifikasi status (KF-30).
- * - Dikirim setelah transaksi utama commit (DB::afterCommit), sinkron, tanpa queue.
+ * - Dikirim setelah transaksi utama commit (DB::afterCommit). Di situs langsung; email lewat antrean.
  * - Idempoten lewat kunci dedupe per peristiwa: pemicu yang dipanggil ulang tidak menggandakan.
  * - Kegagalan hanya dicatat ke log dan TIDAK menggagalkan proses utama.
  */
@@ -44,7 +44,8 @@ class StatusNotifier
                 if ($user->notifications()->where('data->dedupe', $dedupe)->exists()) {
                     return;
                 }
-                $user->notify(new StatusChanged($kind, $id, $this->urlFor($kind, $id), $params, $dedupe));
+                $locale = strcasecmp(trim((string) $registration->participant?->country), 'Indonesia') === 0 ? 'id' : 'en';
+                $user->notify((new StatusChanged($kind, $id, $this->urlFor($kind, $id), $params, $dedupe))->locale($locale));
             } catch (Throwable $e) {
                 Log::warning('notification.failed', ['kind' => $kind, 'id_registration' => $id, 'error' => $e->getMessage()]);
             }

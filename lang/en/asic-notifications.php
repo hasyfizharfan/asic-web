@@ -15,6 +15,16 @@ return [
         'abstract_rejected' => ['title' => 'Abstract not accepted', 'body' => 'The abstract for registration #:id could not be accepted. The decision letter is on the Documents page.'],
         'reregistered' => ['title' => 'Re-registration recorded', 'body' => 'Re-registration for registration #:id has been recorded at the secretariat desk.'],
     ],
+    'mail' => [
+        'subcopy' => 'If the ":actionText" button does not work, copy and paste the following address into your browser:',
+        'copyright' => ':event Committee · Faculty of Agriculture, Universitas Andalas',
+        'greeting' => 'Dear :name,',
+        'greeting_plain' => 'Dear Participant,',
+        'attached' => 'The document is attached to this email (PDF) and can also be downloaded from your account.',
+        'open' => 'Open on the ASIC website',
+        'footer' => 'This email was sent automatically by the ASIC system. For questions, please contact the committee through the website.',
+        'salutation' => "Best regards,\nThe :event Committee",
+    ],
     'page' => [
         'title' => 'Notifications',
         'heading' => 'Notifications',

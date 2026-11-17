@@ -15,6 +15,16 @@ return [
         'abstract_rejected' => ['title' => 'Abstrak belum dapat diterima', 'body' => 'Abstrak untuk registrasi #:id belum dapat diterima. Surat keputusan tersedia di halaman Dokumen.'],
         'reregistered' => ['title' => 'Registrasi ulang tercatat', 'body' => 'Registrasi ulang untuk registrasi #:id sudah tercatat di meja sekretariat.'],
     ],
+    'mail' => [
+        'subcopy' => 'Jika tombol ":actionText" tidak dapat diklik, salin dan tempel alamat berikut ke browser Anda:',
+        'copyright' => 'Panitia :event · Fakultas Pertanian, Universitas Andalas',
+        'greeting' => 'Yth. :name,',
+        'greeting_plain' => 'Yth. Peserta,',
+        'attached' => 'Dokumen terlampir pada email ini (PDF) dan juga dapat diunduh di akun Anda.',
+        'open' => 'Buka di website ASIC',
+        'footer' => 'Email ini dikirim otomatis oleh sistem ASIC. Untuk pertanyaan, silakan hubungi panitia melalui kontak di website.',
+        'salutation' => "Salam,\nPanitia :event",
+    ],
     'page' => [
         'title' => 'Notifikasi',
         'heading' => 'Notifikasi',

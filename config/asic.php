@@ -34,6 +34,10 @@ return [
     // Email panitia penerima permintaan sponsorship/exhibition (opsional; kosong = tanpa email).
     'contact_email' => env('ASIC_CONTACT_EMAIL'),
 
+    // Notifikasi status juga dikirim ke email peserta (butuh MAIL_* di .env; MAIL_MAILER=log = hanya dicatat).
+    'notify_email' => (bool) env('ASIC_NOTIFY_EMAIL', true),
+    'event_short_name' => env('ASIC_EVENT_SHORT_NAME', '4th ASIC 2027'),
+
     'letterhead' => [
         'title' => env('ASIC_LETTERHEAD_TITLE', '4th AGRIFOOD SYSTEM INTERNATIONAL CONFERENCE (ASIC 2027)'),
         'subtitle' => env('ASIC_LETTERHEAD_SUBTITLE', 'FACULTY OF AGRICULTURE, UNIVERSITAS ANDALAS'),

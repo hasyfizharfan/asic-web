@@ -12,10 +12,12 @@ use App\Services\AbstractDecisionProcessor;
 use App\Services\DocumentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Mail\MailManager;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
+use Symfony\Component\Mailer\Transport\TransportInterface;
 use Tests\Concerns\BuildsAsicFixtures;
 use Tests\TestCase;
 
@@ -167,5 +169,41 @@ class StatusNotificationTest extends TestCase
         $this->listener('page');
         $this->as(Role::ROLE_PESERTA, 'page')->get('/participant/notifications')->assertOk()
             ->assertSee(__('asic-notifications.page.mark_all_read'))->assertDontSee('Belum tersedia');
+    }
+
+    /** Email notifikasi benar-benar terkirim (transport array) dengan lampiran PDF, bahasa sesuai negara peserta. */
+    /** Mailer sungguhan dengan transport array (setUp memakai Mail::fake). */
+    private function realArrayMailer(): TransportInterface
+    {
+        config(['mail.default' => 'array']);
+        $manager = new MailManager(app());
+        app()->instance('mail.manager', $manager);
+        Mail::swap($manager);
+
+        return $manager->mailer('array')->getSymfonyTransport();
+    }
+
+    public function test_listener_receives_loa_and_invoice_emails_with_pdf_attachments(): void
+    {
+        $transport = $this->realArrayMailer();
+        $registration = $this->listener('mail');
+        $owner = $this->owner($registration);
+
+        $messages = collect($transport->messages())->map(fn ($m) => $m->getOriginalMessage());
+        $toOwner = $messages->filter(fn ($m) => collect($m->getTo())->contains(fn ($a) => $a->getAddress() === $owner->email))->values();
+        $this->assertCount(2, $toOwner, 'LoA + invoice, tanpa email ganda');
+        foreach ($toOwner as $message) {
+            $this->assertCount(1, $message->getAttachments());
+            $this->assertStringContainsString('application/pdf', $message->getAttachments()[0]->getMediaType().'/'.$message->getAttachments()[0]->getMediaSubtype());
+            $this->assertStringContainsString('ASIC', $message->getSubject());
+        }
+    }
+
+    public function test_email_can_be_switched_off(): void
+    {
+        $transport = $this->realArrayMailer();
+        config(['asic.notify_email' => false]);
+        $this->listener('nomail');
+        $this->assertCount(0, $transport->messages());
     }
 }
