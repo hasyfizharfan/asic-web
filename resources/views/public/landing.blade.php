@@ -181,8 +181,8 @@
             @foreach($speakers as $speaker)
                 @if($speaker->foto)
                     <article class="group overflow-hidden rounded-[28px] bg-white/[0.06] ring-1 ring-white/10">
-                        <div class="relative aspect-[4/3] overflow-hidden">
-                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($speaker->foto) }}" alt="{{ $speaker->nama_speaker }}" class="h-full w-full object-cover object-top transition duration-500 group-hover:scale-105" loading="lazy">
+                        <div class="relative aspect-square overflow-hidden">
+                            <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($speaker->foto) }}" alt="{{ $speaker->nama_speaker }}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105" loading="lazy">
                             <div class="absolute inset-0 bg-gradient-to-t from-[#072b1b] via-[#072b1b]/20 to-transparent" aria-hidden="true"></div>
                             <div class="absolute inset-x-0 bottom-0 p-5">
                                 <h3 class="text-lg font-bold leading-tight">{{ $speaker->nama_speaker }}</h3>
