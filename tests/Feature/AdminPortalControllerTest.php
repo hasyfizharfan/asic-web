@@ -57,7 +57,7 @@ class AdminPortalControllerTest extends TestCase
         $this->abstractFor($registration, ['status_abstrak' => 'Diterima']);
 
         $this->as(Role::ROLE_ADMIN)->get('/admin/dashboard')->assertOk()
-            ->assertSee('Registrasi · 1')->assertSee('Abstrak · 1')->assertSee('Periode registrasi aktif');
+            ->assertSeeInOrder(['Total pendaftar', '1'])->assertSeeInOrder(['Abstrak masuk', '1'])->assertSee('Diterima: 1')->assertSee('Periode registrasi aktif');
     }
 
     public function test_dashboard_payment_totals_match_database_and_are_hidden_without_view_permission(): void

@@ -21,9 +21,11 @@ class ReviewerController extends Controller
                 'accepted' => (clone $base)->where('status_abstrak', 'Diterima')->count(),
                 'rejected' => (clone $base)->where('status_abstrak', 'Ditolak')->count(),
             ],
-            'latestSubmissions' => (clone $base)->where('status_abstrak', 'Diajukan')
-                ->orderByDesc('tanggal_submit')->limit(5)
-                ->get(['id_abstract', 'judul_abstrak', 'scope', 'tanggal_submit']),
+            'total' => (clone $base)->count(),
+            'byScope' => (clone $base)->selectRaw('scope, COUNT(*) as total')->groupBy('scope')->pluck('total', 'scope'),
+            'latestSubmissions' => (clone $base)->orderByRaw("CASE WHEN status_abstrak = 'Diajukan' THEN 0 ELSE 1 END")
+                ->orderByDesc('tanggal_submit')->limit(6)
+                ->get(['id_abstract', 'judul_abstrak', 'scope', 'metode_presentasi', 'status_abstrak', 'tanggal_submit']),
         ]);
     }
 

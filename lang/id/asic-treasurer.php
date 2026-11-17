@@ -191,4 +191,15 @@ return [
             'international_note' => 'Catatan untuk peserta internasional (PayPal/Wise/Flip)',
         ],
     ],
+    'payment_queue' => [
+        'eyebrow' => 'Manajemen keuangan', 'title' => 'Antrean pembayaran', 'subtitle' => 'Periksa bukti transfer, lalu verifikasi atau tolak dengan alasan.',
+        'refresh' => 'Segarkan', 'export' => 'Ekspor pembayaran',
+        'stat_total' => 'Total invoice', 'stat_total_hint' => 'Semua status', 'stat_waiting' => 'Menunggu verifikasi', 'stat_waiting_hint' => 'Perlu diperiksa',
+        'stat_verified' => 'Terverifikasi', 'stat_verified_hint' => 'Receipt sudah terbit', 'stat_overdue' => 'Lewat jatuh tempo', 'stat_overdue_hint' => 'Belum bayar atau kedaluwarsa',
+        'search' => 'Cari nomor invoice', 'search_btn' => 'Cari', 'status_filter' => 'Status', 'all' => 'Semua', 'waiting' => 'Menunggu verifikasi', 'verified' => 'Terverifikasi', 'rejected' => 'Ditolak',
+        'loading' => 'Memuat pembayaran…', 'load_failed' => 'Antrean pembayaran gagal dimuat.', 'empty' => 'Tidak ada pembayaran untuk filter ini.',
+        'col_invoice' => 'Invoice', 'col_participant' => 'Peserta & institusi', 'col_amount' => 'Nominal', 'col_due' => 'Jatuh tempo', 'col_status' => 'Status', 'col_proof' => 'Bukti', 'col_action' => 'Tindakan',
+        'domestic' => 'Tarif domestik', 'international' => 'Tarif internasional', 'overdue' => 'LEWAT', 'view_proof' => 'Lihat bukti',
+        'verify' => 'Verifikasi', 'reject' => 'Tolak', 'reject_prompt' => 'Alasan penolakan bukti transfer:', 'verify_failed' => 'Verifikasi gagal.', 'updated' => 'Status pembayaran diperbarui.',
+    ],
 ];

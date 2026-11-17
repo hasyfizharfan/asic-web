@@ -69,4 +69,11 @@ return [
     'confirm_password' => 'Confirm New Password',
     'btn_update_password' => 'Update Password',
     'profile_updated' => 'Profile updated successfully',
+    'dash' => [
+        'title' => 'Abstract Team Dashboard', 'eyebrow' => 'Scientific review', 'heading' => 'Abstract Team Dashboard', 'subtitle' => 'Scientific review of submissions. Payment and re-registration stay with the Secretariat.',
+        'total' => 'Submitted', 'pending' => 'Awaiting review', 'accepted' => 'Accepted', 'rejected' => 'Rejected', 'reviewed_by_me' => 'Reviewed by me',
+        'by_scope' => 'By scope', 'by_scope_hint' => 'Number of abstracts per scope.', 'empty_scope' => 'No abstracts yet.',
+        'queue' => 'Abstract queue', 'full_list' => 'Full list', 'col_title' => 'Title', 'col_type' => 'Type', 'col_action' => 'Action',
+        'review' => 'Review', 'view' => 'View', 'empty_queue' => 'No abstracts in the queue yet.',
+    ],
 ];

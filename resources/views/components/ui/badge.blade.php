@@ -14,11 +14,11 @@
     };
 
     $variantStyles = match($variant) {
-        'success' => 'bg-tertiary-fixed text-primary border border-tertiary-fixed-dim/50',
-        'warning' => 'bg-secondary-container text-secondary border border-secondary-fixed-dim/50',
+        'success' => 'bg-[#E6F4EA] text-primary border border-[#cfe6d6]',
+        'warning' => 'bg-[#FEF6D8] text-[#7a5d00] border border-[#f5e3a3]',
         'amber' => 'bg-amber-100 text-amber-900 border border-amber-300',
         'danger' => 'bg-error-container text-error border border-error/20',
-        'info' => 'bg-blue-100 text-blue-900 border border-blue-200',
+        'info' => 'bg-[#E8F0FE] text-[#1a4fa0] border border-[#cddcf7]',
         default => 'bg-surface-container-high text-on-surface-variant border border-surface-container-highest',
     };
 

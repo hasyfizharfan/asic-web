@@ -191,4 +191,15 @@ return [
             'international_note' => 'Note for international participants (PayPal/Wise/Flip)',
         ],
     ],
+    'payment_queue' => [
+        'eyebrow' => 'Treasury management', 'title' => 'Payment queue', 'subtitle' => 'Check transfer proofs, then verify or reject with a reason.',
+        'refresh' => 'Refresh', 'export' => 'Export payments',
+        'stat_total' => 'Total invoices', 'stat_total_hint' => 'All statuses', 'stat_waiting' => 'Awaiting verification', 'stat_waiting_hint' => 'Needs checking',
+        'stat_verified' => 'Verified', 'stat_verified_hint' => 'Receipt issued', 'stat_overdue' => 'Overdue', 'stat_overdue_hint' => 'Unpaid or expired',
+        'search' => 'Search invoice number', 'search_btn' => 'Search', 'status_filter' => 'Status', 'all' => 'All', 'waiting' => 'Awaiting verification', 'verified' => 'Verified', 'rejected' => 'Rejected',
+        'loading' => 'Loading payments…', 'load_failed' => 'Failed to load the payment queue.', 'empty' => 'No payments for this filter.',
+        'col_invoice' => 'Invoice', 'col_participant' => 'Participant & institution', 'col_amount' => 'Amount', 'col_due' => 'Due date', 'col_status' => 'Status', 'col_proof' => 'Proof', 'col_action' => 'Action',
+        'domestic' => 'Domestic rate', 'international' => 'International rate', 'overdue' => 'OVERDUE', 'view_proof' => 'View proof',
+        'verify' => 'Verify', 'reject' => 'Reject', 'reject_prompt' => 'Reason for rejecting the transfer proof:', 'verify_failed' => 'Verification failed.', 'updated' => 'Payment status updated.',
+    ],
 ];

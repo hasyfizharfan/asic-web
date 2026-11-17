@@ -214,4 +214,15 @@ return [
     'save_archive_record' => 'Save Archive Record',
     'commit_archive_record' => 'Commit Archive Record',
     'metadata_note' => 'All proceedings registered here automatically push digital metadata schema to Universitas Andalas Institutional Repository (UNAND-IR) and Crossref indexing servers for Scopus trackability.',
+    'dash' => [
+        'title' => 'Admin Dashboard', 'eyebrow' => 'Command center', 'heading' => 'Conference overview', 'subtitle' => 'Key figures, abstract progress, payments, and recent activity from stored data.',
+        'active_period' => 'Active registration period', 'no_period' => 'No active period.', 'export' => 'Export report',
+        'registrants' => 'Total registrants', 'presenters' => 'Presenters', 'listeners' => 'Listeners',
+        'abstracts' => 'Abstracts submitted', 'pending' => 'Pending', 'accepted' => 'Accepted', 'rejected' => 'Rejected',
+        'payments' => 'Verified payments', 'verified' => 'Verified', 'awaiting' => 'Awaiting verification', 'outstanding' => 'Outstanding',
+        'by_type' => 'Registrants by type', 'by_type_hint' => 'Oral, Poster, and Listener.', 'by_scope' => 'Abstracts by scope', 'acceptance' => 'Acceptance rate', 'no_decision' => 'no decisions yet',
+        'by_invoice' => 'Invoice status', 'by_invoice_hint' => 'Distribution of payment status.', 'empty' => 'No data yet.',
+        'activity' => 'Recent activity', 'activity_hint' => 'Registrations, payment verifications, and abstract reviews.', 'no_activity' => 'No activity yet.',
+        'act_registration' => 'Registration', 'act_payment' => 'Payment verification', 'act_review' => 'Abstract review',
+    ],
 ];

@@ -60,7 +60,21 @@ class TreasurerController extends Controller
         $invoices = Invoice::query()->with(['registration.participant.userAccount', 'latestPaymentProof.verification'])
             ->where('status_pembayaran', 'Menunggu Verifikasi')->latest('id_invoice')->get();
 
-        return view('treasurer.payments.index', $this->identity($request) + compact('invoices'));
+        $byStatus = Invoice::query()->selectRaw('status_pembayaran, COUNT(*) as total')->groupBy('status_pembayaran')->pluck('total', 'status_pembayaran');
+        $overdue = Invoice::query()->where(function (Builder $q): void {
+            $q->whereIn('status_pembayaran', ['Kedaluwarsa', 'Kadaluwarsa'])
+                ->orWhere(fn (Builder $due) => $due->where('status_pembayaran', 'Menunggu Pembayaran')
+                    ->whereRaw('COALESCE(tanggal_jatuh_tempo_baru, tanggal_jatuh_tempo) < ?', [now()->toDateString()]));
+        })->count();
+        $counts = [
+            'total' => (int) $byStatus->sum(),
+            'waiting' => (int) ($byStatus['Menunggu Verifikasi'] ?? 0),
+            'verified' => (int) ($byStatus['Terverifikasi'] ?? 0),
+            'rejected' => (int) ($byStatus['Ditolak'] ?? 0),
+            'overdue' => $overdue,
+        ];
+
+        return view('treasurer.payments.index', $this->identity($request) + compact('invoices', 'counts'));
     }
 
     public function paymentDetails(Request $request, int $id): View

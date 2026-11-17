@@ -214,4 +214,15 @@ return [
     'save_archive_record' => 'Simpan Catatan Arsip',
     'commit_archive_record' => 'Komit Catatan Arsip',
     'metadata_note' => 'Semua prosiding yang terdaftar di sini secara otomatis meneruskan skema metadata digital ke Repositori Institusi Universitas Andalas (UNAND-IR) dan server Crossref untuk keterlacakan Scopus.',
+    'dash' => [
+        'title' => 'Dasbor Admin', 'eyebrow' => 'Pusat kendali', 'heading' => 'Ringkasan konferensi', 'subtitle' => 'Angka utama, progres abstrak, pembayaran, dan aktivitas terbaru dari data tersimpan.',
+        'active_period' => 'Periode registrasi aktif', 'no_period' => 'Tidak ada periode aktif.', 'export' => 'Ekspor laporan',
+        'registrants' => 'Total pendaftar', 'presenters' => 'Pemakalah', 'listeners' => 'Listener',
+        'abstracts' => 'Abstrak masuk', 'pending' => 'Menunggu', 'accepted' => 'Diterima', 'rejected' => 'Ditolak',
+        'payments' => 'Pembayaran terverifikasi', 'verified' => 'Terverifikasi', 'awaiting' => 'Menunggu verifikasi', 'outstanding' => 'Belum lunas',
+        'by_type' => 'Pendaftar per jenis', 'by_type_hint' => 'Oral, Poster, dan Listener.', 'by_scope' => 'Abstrak per scope', 'acceptance' => 'Tingkat penerimaan', 'no_decision' => 'belum ada keputusan',
+        'by_invoice' => 'Status invoice', 'by_invoice_hint' => 'Sebaran status pembayaran.', 'empty' => 'Belum ada data.',
+        'activity' => 'Aktivitas terbaru', 'activity_hint' => 'Registrasi, verifikasi pembayaran, dan review abstrak.', 'no_activity' => 'Belum ada aktivitas.',
+        'act_registration' => 'Registrasi', 'act_payment' => 'Verifikasi pembayaran', 'act_review' => 'Review abstrak',
+    ],
 ];
