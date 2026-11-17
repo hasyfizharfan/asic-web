@@ -57,7 +57,7 @@
             <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
                 <div><dt class="text-on-surface-variant">{{ $t['invoice_no'] }}</dt><dd class="font-mono font-bold" x-text="invoice.nomor_invoice"></dd></div>
                 <div><dt class="text-on-surface-variant">{{ $t['status'] }}</dt><dd class="font-semibold" x-text="invoice.status_pembayaran"></dd></div>
-                <div><dt class="text-on-surface-variant">{{ $t['due'] }}</dt><dd x-text="invoice.tanggal_jatuh_tempo"></dd></div>
+                <div><dt class="text-on-surface-variant">{{ $t['due'] }}</dt><dd x-text="asicDate(invoice.tanggal_jatuh_tempo_baru || invoice.tanggal_jatuh_tempo)"></dd></div>
                 <div><dt class="text-on-surface-variant">Total</dt><dd class="text-lg font-bold text-primary" x-text="formatAmount(invoice.total_tagihan)"></dd></div>
             </dl>
             <div class="rounded-xl bg-surface-container-low p-4 text-sm">

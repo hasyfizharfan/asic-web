@@ -26,7 +26,7 @@
     <div class="space-y-3">
         <template x-for="document in documents" :key="document.id_document">
             <article class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5">
-                <div><h2 class="font-bold" x-text="types[document.jenis_dokumen] || document.jenis_dokumen"></h2><p class="mt-1 text-xs text-on-surface-variant"><span>{{ $t['number'] }}</span> <span x-text="document.nomor_dokumen || '—'"></span> · <span>{{ $t['issued'] }}</span> <span x-text="(document.tanggal_terbit || '—').slice(0, 10)"></span> · <span>{{ $t['registration'] }}</span> <span x-text="document.id_registration"></span></p></div>
+                <div><h2 class="font-bold" x-text="types[document.jenis_dokumen] || document.jenis_dokumen"></h2><p class="mt-1 text-xs text-on-surface-variant"><span>{{ $t['number'] }}</span> <span x-text="document.nomor_dokumen || '—'"></span> · <span>{{ $t['issued'] }}</span> <span x-text="asicDate(document.tanggal_terbit)"></span> · <span>{{ $t['registration'] }}</span> <span x-text="document.id_registration"></span></p></div>
                 <a :href="'/api/documents/' + document.id_document + '/download'" class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white">{{ $t['download'] }}</a>
             </article>
         </template>

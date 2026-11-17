@@ -9,10 +9,10 @@
     $scopes = config('abstract-scopes', []);
     $scopeText = $scopeBlocks->mapWithKeys(fn ($b) => [mb_strtolower((string) $b->localized('judul')) => $b])->all();
     $navLinks = [
-        ['#top', __('asic-landing.nav_home')], ['#about', __('asic-landing.nav_about')], ['#cfa', __('asic-landing.nav_cfa')],
+        ['#about', __('asic-landing.nav_about')], ['#cfa', __('asic-landing.nav_cfa')],
         ['#program', $L['nav_program'], $programDays->isNotEmpty()], ['#speakers', $L['nav_speakers'], $speakers->isNotEmpty()],
-        ['#fees', __('asic-landing.nav_fees')], ['#venue', $L['nav_venue']], ['#committee', $L['nav_committee'], $committeeBlocks->isNotEmpty()],
-        ['#sponsorship', $L['nav_sponsorship']], ['#contact', __('asic-landing.nav_contact')],
+        ['#fees', __('asic-landing.nav_fees')], ['#venue', $L['nav_venue']], ['#committee', $L['nav_committee'], $committeeBlocks->isNotEmpty(), 'wide'],
+        ['#sponsorship', $L['nav_sponsorship'], true, 'wide'], ['#contact', __('asic-landing.nav_contact')],
     ];
     $navLinks = array_values(array_filter($navLinks, fn ($l) => $l[2] ?? true));
     $initials = fn (string $name) => collect(preg_split('/\s+/', trim(preg_replace('/\b(Prof|Dr|Assoc|Ir|M\.?Sc|Ph\.?D)\.?/i', '', $name))))->filter()->take(2)->map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)))->implode('');
@@ -29,30 +29,30 @@
     <img src="{{ asset('images/asic/hero-rice-terraces.jpg') }}" alt="" class="pointer-events-none absolute inset-0 h-full w-full object-cover" fetchpriority="high">
     <div class="absolute inset-0 bg-gradient-to-r from-[rgba(7,43,27,0.94)] to-[rgba(9,43,27,0.27)]" aria-hidden="true"></div>
 
-    <nav x-data="{ open: false }" class="relative z-20 flex h-20 items-center justify-between gap-6 px-6 lg:h-24 lg:px-12" aria-label="{{ $L['nav_label'] }}">
+    <nav x-data="{ open: false }" class="relative z-20 flex h-20 items-center justify-between gap-6 px-6 lg:h-24 lg:px-10" aria-label="{{ $L['nav_label'] }}">
         <a href="#top" class="flex shrink-0 flex-col leading-none">
-            <span class="font-poppins text-2xl font-bold">ASIC 2027</span>
-            <span class="mt-1 text-[9px] tracking-[1.7px]">UNIVERSITAS ANDALAS</span>
+            <span class="font-poppins text-[26px] font-bold">ASIC 2027</span>
+            <span class="mt-1 text-[10px] font-semibold tracking-[1.7px] text-white/85">UNIVERSITAS ANDALAS</span>
         </a>
-        <div class="hidden items-center gap-4 text-xs font-medium xl:flex">
-            @foreach($navLinks as $i => $link)
-                <a href="{{ $link[0] }}" class="whitespace-nowrap hover:text-[#F5C518] {{ $i === 0 ? 'font-bold' : '' }}">{{ $link[1] }}</a>
+        <div class="hidden items-center gap-1 text-[15px] font-medium xl:flex">
+            @foreach($navLinks as $link)
+                <a href="{{ $link[0] }}" class="{{ ($link[3] ?? null) === 'wide' ? 'hidden min-[1400px]:inline-flex' : 'inline-flex' }} whitespace-nowrap rounded-lg px-2.5 py-2 hover:bg-white/10 hover:text-[#F5C518]">{{ $link[1] }}</a>
             @endforeach
         </div>
         <div class="hidden items-center gap-4 xl:flex">
-            <div class="flex rounded-xl border border-[#dce4da] p-1 text-xs font-semibold">
-                <a href="{{ route('portal.language', 'id') }}" class="rounded-lg px-2.5 py-2 {{ $locale === 'id' ? 'bg-[#F5C518] text-[#0f3d24]' : 'bg-white text-[#627066]' }}">ID</a>
-                <a href="{{ route('portal.language', 'en') }}" class="rounded-lg px-2.5 py-2 {{ $locale === 'en' ? 'bg-[#F5C518] text-[#0f3d24]' : 'bg-white text-[#627066]' }}">EN</a>
+            <div class="flex rounded-xl border border-[#dce4da] p-1 text-[13px] font-bold">
+                <a href="{{ route('portal.language', 'id') }}" class="rounded-lg px-3 py-2 {{ $locale === 'id' ? 'bg-[#F5C518] text-[#0f3d24]' : 'bg-white text-[#627066]' }}">ID</a>
+                <a href="{{ route('portal.language', 'en') }}" class="rounded-lg px-3 py-2 {{ $locale === 'en' ? 'bg-[#F5C518] text-[#0f3d24]' : 'bg-white text-[#627066]' }}">EN</a>
             </div>
-            <a href="{{ route('login') }}" class="text-xs font-semibold hover:text-[#F5C518]">{{ __('asic-landing.btn_login') }}</a>
-            <a href="{{ route('auth.participant.register') }}" class="rounded-xl bg-[#F5C518] px-4 py-3 text-xs font-bold text-[#0f3d24] hover:bg-[#fed649]">{{ __('asic-landing.btn_register') }}</a>
+            <a href="{{ route('login') }}" class="rounded-lg px-2 py-2 text-[15px] font-semibold hover:text-[#F5C518]">{{ __('asic-landing.btn_login') }}</a>
+            <a href="{{ route('auth.participant.register') }}" class="rounded-xl bg-[#F5C518] px-5 py-3 text-[15px] font-bold text-[#0f3d24] hover:bg-[#fed649]">{{ __('asic-landing.btn_register') }}</a>
         </div>
         <button type="button" @click="open = !open" class="rounded-lg p-2 hover:bg-white/10 xl:hidden" :aria-expanded="open.toString()" aria-controls="mobile-nav" aria-label="{{ $L['menu'] }}">
             <span class="material-symbols-outlined" x-text="open ? 'close' : 'menu'">menu</span>
         </button>
         <div id="mobile-nav" x-show="open" x-transition @click.outside="open = false" class="absolute left-4 right-4 top-full z-50 space-y-1 rounded-2xl border border-white/20 bg-[#0B5D2E] p-4 shadow-2xl xl:hidden" style="display: none;">
             @foreach($navLinks as $link)
-                <a href="{{ $link[0] }}" @click="open = false" class="block rounded-lg px-3 py-2 text-sm hover:bg-white/10">{{ $link[1] }}</a>
+                <a href="{{ $link[0] }}" @click="open = false" class="block rounded-lg px-3 py-2.5 text-base hover:bg-white/10">{{ $link[1] }}</a>
             @endforeach
             <div class="flex items-center gap-2 border-t border-white/15 pt-3">
                 <a href="{{ route('portal.language', 'id') }}" class="rounded-lg px-3 py-1.5 text-xs font-bold {{ $locale === 'id' ? 'bg-[#F5C518] text-[#0f3d24]' : 'bg-white/10' }}">ID</a>

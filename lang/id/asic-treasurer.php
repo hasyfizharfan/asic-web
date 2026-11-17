@@ -202,4 +202,10 @@ return [
         'domestic' => 'Tarif domestik', 'international' => 'Tarif internasional', 'overdue' => 'LEWAT', 'view_proof' => 'Lihat bukti',
         'verify' => 'Verifikasi', 'reject' => 'Tolak', 'reject_prompt' => 'Alasan penolakan bukti transfer:', 'verify_failed' => 'Verifikasi gagal.', 'updated' => 'Status pembayaran diperbarui.',
     ],
+    'refund_policy' => [
+        'title' => 'Pengembalian dana', 'lead' => 'Sesuai kesepakatan dengan panitia, pengembalian dana diproses manual di luar sistem.',
+        'rules_title' => 'Aturan pengembalian',
+        'rules' => ['Biaya publikasi dapat dikembalikan bila artikel batal diproses.', 'Biaya seminar tidak dikembalikan walau peserta batal hadir.', 'Transfer pengembalian dilakukan manual oleh bendahara dan dicatat di laporan keuangan panitia.'],
+        'to_payments' => 'Buka antrean pembayaran',
+    ],
 ];

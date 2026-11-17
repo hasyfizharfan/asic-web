@@ -2,7 +2,6 @@
 
 @section('content')
 <main class="mx-auto w-full max-w-2xl rounded-3xl border border-surface-container-highest bg-surface-container-lowest p-6 shadow-2xl sm:p-10">
-    <a href="{{ route('portal.landing') }}" class="text-sm font-semibold text-primary">← ASIC 2027</a>
     <header class="mt-5 space-y-2">
         <p class="text-xs font-bold uppercase tracking-wider text-primary">Portal Peserta</p>
         <h1 class="text-2xl font-bold text-on-surface sm:text-3xl">Buat akun peserta</h1>

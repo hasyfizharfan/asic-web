@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'open_menu' => 'Open menu',
     'save' => 'Save',
     'cancel' => 'Cancel',
     'confirm' => 'Confirm',

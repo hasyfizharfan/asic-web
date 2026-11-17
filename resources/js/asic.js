@@ -42,6 +42,30 @@ window.asicMoney = function (value, currency = 'IDR') {
     }).format(Number(value || 0));
 };
 
+/**
+ * Format tanggal API (ISO UTC, "Y-m-d" atau "Y-m-d H:i:s") ke tampilan WIB sesuai bahasa halaman.
+ * asicDate(v) = tanggal saja; asicDateTime(v) = tanggal + jam. Nilai kosong menjadi "—".
+ */
+function asicParseDate(value) {
+    if (!value) return null;
+    const raw = String(value);
+    // "Y-m-d" murni = tanggal kalender (tanpa zona); jangan digeser ke UTC.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return new Date(raw + 'T12:00:00+07:00');
+    const normalized = /[zZ]|[+-]\d{2}:?\d{2}$/.test(raw) ? raw : raw.replace(' ', 'T') + '+07:00';
+    const date = new Date(normalized);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+function asicDateFormat(value, withTime) {
+    const date = asicParseDate(value);
+    if (!date) return value ? String(value) : '—';
+    const locale = document.documentElement.lang === 'en' ? 'en-GB' : 'id-ID';
+    const options = { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' };
+    if (withTime) Object.assign(options, { hour: '2-digit', minute: '2-digit', hour12: false });
+    return new Intl.DateTimeFormat(locale, options).format(date) + (withTime ? ' WIB' : '');
+}
+window.asicDate = (value) => asicDateFormat(value, false);
+window.asicDateTime = (value) => asicDateFormat(value, true);
+
 /** Gambar QR di klien (paket npm qrcode); token tidak dikirim ke layanan luar. */
 window.asicQr = {
     render(canvas, text) {

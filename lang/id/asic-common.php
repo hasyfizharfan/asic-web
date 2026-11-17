@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'open_menu' => 'Buka menu',
     'save' => 'Simpan',
     'cancel' => 'Batal',
     'confirm' => 'Konfirmasi',

@@ -5,214 +5,73 @@
 ])
 
 @php
-    $defaultNames = [
-        'participant' => 'Dr. Ahmad Fauzi',
-        'reviewer' => 'Dr. Sarah Jenkins',
-        'secretariat' => 'Rina S., M.Si (Secretariat)',
-        'treasurer' => 'Budi Santoso, S.E. (Treasurer)',
-        'admin' => 'Administrator ASIC',
-    ];
-    $displayName = $userName ?? $defaultNames[$role] ?? 'User';
-
-    $logoutRoute = route('api.logout');
+    $user = auth()->user();
+    $displayName = $userName ?? $user?->participant?->full_name ?? $user?->email ?? '';
+    $profileRoute = match ($role) {
+        'participant' => 'portal.participant.profile',
+        'reviewer' => 'portal.reviewer.profile',
+        default => null,
+    };
+    $bellUrl = $role === 'participant' ? route('portal.participant.notifications') : null;
 @endphp
 
-<header class="sticky top-0 z-20 h-16 bg-surface-container-lowest border-b border-surface-container-highest px-4 sm:px-6 flex items-center justify-between">
-    <!-- Left Section: Mobile Menu Trigger & Conference Context -->
-    <div class="flex items-center gap-3">
-        <button @click="sidebarOpen = true" 
-                type="button" 
-                class="lg:hidden p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low rounded-lg transition"
-                aria-label="Open sidebar">
+<header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-surface-container-highest bg-surface-container-lowest px-4 sm:px-6">
+    <div class="flex min-w-0 items-center gap-3">
+        <button @click="sidebarOpen = true" type="button" class="rounded-lg p-2 text-on-surface hover:bg-surface-container-low lg:hidden" aria-label="{{ __('asic-common.open_menu') }}">
             <span class="material-symbols-outlined text-2xl">menu</span>
         </button>
-
-        <div class="hidden sm:flex items-center gap-2 text-xs text-on-surface-variant">
+        <div class="hidden min-w-0 items-center gap-2 text-sm text-on-surface-variant sm:flex">
             <span class="font-bold text-primary">ASIC 2027</span>
-            <span>/</span>
-            <span class="truncate max-w-[200px] md:max-w-xs">Agrifood System International Conference</span>
+            <span aria-hidden="true">/</span>
+            <span class="truncate">{{ $roleName }}</span>
         </div>
     </div>
 
-    <!-- Right Section: Role chip with switcher, Lang switcher, User Profile -->
-    <div class="flex items-center gap-2 sm:gap-4">
-        <!-- KF-30: lonceng notifikasi (jumlah belum dibaca milik pengguna sendiri) -->
-        @php($bellUrl = $role === 'participant' ? route('portal.participant.notifications') : null)
+    <div class="flex items-center gap-2 sm:gap-3">
+        {{-- KF-30: lonceng notifikasi (jumlah belum dibaca milik pengguna sendiri) --}}
         <div x-data="{ unread: 0 }" x-init="window.asicApi.get('/api/me/notifications/unread-count').then(r => { if (r.ok) unread = Number(r.data?.data?.unread_count || 0); })">
             <{{ $bellUrl ? 'a href='.e($bellUrl) : 'span' }} class="relative inline-flex rounded-lg p-2 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface" aria-label="{{ __('asic-notifications.page.bell_label') }}" title="{{ __('asic-notifications.page.bell_label') }}" data-asic-bell>
-                <span class="material-symbols-outlined text-[22px]">notifications</span>
+                <span class="material-symbols-outlined text-[24px]">notifications</span>
                 <span x-show="unread > 0" x-text="unread > 99 ? '99+' : unread" class="absolute -right-0.5 -top-0.5 min-w-[18px] rounded-full bg-error px-1 text-center text-[10px] font-bold leading-[18px] text-white" style="display: none;"></span>
             </{{ $bellUrl ? 'a' : 'span' }}>
         </div>
-        <!-- Interactive Role Switcher Chip -->
-        <div x-data="{ roleMenuOpen: false }" @click.outside="roleMenuOpen = false" class="relative">
-            <button @click="roleMenuOpen = !roleMenuOpen" 
-                    type="button" 
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary-fixed/40 border border-primary-fixed text-primary text-[11px] font-semibold tracking-wide hover:bg-primary-fixed/70 transition"
-                    title="Switch Portal">
-                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                <span class="uppercase font-bold">{{ $roleName }}</span>
-                <span class="material-symbols-outlined text-[14px]" :class="roleMenuOpen ? 'rotate-180' : ''">expand_more</span>
-            </button>
 
-            <!-- Role Selector Dropdown -->
-            <div x-show="roleMenuOpen" 
-                 x-transition:enter="transition ease-out duration-100"
-                 x-transition:enter-start="transform opacity-0 scale-95"
-                 x-transition:enter-end="transform opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-75"
-                 x-transition:leave-start="transform opacity-100 scale-100"
-                 x-transition:leave-end="transform opacity-0 scale-95"
-                 class="absolute right-0 mt-2 w-56 origin-top-right rounded-xl bg-surface-container-lowest p-2 shadow-xl ring-1 ring-black/5 border border-surface-container-highest focus:outline-none z-50"
-                 style="display: none;">
-                
-                <div class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                    {{ __('asic-common.switch_portal') ?? 'Switch Portal / Role' }}
-                </div>
-
-                <a href="{{ route('portal.participant.dashboard') }}"
-                   class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition {{ $role === 'participant' ? 'bg-primary-fixed/40 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low' }}">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px]">person</span>
-                        <span>Participant (Peserta)</span>
-                    </div>
-                    @if($role === 'participant')
-                        <span class="material-symbols-outlined text-[16px] text-primary">check</span>
-                    @endif
-                </a>
-
-                <a href="{{ route('portal.reviewer.dashboard') }}"
-                   class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition {{ $role === 'reviewer' ? 'bg-primary-fixed/40 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low' }}">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px]">rate_review</span>
-                        <span>Reviewer (Reviewer Abstrak)</span>
-                    </div>
-                    @if($role === 'reviewer')
-                        <span class="material-symbols-outlined text-[16px] text-primary">check</span>
-                    @endif
-                </a>
-
-                <a href="{{ route('portal.secretariat.dashboard') }}"
-                   class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition {{ $role === 'secretariat' ? 'bg-primary-fixed/40 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low' }}">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px]">badge</span>
-                        <span>Secretariat (Sekretariat)</span>
-                    </div>
-                    @if($role === 'secretariat')
-                        <span class="material-symbols-outlined text-[16px] text-primary">check</span>
-                    @endif
-                </a>
-
-                <a href="{{ route('portal.treasurer.dashboard') }}"
-                   class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition {{ $role === 'treasurer' ? 'bg-primary-fixed/40 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low' }}">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px]">payments</span>
-                        <span>Treasurer (Bendahara)</span>
-                    </div>
-                    @if($role === 'treasurer')
-                        <span class="material-symbols-outlined text-[16px] text-primary">check</span>
-                    @endif
-                </a>
-
-                <a href="{{ route('portal.admin.dashboard') }}"
-                   class="flex items-center justify-between px-3 py-2 rounded-lg text-xs transition {{ $role === 'admin' ? 'bg-primary-fixed/40 text-primary font-bold' : 'text-on-surface hover:bg-surface-container-low' }}">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
-                        <span>Admin (Super Admin)</span>
-                    </div>
-                    @if($role === 'admin')
-                        <span class="material-symbols-outlined text-[16px] text-primary">check</span>
-                    @endif
-                </a>
-            </div>
-        </div>
-
-        <!-- Language Switcher -->
         <x-layout.lang-switcher theme="light" />
 
-        <!-- User Profile Dropdown -->
-        <div x-data="{ userMenuOpen: false }" @click.outside="userMenuOpen = false" class="relative">
-            <button @click="userMenuOpen = !userMenuOpen" 
-                    type="button" 
-                    class="flex items-center gap-2 p-1 rounded-full hover:bg-surface-container-low transition focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    aria-expanded="false" 
-                    aria-haspopup="true">
-                <img src="{{ asset('images/asic/avatar.svg') }}" alt="{{ $displayName }}" class="w-8 h-8 rounded-full border border-surface-container-highest">
-                <span class="hidden md:block text-xs font-semibold text-on-surface text-left leading-tight max-w-[120px] truncate">
-                    {{ $displayName }}
+        <div x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false" class="relative">
+            <button @click="open = !open" type="button" :aria-expanded="open.toString()" aria-haspopup="menu"
+                class="flex items-center gap-2 rounded-full p-1 pr-2 hover:bg-surface-container-low">
+                <span class="flex h-9 w-9 items-center justify-center rounded-full bg-[#E6F4EA] text-primary"><span class="material-symbols-outlined text-[22px]">person</span></span>
+                <span class="hidden max-w-[180px] text-left leading-tight md:block">
+                    <span class="block truncate text-sm font-semibold text-on-surface">{{ $displayName }}</span>
+                    <span class="block truncate text-xs text-on-surface-variant">{{ $roleName }}</span>
                 </span>
-                <span class="material-symbols-outlined text-[16px] text-on-surface-variant hidden md:block" :class="userMenuOpen ? 'rotate-180' : ''">expand_more</span>
+                <span class="material-symbols-outlined hidden text-[18px] text-on-surface-variant md:block" :class="open ? 'rotate-180' : ''">expand_more</span>
             </button>
 
-            <!-- Dropdown Menu -->
-            <div x-show="userMenuOpen" 
-                 x-transition:enter="transition ease-out duration-100"
-                 x-transition:enter-start="transform opacity-0 scale-95"
-                 x-transition:enter-end="transform opacity-100 scale-100"
-                 x-transition:leave="transition ease-in duration-75"
-                 x-transition:leave-start="transform opacity-100 scale-100"
-                 x-transition:leave-end="transform opacity-0 scale-95"
-                 class="absolute right-0 mt-2 w-56 origin-top-right rounded-xl bg-surface-container-lowest p-2 shadow-xl ring-1 ring-black/5 border border-surface-container-highest focus:outline-none z-50"
-                 style="display: none;">
-                
-                <div class="px-3 py-2 border-b border-surface-container-highest mb-1">
-                    <p class="text-xs font-bold text-on-surface truncate">{{ $displayName }}</p>
-                    <p class="text-[11px] text-on-surface-variant capitalize">{{ $roleName }}</p>
+            <div x-show="open" x-transition role="menu" style="display: none;"
+                class="absolute right-0 z-50 mt-2 w-60 origin-top-right rounded-xl border border-surface-container-highest bg-surface-container-lowest p-2 shadow-xl">
+                <div class="mb-1 border-b border-surface-container-highest px-3 py-2">
+                    <p class="truncate text-sm font-bold text-on-surface">{{ $displayName }}</p>
+                    @if($user?->email && $user->email !== $displayName)<p class="truncate text-xs text-on-surface-variant">{{ $user->email }}</p>@endif
                 </div>
-
-                @if($role === 'participant')
-                    <a href="{{ route('portal.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
-                        <span class="material-symbols-outlined text-[18px] text-on-surface-variant">account_circle</span>
-                        <span>{{ __('asic-nav.profile') ?? 'My Profile' }}</span>
+                @if($profileRoute && \Illuminate\Support\Facades\Route::has($profileRoute))
+                    <a href="{{ route($profileRoute) }}" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-on-surface hover:bg-surface-container-low">
+                        <span class="material-symbols-outlined text-[20px] text-on-surface-variant">account_circle</span>{{ __('asic-nav.profile') }}
                     </a>
-                    <a href="{{ route('portal.participant.notifications') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
-                        <span class="material-symbols-outlined text-[18px] text-on-surface-variant">notifications</span>
-                        <span>{{ __('asic-nav.notifications') ?? 'Notifications' }}</span>
-                    </a>
-                    <div class="my-1 border-t border-surface-container-highest"></div>
-                @elseif($role === 'reviewer')
-                    <a href="{{ route('portal.dashboard') }}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
-                        <span class="material-symbols-outlined text-[18px] text-on-surface-variant">account_circle</span>
-                        <span>{{ __('asic-reviewer.profile_title') ?? 'Profil Reviewer' }}</span>
-                    </a>
-                    <div class="my-1 border-t border-surface-container-highest"></div>
                 @endif
-
-                <div class="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
-                    {{ __('asic-common.quick_switch') ?? 'Quick Switch Portal' }}
-                </div>
-                <a href="{{ route('portal.participant.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
-                    <span class="material-symbols-outlined text-[16px] text-primary">person</span>
-                    <span>Participant Portal</span>
-                </a>
-                <a href="{{ route('portal.reviewer.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
-                    <span class="material-symbols-outlined text-[16px] text-primary">rate_review</span>
-                    <span>Reviewer Portal</span>
-                </a>
-                <a href="{{ route('portal.secretariat.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
-                    <span class="material-symbols-outlined text-[16px] text-primary">badge</span>
-                    <span>Secretariat Portal</span>
-                </a>
-                <a href="{{ route('portal.treasurer.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
-                    <span class="material-symbols-outlined text-[16px] text-primary">payments</span>
-                    <span>Treasurer Portal</span>
-                </a>
-                <a href="{{ route('portal.admin.dashboard') }}" class="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-on-surface hover:bg-surface-container-low transition">
-                    <span class="material-symbols-outlined text-[16px] text-primary">admin_panel_settings</span>
-                    <span>Admin Portal</span>
-                </a>
-
-                <div class="my-1 border-t border-surface-container-highest"></div>
-
-                <form data-asic-logout action="{{ $logoutRoute }}" method="POST">
+                @if($bellUrl)
+                    <a href="{{ $bellUrl }}" role="menuitem" class="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-on-surface hover:bg-surface-container-low">
+                        <span class="material-symbols-outlined text-[20px] text-on-surface-variant">notifications</span>{{ __('asic-nav.notifications') }}
+                    </a>
+                @endif
+                <form data-asic-logout action="{{ route('api.logout') }}" method="POST" class="mt-1 border-t border-surface-container-highest pt-1">
                     @csrf
-                    <button type="submit" class="flex w-full items-center gap-2 px-3 py-2 rounded-lg text-xs text-error hover:bg-error-container/30 transition">
-                        <span class="material-symbols-outlined text-[18px]">logout</span>
-                        <span>{{ __('asic-nav.logout') ?? 'Sign Out' }}</span>
+                    <button type="submit" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-error hover:bg-error-container/40">
+                        <span class="material-symbols-outlined text-[20px]">logout</span>{{ __('asic-nav.logout') }}
                     </button>
                 </form>
             </div>
         </div>
     </div>
 </header>
-

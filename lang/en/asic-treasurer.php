@@ -202,4 +202,10 @@ return [
         'domestic' => 'Domestic rate', 'international' => 'International rate', 'overdue' => 'OVERDUE', 'view_proof' => 'View proof',
         'verify' => 'Verify', 'reject' => 'Reject', 'reject_prompt' => 'Reason for rejecting the transfer proof:', 'verify_failed' => 'Verification failed.', 'updated' => 'Payment status updated.',
     ],
+    'refund_policy' => [
+        'title' => 'Refunds', 'lead' => 'As agreed with the committee, refunds are processed manually outside the system.',
+        'rules_title' => 'Refund rules',
+        'rules' => ['Publication fees can be refunded if the article is not processed.', 'Seminar fees are not refunded even if the participant does not attend.', 'Refund transfers are made manually by the treasurer and recorded in the committee financial report.'],
+        'to_payments' => 'Open payment queue',
+    ],
 ];

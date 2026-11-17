@@ -191,10 +191,9 @@ class AdminPortalControllerTest extends TestCase
             ->assertSee('/api/document-templates', false);
     }
 
-    public function test_website_settings_are_unavailable_without_backend_data(): void
+    public function test_settings_page_shows_only_working_features_without_placeholders(): void
     {
         $this->as(Role::ROLE_ADMIN)->get('/admin/settings')->assertOk()
-            ->assertSee('Pengaturan website')->assertSee('Belum tersedia')->assertSee('disabled', false)
-            ->assertDontSee('TBA');
+            ->assertSee('/api/registration-periods', false)->assertDontSee('Belum tersedia')->assertDontSee('TBA');
     }
 }

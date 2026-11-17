@@ -37,7 +37,6 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/asic/logo.svg') }}">
-    <style>::-webkit-scrollbar{display:none !important;width:0px !important;}*{scrollbar-width:none !important;-ms-overflow-style:none !important;}</style>
     @include('partials.asic-i18n')
     @vite(['resources/css/asic.css', 'resources/js/asic.js'])
     @stack('styles')

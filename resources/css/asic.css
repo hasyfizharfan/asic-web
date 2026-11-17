@@ -343,33 +343,71 @@ body {
 }
 
 /* Universal Scrollbar Elimination (Hidden completely while preserving full scrollability) */
-html,
-body,
-aside,
-nav,
-div,
-main,
-* {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+/* Scrollbar tipis (bukan disembunyikan) agar tabel/menu yang bisa digeser tetap terlihat. */
+* { scrollbar-width: thin; scrollbar-color: #9AAA9E transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #9AAA9E; border-radius: 9999px; }
+::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/*
+ * Kontrol form global. Proyek tidak memakai plugin @tailwindcss/forms, padahal markup memakai kelas
+ * seperti "rounded-xl border-surface-container-highest" (warna tanpa ketebalan garis) sehingga input tak terlihat.
+ * Gaya dasar ini memberi garis, latar, ukuran sentuh 44px, dan fokus yang jelas untuk SEMUA form.
+ */
+@layer base {
+    input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='hidden']):not([type='range']):not([type='color']),
+    select,
+    textarea {
+        display: block;
+        min-height: 44px;
+        border: 1px solid #9aaa9e;
+        border-radius: 9px;
+        background-color: #ffffff;
+        color: var(--color-on-surface);
+        padding: 0.625rem 0.875rem;
+        font-size: 15px;
+        line-height: 1.4;
+        font-weight: 400;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    textarea { min-height: 96px; }
+    select { padding-right: 2.25rem; }
+    input::placeholder, textarea::placeholder { color: #7b897f; opacity: 1; }
+    input:hover:not(:disabled), select:hover:not(:disabled), textarea:hover:not(:disabled) { border-color: #66746c; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+        outline: 2px solid #168348;
+        outline-offset: 2px;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #168348; box-shadow: 0 0 0 3px rgba(22, 131, 72, 0.18); outline: none; }
+    input:disabled, select:disabled, textarea:disabled { background-color: #eef2ef; color: #66746c; cursor: not-allowed; }
+    input[aria-invalid='true'], select[aria-invalid='true'], textarea[aria-invalid='true'] { border-color: var(--color-error); }
+    input[type='checkbox'], input[type='radio'] {
+        width: 18px; height: 18px; flex-shrink: 0;
+        accent-color: #0b5d2e;
+        cursor: pointer;
+    }
+    input[type='file'] { font-size: 14px; max-width: 100%; }
+    input[type='file']::file-selector-button {
+        margin-right: 0.75rem;
+        border: 1px solid #0b5d2e;
+        border-radius: 9px;
+        background: #e6f4ea;
+        color: #0b5d2e;
+        padding: 0.5rem 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    label { color: var(--color-on-surface); }
+    button, [role='button'] { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: 0.6; }
 }
 
-::-webkit-scrollbar,
-*::-webkit-scrollbar {
-    display: none !important;
-    width: 0px !important;
-    height: 0px !important;
-    background: transparent !important;
+/* Kelas warna garis yang terlalu pucat untuk kontrol form (kontras < 3:1) dinaikkan khusus pada input/select/textarea. */
+:is(input, select, textarea):is(.border-surface-container-highest, .border-surface-container-high, .border-outline-variant, .border-\[\#c9d6c2\], .border-\[\#d9e3d0\]) {
+    border-color: #9aaa9e;
 }
-
-.scrollbar-none {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+:is(input, select, textarea):is(.border-surface-container-highest, .border-surface-container-high, .border-outline-variant):focus {
+    border-color: #168348;
 }
-
-.scrollbar-none::-webkit-scrollbar {
-    display: none !important;
-    width: 0px !important;
-    height: 0px !important;
-}
-

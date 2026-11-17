@@ -9,7 +9,7 @@
         this.loading = true; this.loadError = '';
         const response = await window.asicApi.get('/api/admin/roles-permissions'); this.loading = false;
         if (!response.ok) { this.loadError = response.error || 'Matriks permission gagal dimuat.'; return; }
-        this.matrixData = response.data?.data; this.draft = structuredClone(this.matrixData?.matrix || {});
+        const data = response.data?.data || {}; this.draft = JSON.parse(JSON.stringify(data.matrix || {})); this.matrixData = data;
     },
     async loadAudit() {
         this.auditLoading = true; this.auditError = '';
@@ -19,11 +19,12 @@
         this.auditRows = response.data?.data || []; this.auditLastPage = response.data?.pagination?.last_page || 1;
     },
     async save() {
+        if (!this.draft || !Object.keys(this.draft).length) return;
         this.saving = true; this.formError = '';
         const response = await window.asicApi.post('/api/admin/roles-permissions', { matrix: this.draft, audit_note: this.auditNote });
         this.saving = false;
         if (!response.ok) { this.formError = response.error || 'Perubahan permission gagal disimpan.'; return; }
-        this.matrixData.matrix = response.data?.data?.matrix || this.draft; this.draft = structuredClone(this.matrixData.matrix);
+        const saved = JSON.parse(JSON.stringify(response.data?.data?.matrix || this.draft)); this.matrixData.matrix = saved; this.draft = JSON.parse(JSON.stringify(saved));
         await this.loadAudit(); window.asicApi.showToast(response.data?.message || 'Matriks permission disimpan.', 'success');
     },
     async reset() {

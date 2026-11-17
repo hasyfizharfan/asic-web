@@ -55,21 +55,20 @@
         <label class="block min-w-[16rem] flex-1 text-sm font-semibold">{{ $t('event_label') }}
             <select x-model="idEvent" class="mt-1 block w-full rounded-xl border-surface-container-highest"><template x-for="item in events" :key="item.id_event"><option :value="String(item.id_event)" x-text="item.nama_event"></option></template></select>
         </label>
-        <p class="text-sm" x-show="event"><span class="block text-xs text-on-surface-variant">{{ $t('first_day') }}</span><strong x-text="String(event?.tanggal_mulai || '').slice(0, 10)"></strong></p>
+        <p class="text-sm" x-show="event"><span class="block text-xs text-on-surface-variant">{{ $t('first_day') }}</span><strong x-text="asicDate(event?.tanggal_mulai)"></strong></p>
         <p class="rounded-xl px-3 py-2 text-sm font-semibold" x-show="event" :class="isFirstDay ? 'bg-secondary-container text-on-secondary-container' : 'bg-surface-container-high text-on-surface-variant'" x-text="isFirstDay ? i18n.first_day_open : i18n.first_day_closed"></p>
     </section>
 
     <section x-show="result" role="status" class="rounded-2xl p-5" :class="{ 'bg-secondary-container text-on-secondary-container': result?.kind === 'success', 'bg-tertiary-container text-on-tertiary-container': result?.kind === 'already', 'bg-error-container text-on-error-container': result?.kind === 'rejected' }">
         <p class="text-xs font-bold uppercase tracking-widest" x-text="result?.kind === 'success' ? i18n.result_success : (result?.kind === 'already' ? i18n.result_already : i18n.result_rejected)"></p>
         <p class="mt-1 font-semibold" x-text="result?.message"></p>
-        <p class="mt-1 text-sm" x-show="result?.data" x-text="(result?.data?.participant?.full_name || '') + ' · #' + (result?.data?.id_registration || '') + ' · ' + (result?.data?.attendance_mode || '') + (result?.data?.reregistered_at ? ' · ' + new Date(result.data.reregistered_at).toLocaleString() : '')"></p>
+        <p class="mt-1 text-sm" x-show="result?.data" x-text="(result?.data?.participant?.full_name || '') + ' · #' + (result?.data?.id_registration || '') + ' · ' + (result?.data?.attendance_mode || '') + (result?.data?.reregistered_at ? ' · ' + asicDateTime(result.data.reregistered_at) : '')"></p>
     </section>
 
     <section class="grid gap-5 lg:grid-cols-2">
         <article class="space-y-4 rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5 shadow-sm">
             <h2 class="font-bold">{{ $t('scan_title') }}</h2>
             <form class="flex gap-2" @submit.prevent="scan()"><input x-model="qrToken" required placeholder="{{ $t('scan_placeholder') }}" class="min-w-0 flex-1 rounded-xl border-surface-container-highest font-mono"><button :disabled="!idEvent || busy" class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-40">{{ $t('scan_btn') }}</button></form>
-            <div class="grid grid-cols-3 gap-2 text-center text-xs"><button type="button" disabled class="rounded-lg border p-2 opacity-60">{{ $t('override') }}</button><button type="button" disabled class="rounded-lg border p-2 opacity-60">{{ $t('badge') }}</button><button type="button" disabled class="rounded-lg border p-2 opacity-60">{{ $t('kit') }}</button></div>
         </article>
 
         <article class="space-y-4 rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5 shadow-sm">
@@ -83,7 +82,7 @@
                     <div><span class="block text-xs text-on-surface-variant">{{ $t('col_registration') }}</span><strong x-text="selected?.registration_status"></strong></div>
                     <div><span class="block text-xs text-on-surface-variant">{{ $t('col_mode') }}</span><strong x-text="selected?.attendance_mode"></strong></div>
                     <div><span class="block text-xs text-on-surface-variant">{{ $t('col_payment') }}</span><strong x-text="selected?.invoice?.status_pembayaran || i18n.no_invoice"></strong></div>
-                    <div><span class="block text-xs text-on-surface-variant">{{ $t('col_rereg') }}</span><strong x-text="selected?.reregistered_at ? new Date(selected.reregistered_at).toLocaleString() : i18n.not_yet"></strong></div>
+                    <div><span class="block text-xs text-on-surface-variant">{{ $t('col_rereg') }}</span><strong x-text="selected?.reregistered_at ? asicDateTime(selected.reregistered_at) : i18n.not_yet"></strong></div>
                 </div>
                 <button type="button" @click="manual()" :disabled="!idEvent || busy" class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-40">{{ $t('manual_btn') }}</button>
             </section>

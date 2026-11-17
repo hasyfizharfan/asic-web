@@ -123,7 +123,7 @@
     <div x-show="tab === 'sponsorship-inquiries' && rows.length" class="space-y-3">
         <template x-for="row in rows" :key="row.id_inquiry">
             <article class="rounded-xl border border-surface-container-high bg-surface-container-lowest p-4 text-sm">
-                <div class="flex flex-wrap justify-between gap-2"><p class="font-bold"><span x-text="row.jenis"></span> · <span x-text="row.nama_organisasi"></span></p><p class="text-xs text-on-surface-variant"><span>{{ $m['received_at'] }}</span> <span x-text="(row.created_at || '').slice(0, 16).replace('T', ' ')"></span></p></div>
+                <div class="flex flex-wrap justify-between gap-2"><p class="font-bold"><span x-text="row.jenis"></span> · <span x-text="row.nama_organisasi"></span></p><p class="text-xs text-on-surface-variant"><span>{{ $m['received_at'] }}</span> <span x-text="asicDateTime(row.created_at)"></span></p></div>
                 <p class="mt-1 text-xs text-on-surface-variant" x-text="[row.nama_kontak, row.email, row.telepon].filter(Boolean).join(' · ')"></p>
                 <p class="mt-2 whitespace-pre-line" x-text="row.pesan"></p>
                 <div class="mt-3 grid gap-2 sm:grid-cols-[12rem_1fr_auto]">
@@ -147,7 +147,7 @@
                             <p class="font-semibold" x-text="title(row)"></p>
                             <p class="text-xs text-on-surface-variant" x-show="tab === 'event-content'" x-text="sections[row.section] || row.section"></p>
                             <p class="text-xs text-on-surface-variant" x-show="tab === 'legal-documents'" x-text="(legalTypes[row.jenis] || row.jenis) + ' · v' + row.versi"></p>
-                            <p class="text-xs text-on-surface-variant" x-show="tab === 'important-dates'" x-text="(row.tanggal_mulai || '').slice(0, 10) + (row.tanggal_selesai ? ' – ' + row.tanggal_selesai.slice(0, 10) : '')"></p>
+                            <p class="text-xs text-on-surface-variant" x-show="tab === 'important-dates'" x-text="asicDate(row.tanggal_mulai) + (row.tanggal_selesai ? ' – ' + asicDate(row.tanggal_selesai) : '')"></p>
                             <span x-show="row.translation_complete === false" class="mt-1 inline-block rounded-full bg-tertiary-container px-2 py-0.5 text-[11px] font-semibold text-on-tertiary-container">{{ $m['incomplete_translation'] }}</span>
                         </td>
                         <td class="p-3"><span class="rounded-full bg-surface-container px-2 py-1 text-xs font-semibold" x-text="statuses[row.status] || row.status"></span></td>
