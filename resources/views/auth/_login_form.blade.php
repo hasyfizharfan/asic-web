@@ -7,7 +7,7 @@
     <form action="{{ route('api.login') }}" method="POST" data-asic-login class="mt-6 space-y-4">
         @csrf
         <p data-form-error role="alert" class="hidden rounded-lg bg-error-container px-3 py-2 text-sm font-semibold text-on-error-container"></p>
-        <x-ui.input :label="$emailLabel" name="email" type="email" :placeholder="$emailPlaceholder" iconLeft="mail" autocomplete="email" required />
+        <x-ui.input :label="$emailLabel" name="email" type="email" :placeholder="$emailPlaceholder" iconLeft="mail" autocomplete="email" :value="session('registered_email')" required />
         <x-ui.input :label="__('asic-auth.password_label')" name="password" type="password" placeholder="••••••••" iconLeft="lock" autocomplete="current-password" required />
         <div class="flex items-center justify-between gap-3 text-sm">
             <label class="flex items-center gap-2 text-on-surface-variant"><input type="checkbox" name="remember" value="1" checked> {{ __('asic-auth.remember_me') }}</label>

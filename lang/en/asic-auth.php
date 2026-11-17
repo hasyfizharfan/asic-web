@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'registered_title' => 'Account created',
+    'registered_sent' => 'A confirmation email has been sent to :email. If it is not in your Inbox, check your Spam folder. Please sign in with your email and password.',
+    'registered_plain' => 'Please sign in with the email and password you just created.',
     'back_to_home' => 'Back to ASIC 2027',
     'conference_edition' => '3rd Agrifood System International Conference',
     'organizer' => 'Faculty of Agriculture, Universitas Andalas',

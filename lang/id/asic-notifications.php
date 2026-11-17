@@ -15,6 +15,13 @@ return [
         'abstract_rejected' => ['title' => 'Abstrak belum dapat diterima', 'body' => 'Abstrak untuk registrasi #:id belum dapat diterima. Surat keputusan tersedia di halaman Dokumen.'],
         'reregistered' => ['title' => 'Registrasi ulang tercatat', 'body' => 'Registrasi ulang untuk registrasi #:id sudah tercatat di meja sekretariat.'],
     ],
+    'welcome' => [
+        'subject' => 'Pendaftaran akun berhasil - :event',
+        'created' => 'Akun Anda untuk :event sudah berhasil dibuat dengan email :email dan sudah bisa langsung dipakai.',
+        'next' => 'Langkah berikutnya: masuk ke portal peserta, lengkapi formulir registrasi (pilih jenis peserta), lalu kirim abstrak bila Anda pemakalah. Semua dokumen (LoA, invoice, receipt, sertifikat) juga akan dikirim ke email ini.',
+        'button' => 'Masuk ke portal peserta',
+        'not_you' => 'Bila Anda tidak merasa mendaftar, abaikan email ini atau hubungi panitia.',
+    ],
     'mail' => [
         'subcopy' => 'Jika tombol ":actionText" tidak dapat diklik, salin dan tempel alamat berikut ke browser Anda:',
         'copyright' => 'Panitia :event · Fakultas Pertanian, Universitas Andalas',

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Registration;
 use App\Notifications\StatusChanged;
+use App\Support\MailGuard;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -44,7 +45,7 @@ class StatusNotifier
                 if ($user->notifications()->where('data->dedupe', $dedupe)->exists()) {
                     return;
                 }
-                $locale = strcasecmp(trim((string) $registration->participant?->country), 'Indonesia') === 0 ? 'id' : 'en';
+                $locale = MailGuard::localeForCountry($registration->participant?->country);
                 $user->notify((new StatusChanged($kind, $id, $this->urlFor($kind, $id), $params, $dedupe))->locale($locale));
             } catch (Throwable $e) {
                 Log::warning('notification.failed', ['kind' => $kind, 'id_registration' => $id, 'error' => $e->getMessage()]);

@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\IssuedDocument;
+use App\Support\MailGuard;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -50,10 +51,7 @@ class StatusChanged extends Notification implements ShouldQueue
     public function via(object $notifiable): array
     {
         $channels = ['database'];
-        $email = (string) ($notifiable->email ?? '');
-        // Domain cadangan untuk uji (RFC 2606/6761) tidak ada di internet: jangan dikirimi email.
-        $reserved = config('asic.skip_reserved_email_domains', true) && (bool) preg_match('/\.(test|example|invalid|localhost)$/i', $email);
-        if (config('asic.notify_email', true) && $email !== '' && ! $reserved && ! in_array($this->kind, self::NO_MAIL, true)) {
+        if (MailGuard::allows($notifiable->email ?? null) && ! in_array($this->kind, self::NO_MAIL, true)) {
             $channels[] = 'mail';
         }
 

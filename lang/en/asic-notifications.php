@@ -15,6 +15,13 @@ return [
         'abstract_rejected' => ['title' => 'Abstract not accepted', 'body' => 'The abstract for registration #:id could not be accepted. The decision letter is on the Documents page.'],
         'reregistered' => ['title' => 'Re-registration recorded', 'body' => 'Re-registration for registration #:id has been recorded at the secretariat desk.'],
     ],
+    'welcome' => [
+        'subject' => 'Account registration successful - :event',
+        'created' => 'Your :event account has been created with the email :email and is ready to use.',
+        'next' => 'Next steps: sign in to the participant portal, complete the registration form (choose your participant type), then submit your abstract if you are a presenter. All documents (LoA, invoice, receipt, certificate) will also be sent to this email.',
+        'button' => 'Sign in to the participant portal',
+        'not_you' => 'If you did not register, please ignore this email or contact the committee.',
+    ],
     'mail' => [
         'subcopy' => 'If the ":actionText" button does not work, copy and paste the following address into your browser:',
         'copyright' => ':event Committee · Faculty of Agriculture, Universitas Andalas',

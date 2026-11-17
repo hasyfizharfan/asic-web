@@ -7,8 +7,10 @@ use App\Models\IssuedDocument;
 use App\Models\Participant;
 use App\Models\RegistrationFee;
 use App\Models\UserAccount;
+use App\Notifications\WelcomeParticipant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Smalot\PdfParser\Parser;
 use Tests\Concerns\BuildsAsicFixtures;
@@ -39,6 +41,32 @@ class QaRegressionTest extends TestCase
 
         $user = UserAccount::where('email', 'peserta.baru@example.test')->firstOrFail();
         $this->assertTrue(Participant::where('id_user', $user->id_user)->exists());
+    }
+
+    /** Masukan uji: setelah daftar ada email konfirmasi sungguhan (dulu pesannya menyebut tautan aktivasi padahal tidak ada email). */
+    public function test_registration_sends_confirmation_email_and_login_page_confirms_it(): void
+    {
+        Notification::fake();
+        $response = $this->withHeaders(['Origin' => 'http://127.0.0.1:8000', 'Referer' => 'http://127.0.0.1:8000/participant/register'])->postJson('/api/register', [
+            'full_name' => 'Peserta Email', 'email' => 'peserta.email@example.test',
+            'password' => 'QaTest#2026', 'password_confirmation' => 'QaTest#2026',
+            'institution' => 'Universitas Contoh', 'country' => 'Indonesia', 'agree_terms' => true,
+        ])->assertCreated()
+            ->assertJsonPath('confirmation_email_sent', true)
+            ->assertJsonPath('activation_link_required', false)
+            ->assertJsonPath('data.redirect_url', route('auth.participant.login', ['registered' => 1]));
+        $this->assertStringContainsString('peserta.email@example.test', $response->json('message'));
+
+        $user = UserAccount::where('email', 'peserta.email@example.test')->firstOrFail();
+        Notification::assertSentTo($user, WelcomeParticipant::class, function ($n, $channels) use ($user) {
+            $mail = $n->toMail($user);
+
+            return $channels === ['mail'] && str_contains($mail->subject, 'ASIC') && $mail->actionUrl === route('auth.participant.login');
+        });
+
+        $this->get('/participant/login?registered=1')->assertOk()
+            ->assertSee(__('asic-auth.registered_title'))
+            ->assertSee('value="peserta.email@example.test"', false);
     }
 
     /** BUG-017: Listener wajib mendapat LoA otomatis setelah registrasi (kesepakatan mitra). */

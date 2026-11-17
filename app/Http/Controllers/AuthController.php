@@ -8,13 +8,16 @@ use App\Models\Participant;
 use App\Models\Registration;
 use App\Models\Role;
 use App\Models\UserAccount;
+use App\Notifications\WelcomeParticipant;
 use App\Services\ConsentRecorder;
+use App\Support\MailGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -135,24 +138,43 @@ class AuthController extends Controller
         // Muat relasi role dan participant beserta accessor full_name
         $user->load(['role', 'participant']);
 
+        // Email konfirmasi pendaftaran (akun langsung aktif; gagal kirim tidak membatalkan pendaftaran).
+        $emailSent = false;
+        try {
+            if (MailGuard::allows($user->email)) {
+                $user->notify((new WelcomeParticipant)->locale(MailGuard::localeForCountry($user->participant?->country)));
+                $emailSent = true;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('register.welcome_mail_failed', ['id_user' => $user->id_user, 'error' => $e->getMessage()]);
+        }
+        if ($request->hasSession()) {
+            $request->session()->flash('registered_email', $user->email);
+            $request->session()->flash('registered_email_sent', $emailSent);
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => __('asic-api.messages.akun_delegasi_berhasil_dibuat_tautan_aktivasi_inst'),
-                'activation_link_required' => true,
+                'message' => $emailSent
+                    ? __('asic-api.messages.register_success_email', ['email' => $user->email])
+                    : __('asic-api.messages.register_success'),
+                'activation_link_required' => false,
+                'confirmation_email_sent' => $emailSent,
                 'data' => [
                     'id_user' => $user->id_user,
                     'email' => $user->email,
                     'role' => $user->role?->nama_role,
                     'status_akun' => $user->status_akun,
                     'participant' => $user->participant,
+                    'redirect_url' => route('auth.participant.login', ['registered' => 1]),
                 ],
             ], Response::HTTP_CREATED);
         }
 
         return redirect()->route('login')->with(
             'success',
-            'Akun delegasi berhasil dibuat. Silakan periksa email institusi Anda untuk aktivasi akun.'
+            __('asic-api.messages.register_success')
         );
     }
 

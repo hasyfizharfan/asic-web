@@ -1,6 +1,9 @@
 <?php
 
 return [
+    'registered_title' => 'Akun berhasil dibuat',
+    'registered_sent' => 'Email konfirmasi telah dikirim ke :email. Bila tidak ada di Kotak Masuk, periksa folder Spam. Silakan masuk dengan email dan kata sandi Anda.',
+    'registered_plain' => 'Silakan masuk dengan email dan kata sandi yang baru Anda buat.',
     'back_to_home' => 'Kembali ke Beranda ASIC 2027',
     'conference_edition' => 'Agrifood System International Conference ke-3',
     'organizer' => 'Fakultas Pertanian, Universitas Andalas',

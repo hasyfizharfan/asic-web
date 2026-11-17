@@ -27,6 +27,8 @@ return [
         'akun_admin_tidak_dapat_menonaktifkan_atau_menghapu' => 'Akun Admin tidak dapat menonaktifkan atau menghapus akunnya sendiri.',
         'akun_admin_tidak_dapat_menurunkan_perannya_sendiri' => 'Akun Admin tidak dapat menurunkan perannya sendiri.',
         'akun_anda_berstatus_nonaktif_silakan_hubungi_admin' => 'Akun Anda berstatus Nonaktif. Silakan hubungi Administrator.',
+        'register_success' => 'Akun berhasil dibuat. Silakan masuk.',
+        'register_success_email' => 'Akun berhasil dibuat. Email konfirmasi telah dikirim ke :email.',
         'akun_delegasi_berhasil_dibuat_tautan_aktivasi_inst' => 'Akun delegasi berhasil dibuat. Tautan aktivasi instan telah dikirimkan ke alamat email institusi Anda.',
         'akun_ini_tidak_memiliki_profil_peserta' => 'Akun ini tidak memiliki profil peserta.',
         'akun_pengguna_staf_berhasil_dibuat_dan_undangan_te' => 'Akun pengguna / staf berhasil dibuat dan undangan telah dikirimkan.',

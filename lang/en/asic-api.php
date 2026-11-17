@@ -27,6 +27,8 @@ return [
         'akun_admin_tidak_dapat_menonaktifkan_atau_menghapu' => 'An Admin account cannot deactivate or delete its own account.',
         'akun_admin_tidak_dapat_menurunkan_perannya_sendiri' => 'An Admin account cannot downgrade its own role.',
         'akun_anda_berstatus_nonaktif_silakan_hubungi_admin' => 'Your account is inactive. Please contact the Administrator.',
+        'register_success' => 'Your account has been created. Please sign in.',
+        'register_success_email' => 'Your account has been created. A confirmation email has been sent to :email.',
         'akun_delegasi_berhasil_dibuat_tautan_aktivasi_inst' => 'Your delegate account has been created. An activation link has been sent to your institutional email address.',
         'akun_ini_tidak_memiliki_profil_peserta' => 'This account has no participant profile.',
         'akun_pengguna_staf_berhasil_dibuat_dan_undangan_te' => 'The user/staff account has been created and an invitation has been sent.',
