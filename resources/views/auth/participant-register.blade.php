@@ -3,34 +3,33 @@
 @php $R = trans('asic-auth.split'); @endphp
 
 @section('content')
-<span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F4EA] px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary"><span class="material-symbols-outlined text-[16px]">person_add</span>{{ __('asic-auth.participant_portal') }}</span>
-<h1 class="mt-3 font-serif text-[32px] font-semibold leading-tight text-[#182820]">{{ $R['register_title'] }}</h1>
-<p class="mt-1.5 text-[15px] text-on-surface-variant">{{ $R['register_desc'] }}</p>
+<h1 class="font-serif text-[30px] font-semibold leading-tight text-[#182820]">{{ $R['register_title'] }}</h1>
+<p class="mt-1 text-[15px] text-on-surface-variant">{{ $R['register_desc'] }}</p>
 
-<form action="{{ route('api.register') }}" method="POST" data-asic-api-form data-success-redirect="{{ route('auth.participant.login') }}" class="mt-6 grid gap-4 sm:grid-cols-2">
+<form action="{{ route('api.register') }}" method="POST" data-asic-api-form data-success-redirect="{{ route('auth.participant.login') }}" class="mt-5 grid gap-x-4 gap-y-3 sm:grid-cols-2">
     @csrf
     <p data-form-error role="alert" class="hidden rounded-lg bg-error-container px-3 py-2 text-sm font-semibold text-on-error-container sm:col-span-2"></p>
-    <label class="block text-sm font-semibold sm:col-span-2">{{ $R['full_name'] }}
-        <input name="full_name" required maxlength="150" autocomplete="name" placeholder="{{ $R['full_name_ph'] }}" class="mt-1.5 w-full">
+    <label class="block text-sm font-semibold">{{ $R['full_name'] }}
+        <input name="full_name" required maxlength="150" autocomplete="name" placeholder="{{ $R['full_name_ph'] }}" class="mt-1 w-full">
     </label>
     <label class="block text-sm font-semibold">{{ __('asic-auth.email_label') }}
-        <input name="email" type="email" required maxlength="100" autocomplete="email" placeholder="nama@institusi.ac.id" class="mt-1.5 w-full">
-    </label>
-    <label class="block text-sm font-semibold">{{ $R['phone'] }}
-        <input name="phone" maxlength="20" autocomplete="tel" placeholder="+62 812…" class="mt-1.5 w-full">
+        <input name="email" type="email" required maxlength="100" autocomplete="email" placeholder="nama@institusi.ac.id" class="mt-1 w-full">
     </label>
     <label class="block text-sm font-semibold">{{ $R['affiliation'] }}
-        <input name="affiliation" maxlength="150" autocomplete="organization" placeholder="{{ $R['affiliation_ph'] }}" class="mt-1.5 w-full">
+        <input name="affiliation" maxlength="150" autocomplete="organization" placeholder="{{ $R['affiliation_ph'] }}" class="mt-1 w-full">
+    </label>
+    <label class="block text-sm font-semibold">{{ $R['phone'] }}
+        <input name="phone" maxlength="20" autocomplete="tel" placeholder="+62 812…" class="mt-1 w-full">
     </label>
     <label class="block text-sm font-semibold">{{ __('asic-auth.country_label') }}
-        <input name="country" required maxlength="100" value="Indonesia" autocomplete="country-name" class="mt-1.5 w-full">
+        <input name="country" required maxlength="100" value="Indonesia" autocomplete="country-name" aria-describedby="country-help" class="mt-1 w-full">
     </label>
-    <p class="-mt-2 text-xs text-on-surface-variant sm:col-span-2">{{ __('asic-auth.country_help') }}</p>
+    <p id="country-help" class="flex items-end gap-2 pb-2.5 text-xs leading-snug text-on-surface-variant"><span class="material-symbols-outlined text-[18px] text-primary" aria-hidden="true">payments</span>{{ __('asic-auth.country_help') }}</p>
     <label class="block text-sm font-semibold">{{ __('asic-auth.password_label') }}
-        <input name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="{{ $R['password_ph'] }}" class="mt-1.5 w-full">
+        <input name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="{{ $R['password_ph'] }}" class="mt-1 w-full">
     </label>
     <label class="block text-sm font-semibold">{{ $R['password_confirm'] }}
-        <input name="password_confirmation" type="password" required minlength="8" autocomplete="new-password" class="mt-1.5 w-full">
+        <input name="password_confirmation" type="password" required minlength="8" autocomplete="new-password" class="mt-1 w-full">
     </label>
     <label class="flex items-start gap-2.5 text-sm text-on-surface-variant sm:col-span-2">
         <input name="agree_terms" type="checkbox" value="1" required class="mt-0.5">
@@ -44,5 +43,5 @@
         {{ $R['create_account'] }}<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
     </button>
 </form>
-<p class="mt-6 text-center text-[15px] text-on-surface-variant">{{ $R['have_account'] }} <a href="{{ route('auth.participant.login') }}" class="font-bold text-primary hover:underline">{{ __('asic-auth.sign_in_btn') }}</a></p>
+<p class="mt-4 text-center text-[15px] text-on-surface-variant">{{ $R['have_account'] }} <a href="{{ route('auth.participant.login') }}" class="font-bold text-primary hover:underline">{{ __('asic-auth.sign_in_btn') }}</a></p>
 @endsection

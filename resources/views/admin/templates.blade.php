@@ -58,7 +58,7 @@
             <article class="grid gap-3 rounded-xl border border-surface-container-high bg-surface-container-lowest p-4 md:grid-cols-[14rem_1fr_auto]">
                 <div><p class="font-semibold" x-text="types[row.jenis_dokumen] || row.jenis_dokumen"></p><span x-show="row.bawaan" class="rounded-full bg-surface-container px-2 py-0.5 text-[11px]">{{ $t['builtin'] }}</span></div>
                 <label class="text-sm"><span class="sr-only">{{ $t['format'] }}</span><input x-model="row.format_nomor" maxlength="100" class="w-full rounded-lg border-surface-container-highest font-mono text-sm"><span x-show="fieldErrors[row.jenis_dokumen]" x-text="fieldErrors[row.jenis_dokumen]" class="text-xs text-error"></span></label>
-                <div class="flex gap-2 text-sm"><button type="button" @click="saveFormat(row)" :disabled="saving" class="rounded-lg bg-primary px-3 py-2 font-semibold text-white disabled:opacity-40">{{ $t['save'] }}</button><a :href="'/api/document-templates/preview/' + row.jenis_dokumen + '?id_event=' + idEvent" target="_blank" rel="noopener" class="rounded-lg border px-3 py-2">{{ $t['preview'] }}</a></div>
+                <div class="flex gap-2 text-sm"><button type="button" @click="saveFormat(row)" :disabled="saving" class="rounded-lg bg-primary px-3 py-2 font-semibold text-white disabled:opacity-40">{{ $t['save'] }}</button><a :href="'/api/document-templates/preview/' + row.jenis_dokumen + '?id_event=' + idEvent" target="_blank" rel="noopener" class="act-btn"><span class="material-symbols-outlined" aria-hidden="true">visibility</span>{{ $t['preview'] }}</a></div>
             </article>
         </template>
         <aside class="rounded-xl bg-surface-container-low p-4 text-sm">
@@ -83,7 +83,7 @@
         <template x-for="row in rows" :key="row.id_template">
             <article class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-surface-container-high bg-surface-container-lowest p-4 text-sm">
                 <div><p class="font-semibold" x-text="row.nama_template"></p><p class="text-xs text-on-surface-variant" x-text="[types[row.jenis_dokumen], subtypes[row.subjenis], (row.bahasa || '').toUpperCase(), row.versi ? 'v' + row.versi : '', row.status_template].filter(Boolean).join(' · ')"></p></div>
-                <div class="flex gap-3"><a :href="'/api/document-templates/' + row.id_template + '/download'" class="font-semibold text-primary underline">{{ $t['download'] }}</a><button type="button" @click="setStatus(row, row.status_template === 'Aktif' ? 'Tidak Aktif' : 'Aktif')" class="underline" x-text="row.status_template === 'Aktif' ? i18n.deactivate : i18n.activate"></button></div>
+                <div class="flex gap-3"><a :href="'/api/document-templates/' + row.id_template + '/download'" class="icon-btn" aria-label="{{ $t['download'] }}"><span class="material-symbols-outlined" aria-hidden="true">download</span></a><button type="button" @click="setStatus(row, row.status_template === 'Aktif' ? 'Tidak Aktif' : 'Aktif')" class="icon-btn icon-btn-muted" :aria-label="row.status_template === 'Aktif' ? i18n.deactivate : i18n.activate"><span class="material-symbols-outlined" aria-hidden="true" x-text="row.status_template === 'Aktif' ? 'toggle_on' : 'toggle_off'"></span></button></div>
             </article>
         </template>
     </section>

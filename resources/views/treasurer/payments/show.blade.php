@@ -39,7 +39,7 @@
         <div><span class="text-sm text-on-surface-variant">Peserta</span><p x-text="invoice?.registration?.participant?.full_name || invoice?.registration?.participant?.user_account?.email"></p></div>
         <div><span class="text-sm text-on-surface-variant">Total</span><p x-text="window.asicMoney(invoice?.total_tagihan, invoice?.mata_uang)"></p></div>
         <div><span class="text-sm text-on-surface-variant">Status</span><p x-text="invoice?.status_pembayaran"></p></div>
-        <template x-if="latestProof"><a class="text-primary underline" target="_blank" :href="'/api/payment-proofs/' + latestProof.id_payment_proof + '/file'">Lihat bukti transfer</a></template>
+        <template x-if="latestProof"><a class="act-btn" target="_blank" rel="noopener" :href="'/api/payment-proofs/' + latestProof.id_payment_proof + '/file'"><span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>Lihat bukti transfer</a></template>
         <div x-show="invoice?.status_pembayaran === 'Menunggu Verifikasi' && latestProof" class="flex gap-3">
             <button type="button" :disabled="busy" @click="verify(true)" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">Verifikasi</button>
             <button type="button" :disabled="busy" @click="verify(false)" class="rounded-lg border border-error px-4 py-2 text-sm font-semibold text-error">Tolak</button>

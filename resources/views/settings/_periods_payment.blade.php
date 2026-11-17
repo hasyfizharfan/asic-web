@@ -55,7 +55,7 @@
             <template x-for="row in periods" :key="row.id_period">
                 <li class="flex flex-wrap items-center justify-between gap-2 py-2">
                     <span><strong x-text="row.nama_periode"></strong> <span class="text-xs text-on-surface-variant" x-text="(row.nama_event || '') + ' · ' + asicDate(row.tanggal_mulai) + ' – ' + asicDate(row.tanggal_selesai) + ' · ' + (row.status_periode === 'Aktif' ? i18n.active : i18n.inactive)"></span></span>
-                    <span class="space-x-2"><button type="button" @click="editPeriod(row)" class="text-primary underline">{{ $t['edit'] }}</button><button type="button" @click="removePeriod(row)" class="text-error underline">{{ $t['delete'] }}</button></span>
+                    <span class="space-x-2"><button type="button" @click="editPeriod(row)" class="icon-btn" aria-label="{{ $t['edit'] }}"><span class="material-symbols-outlined" aria-hidden="true">edit</span></button><button type="button" @click="removePeriod(row)" class="icon-btn icon-btn-danger" aria-label="{{ $t['delete'] }}"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button></span>
                 </li>
             </template>
         </ul>

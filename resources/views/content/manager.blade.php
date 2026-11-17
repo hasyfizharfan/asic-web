@@ -151,18 +151,18 @@
                             <span x-show="row.translation_complete === false" class="mt-1 inline-block rounded-full bg-tertiary-container px-2 py-0.5 text-[11px] font-semibold text-on-tertiary-container">{{ $m['incomplete_translation'] }}</span>
                         </td>
                         <td class="p-3"><span class="rounded-full bg-surface-container px-2 py-1 text-xs font-semibold" x-text="statuses[row.status] || row.status"></span></td>
-                        <td class="space-x-2 whitespace-nowrap p-3 text-sm">
-                            <template x-if="tab !== 'legal-documents'"><span class="space-x-2">
-                                <button type="button" x-show="tab !== 'photos'" @click="openEdit(row)" class="text-primary underline">{{ $m['edit'] }}</button>
-                                <button type="button" x-show="tab === 'photos'" @click="openEdit(row)" class="text-primary underline">{{ $m['edit'] }}</button>
-                                <button type="button" @click="setStatus(row, row.status === 'Dipublikasikan' ? 'Draft' : 'Dipublikasikan')" class="text-primary underline" x-text="row.status === 'Dipublikasikan' ? i18n.unpublish : i18n.publish"></button>
-                                <button type="button" @click="move(index, -1)" :disabled="index === 0" class="disabled:opacity-30" :aria-label="i18n.move_up">↑</button>
-                                <button type="button" @click="move(index, 1)" :disabled="index === rows.length - 1" class="disabled:opacity-30" :aria-label="i18n.move_down">↓</button>
-                                <button type="button" @click="remove(row)" class="text-error underline">{{ $m['delete'] }}</button>
+                        <td class="whitespace-nowrap p-3 text-sm">
+                            <template x-if="tab !== 'legal-documents'"><span class="icon-btn-group">
+                                <button type="button" x-show="tab !== 'photos'" @click="openEdit(row)" class="icon-btn" aria-label="{{ $m['edit'] }}"><span class="material-symbols-outlined" aria-hidden="true">edit</span></button>
+                                <button type="button" x-show="tab === 'photos'" @click="openEdit(row)" class="icon-btn" aria-label="{{ $m['edit'] }}"><span class="material-symbols-outlined" aria-hidden="true">edit</span></button>
+                                <button type="button" @click="setStatus(row, row.status === 'Dipublikasikan' ? 'Draft' : 'Dipublikasikan')" class="icon-btn icon-btn-muted" :aria-label="row.status === 'Dipublikasikan' ? i18n.unpublish : i18n.publish"><span class="material-symbols-outlined" aria-hidden="true" x-text="row.status === 'Dipublikasikan' ? 'visibility_off' : 'publish'"></span></button>
+                                <button type="button" @click="move(index, -1)" :disabled="index === 0" class="icon-btn icon-btn-muted" :aria-label="i18n.move_up"><span class="material-symbols-outlined" aria-hidden="true">arrow_upward</span></button>
+                                <button type="button" @click="move(index, 1)" :disabled="index === rows.length - 1" class="icon-btn icon-btn-muted" :aria-label="i18n.move_down"><span class="material-symbols-outlined" aria-hidden="true">arrow_downward</span></button>
+                                <button type="button" @click="remove(row)" class="icon-btn icon-btn-danger" aria-label="{{ $m['delete'] }}"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button>
                             </span></template>
-                            <template x-if="tab === 'legal-documents'"><span class="space-x-2">
-                                <button type="button" @click="preview = row" class="text-primary underline">{{ $m['preview'] }}</button>
-                                <template x-if="row.status === 'Draft'"><span class="space-x-2"><button type="button" @click="openEdit(row)" class="text-primary underline">{{ $m['edit'] }}</button><button type="button" @click="publishLegal(row)" class="font-semibold text-primary underline">{{ $m['publish'] }}</button><button type="button" @click="remove(row)" class="text-error underline">{{ $m['delete'] }}</button></span></template>
+                            <template x-if="tab === 'legal-documents'"><span class="icon-btn-group">
+                                <button type="button" @click="preview = row" class="icon-btn" aria-label="{{ $m['preview'] }}"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
+                                <template x-if="row.status === 'Draft'"><span class="icon-btn-group"><button type="button" @click="openEdit(row)" class="icon-btn" aria-label="{{ $m['edit'] }}"><span class="material-symbols-outlined" aria-hidden="true">edit</span></button><button type="button" @click="publishLegal(row)" class="icon-btn" aria-label="{{ $m['publish'] }}"><span class="material-symbols-outlined" aria-hidden="true">publish</span></button><button type="button" @click="remove(row)" class="icon-btn icon-btn-danger" aria-label="{{ $m['delete'] }}"><span class="material-symbols-outlined" aria-hidden="true">delete</span></button></span></template>
                                 <span x-show="row.status !== 'Draft'" class="text-xs text-on-surface-variant">{{ $m['locked'] }}</span>
                             </span></template>
                         </td>
@@ -174,7 +174,7 @@
 
     {{-- Pratinjau dokumen hukum: teks biasa --}}
     <section x-show="preview" class="space-y-2 rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5">
-        <div class="flex justify-between"><h2 class="font-bold" x-text="preview?.judul_id || preview?.judul_en"></h2><button type="button" @click="preview = null" class="text-sm underline">{{ $m['close'] }}</button></div>
+        <div class="flex justify-between"><h2 class="font-bold" x-text="preview?.judul_id || preview?.judul_en"></h2><button type="button" @click="preview = null" class="icon-btn icon-btn-muted" aria-label="{{ $m['close'] }}"><span class="material-symbols-outlined" aria-hidden="true">close</span></button></div>
         <p class="whitespace-pre-line text-sm" x-text="preview?.isi_id"></p>
         <hr class="border-surface-container-high">
         <p class="whitespace-pre-line text-sm" x-text="preview?.isi_en"></p>

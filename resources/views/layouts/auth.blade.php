@@ -42,13 +42,13 @@
 
     {{-- Panel form --}}
     <div class="flex min-h-screen flex-col">
-        <header class="flex items-center justify-between px-5 py-4 sm:px-10">
+        <header class="flex items-center justify-between px-5 py-2.5 sm:px-10">
             <a href="{{ route('portal.landing') }}" class="inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:text-[#168348]">
                 <span class="material-symbols-outlined text-[20px]">arrow_back</span>{{ __('asic-auth.back_to_home') }}
             </a>
             <x-layout.lang-switcher theme="light" />
         </header>
-        <main class="flex flex-1 items-center justify-center px-5 pb-10 sm:px-10">
+        <main class="flex flex-1 items-center justify-center px-5 pb-4 sm:px-10">
             <div class="w-full {{ $formWidth ?? 'max-w-md' }}">
                 @yield('content')
             </div>
