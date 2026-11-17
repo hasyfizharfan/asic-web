@@ -206,4 +206,12 @@ class StatusNotificationTest extends TestCase
         $this->listener('nomail');
         $this->assertCount(0, $transport->messages());
     }
+
+    public function test_reserved_test_domains_get_no_email(): void
+    {
+        $transport = $this->realArrayMailer();
+        config(['asic.skip_reserved_email_domains' => true]);
+        $this->listener('reserved'); // email @example.test
+        $this->assertCount(0, $transport->messages());
+    }
 }
