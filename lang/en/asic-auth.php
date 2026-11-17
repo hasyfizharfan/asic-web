@@ -49,4 +49,15 @@ return [
     'demo_admin_staff' => 'Super Administrator',
     'country_label' => 'Country',
     'country_help' => 'Participants from Indonesia are billed in IDR; participants from other countries are billed in USD.',
+    'split' => [
+        'eyebrow' => '4th Agrifood System International Conference', 'title' => 'One portal for abstracts, payments and certificates.',
+        'staff_title' => 'The ASIC 2027 committee workspace.', 'hybrid' => 'Hybrid: onsite and online',
+        'reviewer_desc' => 'Sign in to review submitted abstracts and record decisions.',
+        'register_title' => 'Create a participant account', 'register_aside' => 'Share your research with scientists from many countries.',
+        'register_desc' => 'One account to submit abstracts, pay and download documents.',
+        'full_name' => 'Full name (with titles)', 'full_name_ph' => 'e.g. Dr. Siti Rahmah, M.Si.', 'phone' => 'Phone / WhatsApp number',
+        'affiliation' => 'Institution / affiliation', 'affiliation_ph' => 'e.g. Universitas Andalas', 'password_ph' => 'At least 8 characters',
+        'password_confirm' => 'Repeat password', 'create_account' => 'Create account', 'have_account' => 'Already have an account?',
+        'reset_title' => 'Reset password', 'reset_desc' => 'Create a new password for your ASIC account.', 'new_password' => 'New password', 'save_password' => 'Save new password',
+    ],
 ];

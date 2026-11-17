@@ -87,4 +87,28 @@ return [
         'sponsor_lead' => 'Support ASIC 2027 as a sponsor or exhibitor and reach agricultural researchers and practitioners from many countries.',
         'sponsor_cta' => 'Propose a partnership',
     ],
+    'footer' => [
+        'about' => 'The international scientific conference of the Faculty of Agriculture, Universitas Andalas, bringing together researchers, practitioners and policymakers for sustainable food systems.',
+        'address' => 'Limau Manis Campus, Padang, West Sumatra, Indonesia',
+        'photo_credit' => 'Illustrative photos: Pexels',
+    ],
+    'v2' => [
+        'stat_edition' => 'Conference edition', 'stat_scopes' => 'Research scopes', 'stat_speakers' => 'Keynote speakers', 'stat_days' => 'Days + field trip',
+        'alt_conference' => 'Plenary session at the conference', 'alt_lab' => 'Smart farming research in a laboratory', 'alt_farmers' => 'Farmers planting rice in a paddy field',
+        'alt_jamgadang' => 'Jam Gadang, Bukittinggi', 'alt_farmer' => 'A farmer in a rice field',
+        'theme_label' => 'ASIC 2027 theme', 'theme_default' => 'Integrating Smart Farming into Sustainable Agriculture: Innovation, Collaboration, and Resilience',
+        'cfa_card_title' => 'Share your research at an international forum.',
+        'fees_lead' => 'Choose your attendance mode and currency. Prices follow the period currently in effect.',
+        'currency' => 'Currency', 'domestic' => 'Indonesia', 'international' => 'International',
+        'type_desc' => ['Student' => 'Active undergraduate and graduate students', 'Regular' => 'Lecturers, researchers, practitioners and public'],
+        'base_note' => 'Without publication', 'until' => 'valid until', 'with_proceedings' => 'With proceedings', 'with_journal' => 'With journal', 'period_price' => 'Price',
+        'included' => 'What you get',
+        'includes' => [
+            'Luring' => ['Participant or presenter certificate', 'Seminar kit and conference book', 'Lunch and two coffee breaks', 'Access to plenary and parallel sessions'],
+            'Daring' => ['E-certificate', 'E-conference book', 'Hybrid access to plenary and parallel sessions'],
+        ],
+        'publication_eyebrow' => 'Outputs', 'facilities_eyebrow' => 'Facilities',
+        'fieldtrip_title' => 'Explore West Sumatra', 'fieldtrip_desc' => 'A one-day field visit after the conference for registered participants.',
+        'sponsor_title' => 'Get in front of the international agrifood community.',
+    ],
 ];

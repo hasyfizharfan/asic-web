@@ -87,4 +87,28 @@ return [
         'sponsor_lead' => 'Dukung ASIC 2027 sebagai sponsor atau peserta pameran dan jangkau peneliti serta praktisi pertanian dari berbagai negara.',
         'sponsor_cta' => 'Ajukan kerja sama',
     ],
+    'footer' => [
+        'about' => 'Konferensi ilmiah internasional Fakultas Pertanian Universitas Andalas yang mempertemukan peneliti, praktisi, dan pembuat kebijakan untuk sistem pangan berkelanjutan.',
+        'address' => 'Kampus Limau Manis, Padang, Sumatera Barat, Indonesia',
+        'photo_credit' => 'Foto ilustrasi: Pexels',
+    ],
+    'v2' => [
+        'stat_edition' => 'Edisi konferensi', 'stat_scopes' => 'Ruang lingkup riset', 'stat_speakers' => 'Pembicara utama', 'stat_days' => 'Hari + field trip',
+        'alt_conference' => 'Suasana sesi pleno konferensi', 'alt_lab' => 'Riset pertanian cerdas di laboratorium', 'alt_farmers' => 'Petani menanam padi di sawah',
+        'alt_jamgadang' => 'Jam Gadang, Bukittinggi', 'alt_farmer' => 'Petani di tengah sawah',
+        'theme_label' => 'Tema ASIC 2027', 'theme_default' => 'Integrating Smart Farming into Sustainable Agriculture: Innovation, Collaboration, and Resilience',
+        'cfa_card_title' => 'Bagikan riset Anda di forum internasional.',
+        'fees_lead' => 'Pilih mode kehadiran dan mata uang. Harga tampil sesuai periode yang sedang berlaku.',
+        'currency' => 'Mata uang', 'domestic' => 'Indonesia', 'international' => 'Internasional',
+        'type_desc' => ['Student' => 'Mahasiswa S1, S2, dan S3 aktif', 'Regular' => 'Dosen, peneliti, praktisi, dan umum'],
+        'base_note' => 'Tanpa publikasi', 'until' => 'berlaku s.d.', 'with_proceedings' => 'Dengan prosiding', 'with_journal' => 'Dengan jurnal', 'period_price' => 'Harga',
+        'included' => 'Yang Anda dapatkan',
+        'includes' => [
+            'Luring' => ['Sertifikat peserta atau pemakalah', 'Seminar kit dan conference book', 'Makan siang dan dua kali coffee break', 'Akses sesi pleno dan paralel'],
+            'Daring' => ['E-sertifikat', 'E-conference book', 'Akses hybrid sesi pleno dan paralel'],
+        ],
+        'publication_eyebrow' => 'Luaran', 'facilities_eyebrow' => 'Fasilitas',
+        'fieldtrip_title' => 'Jelajahi Sumatera Barat', 'fieldtrip_desc' => 'Kunjungan lapangan sehari setelah konferensi untuk peserta yang mendaftar.',
+        'sponsor_title' => 'Tampil di depan komunitas agrifood internasional.',
+    ],
 ];

@@ -1,17 +1,10 @@
-<nav class="bg-[#0B5D2E] px-6 py-5 text-white lg:px-16">
-    <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
-        <a href="{{ route('portal.landing') }}" class="font-poppins text-2xl font-bold">ASIC 2027</a>
-        <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px] font-medium">
-            <a href="{{ route('portal.landing') }}" class="text-white/85 hover:text-white">{{ __('asic-public.nav.home') }}</a>
-            <a href="{{ route('public.downloads') }}" class="text-white/85 hover:text-white">{{ __('asic-documents.public.title') }}</a>
-            <a href="{{ route('public.archive') }}" class="text-white/85 hover:text-white">{{ __('asic-documents.archive.title') }}</a>
-            @foreach(($publicPages ?? []) as $name => $available)
-                @if($available)<a href="{{ route('public.'.$name) }}" class="text-white/85 hover:text-white">{{ __('asic-public.nav.'.$name) }}</a>@endif
-            @endforeach
-            <span class="flex gap-1 rounded-xl border border-white/30 p-1 text-[13px] font-bold">
-                <a href="{{ route('portal.language', 'id') }}" class="rounded-lg px-3 py-1.5 {{ app()->getLocale() === 'id' ? 'bg-white text-[#0B5D2E]' : 'text-white/80' }}">ID</a>
-                <a href="{{ route('portal.language', 'en') }}" class="rounded-lg px-3 py-1.5 {{ app()->getLocale() === 'en' ? 'bg-white text-[#0B5D2E]' : 'text-white/80' }}">EN</a>
-            </span>
-        </div>
-    </div>
-</nav>
+{{-- Navbar halaman publik non-landing: pil melayang + baris tautan informasi. --}}
+@include('public.partials.navbar', ['overlay' => false])
+<div class="h-24" aria-hidden="true"></div>
+<div class="mx-auto flex max-w-7xl flex-wrap gap-2 px-4 pb-2 text-sm">
+    <a href="{{ route('public.downloads') }}" class="rounded-full bg-white px-4 py-2 font-semibold text-[#0B5D2E] ring-1 ring-[#dce4da] hover:ring-[#0B5D2E]">{{ __('asic-documents.public.title') }}</a>
+    <a href="{{ route('public.archive') }}" class="rounded-full bg-white px-4 py-2 font-semibold text-[#0B5D2E] ring-1 ring-[#dce4da] hover:ring-[#0B5D2E]">{{ __('asic-documents.archive.title') }}</a>
+    @foreach(($publicPages ?? []) as $name => $available)
+        @if($available)<a href="{{ route('public.'.$name) }}" class="rounded-full bg-white px-4 py-2 font-semibold text-[#0B5D2E] ring-1 ring-[#dce4da] hover:ring-[#0B5D2E] {{ request()->routeIs('public.'.$name) ? 'bg-[#E6F4EA] ring-[#0B5D2E]' : '' }}">{{ __('asic-public.nav.'.$name) }}</a>@endif
+    @endforeach
+</div>

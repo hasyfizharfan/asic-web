@@ -42,6 +42,7 @@ class PublicPortalController extends Controller
             'event' => $event,
             'feeRows' => $feeRows,
             'feeTable' => $this->feeTable($fees),
+            'feeCards' => $this->feeCards($fees),
             'speakers' => $event ? Speaker::query()->where('id_event', $event->id_event)->orderBy('id_speaker')->get() : collect(),
             'programDays' => $event ? $this->programDays(EventSchedule::query()->where('id_event', $event->id_event)->orderBy('tanggal')->orderBy('waktu_mulai')->get()) : collect(),
             'scopeBlocks' => $blocks->where('section', 'scope')->values(),
@@ -95,6 +96,54 @@ class PublicPortalController extends Controller
             'periods' => $periods->map(fn ($p) => ['name' => $p->nama_periode, 'active' => $p->status_periode === 'Aktif', 'until' => $p->tanggal_selesai])->all(),
             'rows' => $rows,
         ];
+    }
+
+    /**
+     * Kartu harga: [kategori][mode][mata uang] => periode berlaku (aktif, atau terdekat), harga dasar tanpa publikasi,
+     * total dengan prosiding/jurnal, dan harga dasar di periode lain (mis. Regular).
+     *
+     * @return array<string, array<string, array<string, array<string, mixed>>>>
+     */
+    private function feeCards(Collection $fees): array
+    {
+        $cards = [];
+        $periods = $fees->map(fn (RegistrationFee $f) => $f->registrationPeriod)->filter()->unique('id_period')->sortBy('tanggal_mulai')->values();
+        foreach (['Student', 'Regular'] as $type) {
+            foreach (['Luring', 'Daring'] as $mode) {
+                foreach (Currency::ALL as $currency) {
+                    $group = $fees->filter(fn (RegistrationFee $f) => $f->registration_type === $type && $f->attendance_mode === $mode && ($f->mata_uang ?? Currency::IDR) === $currency);
+                    if ($group->isEmpty()) {
+                        continue;
+                    }
+                    $byPeriod = [];
+                    foreach ($periods as $period) {
+                        $inPeriod = $group->where('id_period', $period->id_period);
+                        if ($inPeriod->isEmpty()) {
+                            continue;
+                        }
+                        $price = fn (string $pub) => ($fee = $inPeriod->firstWhere('tujuan_publikasi', $pub)) ? (float) $fee->finalAmount() : null;
+                        $base = $price('Tidak') ?? (float) $inPeriod->min(fn ($f) => (float) $f->finalAmount());
+                        $byPeriod[] = [
+                            'name' => $period->nama_periode, 'active' => $period->status_periode === 'Aktif', 'until' => $period->tanggal_selesai,
+                            'base' => Currency::format($base, $currency), 'base_raw' => $base,
+                            'proceedings' => ($v = $price('Prosiding')) !== null ? Currency::format($v, $currency) : null,
+                            'journal' => ($v = $price('Jurnal')) !== null ? Currency::format($v, $currency) : null,
+                        ];
+                    }
+                    if (! $byPeriod) {
+                        continue;
+                    }
+                    $currentIndex = collect($byPeriod)->search(fn ($p) => $p['active']);
+                    $currentIndex = $currentIndex === false ? 0 : $currentIndex;
+                    $cards[$type][$mode][$currency] = [
+                        'current' => $byPeriod[$currentIndex],
+                        'others' => array_values(array_filter($byPeriod, fn ($p, $i) => $i !== $currentIndex, ARRAY_FILTER_USE_BOTH)),
+                    ];
+                }
+            }
+        }
+
+        return $cards;
     }
 
     /** @return Collection<string, Collection<int, EventSchedule>> */

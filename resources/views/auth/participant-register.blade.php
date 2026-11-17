@@ -1,52 +1,48 @@
-@extends('layouts.auth', ['title' => 'Daftar Peserta - ASIC 2027'])
+@extends('layouts.auth', ['title' => __('asic-auth.split.register_title') . ' - ASIC 2027', 'photo' => 'images/asic/photos/farmers-planting.jpg', 'asideTitle' => __('asic-auth.split.register_aside'), 'formWidth' => 'max-w-xl'])
+
+@php $R = trans('asic-auth.split'); @endphp
 
 @section('content')
-<main class="mx-auto w-full max-w-2xl rounded-3xl border border-surface-container-highest bg-surface-container-lowest p-6 shadow-2xl sm:p-10">
-    <header class="mt-5 space-y-2">
-        <p class="text-xs font-bold uppercase tracking-wider text-primary">Portal Peserta</p>
-        <h1 class="text-2xl font-bold text-on-surface sm:text-3xl">Buat akun peserta</h1>
-        <p class="text-sm text-on-surface-variant">Buat akun terlebih dahulu. Setelah masuk, Anda dapat memilih event dan mendaftar dengan fee aktif.</p>
-    </header>
+<span class="inline-flex items-center gap-1.5 rounded-full bg-[#E6F4EA] px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary"><span class="material-symbols-outlined text-[16px]">person_add</span>{{ __('asic-auth.participant_portal') }}</span>
+<h1 class="mt-3 font-serif text-[32px] font-semibold leading-tight text-[#182820]">{{ $R['register_title'] }}</h1>
+<p class="mt-1.5 text-[15px] text-on-surface-variant">{{ $R['register_desc'] }}</p>
 
-    <form action="{{ route('api.register') }}" method="POST" data-asic-api-form data-success-redirect="{{ route('auth.participant.login') }}" class="mt-7 space-y-4">
-        @csrf
-        <p data-form-error role="alert" class="hidden text-sm font-semibold text-error"></p>
-        <label class="block text-sm font-semibold">Nama lengkap
-            <input name="full_name" required maxlength="150" autocomplete="name" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
-        </label>
-        <label class="block text-sm font-semibold">Email
-            <input name="email" type="email" required maxlength="100" autocomplete="email" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
-        </label>
-        <label class="block text-sm font-semibold">Institusi / afiliasi
-            <input name="affiliation" maxlength="150" autocomplete="organization" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
-        </label>
-        <label class="block text-sm font-semibold">{{ __('asic-auth.country_label') }}
-            <input name="country" required maxlength="100" value="Indonesia" autocomplete="country-name" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
-            <span class="mt-1 block text-xs font-normal text-on-surface-variant">{{ __('asic-auth.country_help') }}</span>
-        </label>
-        <label class="block text-sm font-semibold">Nomor telepon
-            <input name="phone" maxlength="20" autocomplete="tel" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
-        </label>
-        <div class="grid gap-4 sm:grid-cols-2">
-            <label class="block text-sm font-semibold">Kata sandi
-                <input name="password" type="password" required minlength="8" autocomplete="new-password" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
-            </label>
-            <label class="block text-sm font-semibold">Konfirmasi kata sandi
-                <input name="password_confirmation" type="password" required minlength="8" autocomplete="new-password" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
-            </label>
-        </div>
-        <label class="flex items-start gap-2 text-sm text-on-surface-variant">
-            <input name="agree_terms" type="checkbox" value="1" required class="mt-1 rounded border-surface-container-highest">
-            <span>{!! __('asic-public.register_terms', [
-                'terms' => '<a href="'.e(route('public.terms')).'" target="_blank" rel="noopener" class="font-semibold text-primary underline">'.e(__('asic-public.nav.terms')).'</a>',
-                'privacy' => '<a href="'.e(route('public.privacy')).'" target="_blank" rel="noopener" class="font-semibold text-primary underline">'.e(__('asic-public.nav.privacy')).'</a>',
-                'ethics' => '<a href="'.e(route('public.ethics')).'" target="_blank" rel="noopener" class="font-semibold text-primary underline">'.e(__('asic-public.nav.ethics')).'</a>',
-            ]) !!}</span>
-        </label>
-        <button type="submit" class="w-full rounded-xl bg-primary px-5 py-3 text-sm font-bold text-white">Buat akun</button>
-    </form>
-    <p class="mt-6 border-t border-surface-container-highest pt-5 text-center text-sm text-on-surface-variant">
-        Sudah punya akun? <a href="{{ route('auth.participant.login') }}" class="font-bold text-primary">Masuk</a>
-    </p>
-</main>
+<form action="{{ route('api.register') }}" method="POST" data-asic-api-form data-success-redirect="{{ route('auth.participant.login') }}" class="mt-6 grid gap-4 sm:grid-cols-2">
+    @csrf
+    <p data-form-error role="alert" class="hidden rounded-lg bg-error-container px-3 py-2 text-sm font-semibold text-on-error-container sm:col-span-2"></p>
+    <label class="block text-sm font-semibold sm:col-span-2">{{ $R['full_name'] }}
+        <input name="full_name" required maxlength="150" autocomplete="name" placeholder="{{ $R['full_name_ph'] }}" class="mt-1.5 w-full">
+    </label>
+    <label class="block text-sm font-semibold">{{ __('asic-auth.email_label') }}
+        <input name="email" type="email" required maxlength="100" autocomplete="email" placeholder="nama@institusi.ac.id" class="mt-1.5 w-full">
+    </label>
+    <label class="block text-sm font-semibold">{{ $R['phone'] }}
+        <input name="phone" maxlength="20" autocomplete="tel" placeholder="+62 812…" class="mt-1.5 w-full">
+    </label>
+    <label class="block text-sm font-semibold">{{ $R['affiliation'] }}
+        <input name="affiliation" maxlength="150" autocomplete="organization" placeholder="{{ $R['affiliation_ph'] }}" class="mt-1.5 w-full">
+    </label>
+    <label class="block text-sm font-semibold">{{ __('asic-auth.country_label') }}
+        <input name="country" required maxlength="100" value="Indonesia" autocomplete="country-name" class="mt-1.5 w-full">
+    </label>
+    <p class="-mt-2 text-xs text-on-surface-variant sm:col-span-2">{{ __('asic-auth.country_help') }}</p>
+    <label class="block text-sm font-semibold">{{ __('asic-auth.password_label') }}
+        <input name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="{{ $R['password_ph'] }}" class="mt-1.5 w-full">
+    </label>
+    <label class="block text-sm font-semibold">{{ $R['password_confirm'] }}
+        <input name="password_confirmation" type="password" required minlength="8" autocomplete="new-password" class="mt-1.5 w-full">
+    </label>
+    <label class="flex items-start gap-2.5 text-sm text-on-surface-variant sm:col-span-2">
+        <input name="agree_terms" type="checkbox" value="1" required class="mt-0.5">
+        <span>{!! __('asic-public.register_terms', [
+            'terms' => '<a href="'.e(route('public.terms')).'" target="_blank" rel="noopener" class="font-semibold text-primary underline">'.e(__('asic-public.nav.terms')).'</a>',
+            'privacy' => '<a href="'.e(route('public.privacy')).'" target="_blank" rel="noopener" class="font-semibold text-primary underline">'.e(__('asic-public.nav.privacy')).'</a>',
+            'ethics' => '<a href="'.e(route('public.ethics')).'" target="_blank" rel="noopener" class="font-semibold text-primary underline">'.e(__('asic-public.nav.ethics')).'</a>',
+        ]) !!}</span>
+    </label>
+    <button type="submit" class="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-primary text-[15px] font-bold text-white transition hover:bg-[#168348] sm:col-span-2">
+        {{ $R['create_account'] }}<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+    </button>
+</form>
+<p class="mt-6 text-center text-[15px] text-on-surface-variant">{{ $R['have_account'] }} <a href="{{ route('auth.participant.login') }}" class="font-bold text-primary hover:underline">{{ __('asic-auth.sign_in_btn') }}</a></p>
 @endsection

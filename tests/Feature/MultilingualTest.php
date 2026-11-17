@@ -55,10 +55,10 @@ class MultilingualTest extends TestCase
     public function test_language_choice_persists_across_requests(): void
     {
         $this->get('/lang/en')->assertRedirect();
-        $this->get('/login')->assertOk()->assertSee('<html lang="en"', false)->assertSee(__('asic-auth.tagline', [], 'en'));
+        $this->get('/login')->assertOk()->assertSee('<html lang="en"', false)->assertSee(__('asic-auth.split.title', [], 'en'));
 
         $this->get('/lang/id')->assertRedirect();
-        $this->get('/login')->assertOk()->assertSee('<html lang="id"', false)->assertSee(__('asic-auth.tagline', [], 'id'));
+        $this->get('/login')->assertOk()->assertSee('<html lang="id"', false)->assertSee(__('asic-auth.split.title', [], 'id'));
     }
 
     public function test_invalid_locale_is_not_found(): void
