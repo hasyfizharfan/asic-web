@@ -43,5 +43,8 @@
         {{ $R['create_account'] }}<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
     </button>
 </form>
-<p class="mt-4 text-center text-[15px] text-on-surface-variant">{{ $R['have_account'] }} <a href="{{ route('auth.participant.login') }}" class="font-bold text-primary hover:underline">{{ __('asic-auth.sign_in_btn') }}</a></p>
+<div class="mt-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+    <x-ui.spam-note compact class="inline-flex items-center gap-1 text-[13px]" />
+    <p class="text-[15px] text-on-surface-variant">{{ $R['have_account'] }} <a href="{{ route('auth.participant.login') }}" class="font-bold text-primary hover:underline">{{ __('asic-auth.sign_in_btn') }}</a></p>
+</div>
 @endsection

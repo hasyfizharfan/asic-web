@@ -9,6 +9,8 @@ return [
     'edit' => 'Edit',
     'preview' => 'View',
     'open_new_tab' => 'Open in new tab',
+    'email_spam_short' => 'Check Spam if our emails do not arrive.',
+    'email_spam_note' => 'ASIC emails are sent from :from. If you cannot find them in your Inbox, check the Spam or Promotions folder and mark them "Not spam" so future emails reach your Inbox.',
     'download' => 'Download',
     'upload' => 'Upload',
     'submit' => 'Submit',

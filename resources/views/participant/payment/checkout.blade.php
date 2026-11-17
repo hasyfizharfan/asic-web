@@ -78,6 +78,7 @@
                         <p class="mt-0.5 text-2xl font-bold text-primary" x-text="formatAmount(invoice.total_tagihan)"></p>
                         <p class="mt-1 text-xs text-on-surface-variant">{{ $t['amount_note'] }}</p>
                     </div>
+                    <x-ui.spam-note />
                     <label class="block text-sm font-semibold">{{ $t['proof'] }}
                         <input type="file" name="file_bukti" accept=".jpg,.jpeg,.png,.pdf" required class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
                     </label>

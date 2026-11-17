@@ -208,6 +208,7 @@
 
                 <section class="rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5">
                     <h2 class="flex items-center gap-2 font-bold"><span class="material-symbols-outlined text-primary">notifications</span>{{ $t['latest_notifications'] }}</h2>
+                    <x-ui.spam-note class="mt-3" />
                     <ul class="mt-3 space-y-3">
                         @forelse($latestNotifications as $note)
                             <li class="border-b border-surface-container-highest pb-3 last:border-0 last:pb-0">

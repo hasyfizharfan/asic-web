@@ -9,6 +9,8 @@ return [
     'edit' => 'Ubah',
     'preview' => 'Lihat',
     'open_new_tab' => 'Buka di tab baru',
+    'email_spam_short' => 'Cek folder Spam bila email kami tidak masuk.',
+    'email_spam_note' => 'Email dari ASIC dikirim dari :from. Bila tidak ada di Kotak Masuk, periksa folder Spam atau Promosi, lalu tandai "Bukan spam" agar email berikutnya masuk Kotak Masuk.',
     'download' => 'Unduh',
     'upload' => 'Unggah',
     'submit' => 'Kirim',
