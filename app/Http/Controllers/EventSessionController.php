@@ -110,7 +110,7 @@ class EventSessionController extends Controller
             $svgContent = QrCode::format('svg')
                 ->size(350)
                 ->errorCorrection('H')
-                ->generate($token);
+                ->generate(EventSession::checkinUrlFor($token));
             Storage::disk('public')->put($qrRelativePath, (string) $svgContent);
         } else {
             $svgContent = '<svg xmlns="http://www.w3.org/2000/svg" width="350" height="350" viewBox="0 0 350 350">'

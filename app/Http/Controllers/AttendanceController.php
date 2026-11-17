@@ -213,8 +213,8 @@ class AttendanceController extends Controller
     )]
     public function submitSessionQr(Request $request): JsonResponse
     {
-        $validated = $request->validate(['qr_token' => ['required', 'string', 'max:100']]);
-        $session = EventSession::with('event')->where('qr_token', $validated['qr_token'])->first();
+        $validated = $request->validate(['qr_token' => ['required', 'string', 'max:500']]);
+        $session = EventSession::with('event')->where('qr_token', EventSession::tokenFromScan($validated['qr_token']))->first();
         if (! $session) {
             return response()->json(['success' => false, 'message' => __('asic-api.messages.token_qr_sesi_tidak_valid')], Response::HTTP_UNPROCESSABLE_ENTITY);
         }

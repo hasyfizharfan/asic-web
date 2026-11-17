@@ -97,6 +97,34 @@ class EventSession extends Model
     /**
      * Accessor URL QR Code sesi dari Storage public.
      */
+    /**
+     * Isi QR sesi berupa tautan check-in. Dipindai dengan kamera di website maupun kamera HP biasa,
+     * keduanya membuka halaman kehadiran peserta dan langsung mencatat hadir.
+     */
+    public static function checkinUrlFor(string $token): string
+    {
+        return url('/participant/attendance').'?sesi='.rawurlencode($token);
+    }
+
+    public function checkinUrl(): string
+    {
+        return self::checkinUrlFor((string) $this->qr_token);
+    }
+
+    /** Ambil token sesi dari hasil pindai (tautan check-in atau token mentah). */
+    public static function tokenFromScan(string $value): string
+    {
+        $value = trim($value);
+        if (str_contains($value, 'sesi=')) {
+            parse_str((string) parse_url($value, PHP_URL_QUERY), $params);
+            if (! empty($params['sesi']) && is_string($params['sesi'])) {
+                return trim($params['sesi']);
+            }
+        }
+
+        return $value;
+    }
+
     public function getQrCodeUrlAttribute(): ?string
     {
         if ($this->qr_code_path && Storage::disk('public')->exists($this->qr_code_path)) {

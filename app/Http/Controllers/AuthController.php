@@ -239,7 +239,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         $user->load(['role', 'participant']);
-        $redirectUrl = $this->resolveRedirectUrl($user);
+        $redirectUrl = $this->intendedUrl((string) $request->session()->pull('url.intended', ''), $user) ?? $this->resolveRedirectUrl($user);
 
         if ($request->expectsJson()) {
             return response()->json([
@@ -451,6 +451,19 @@ class AuthController extends Controller
     /**
      * Tentukan URL redirect sesuai peran pengguna.
      */
+    /** Tautan tujuan sebelum login hanya dipakai bila berada di portal milik peran akun tersebut. */
+    protected function intendedUrl(string $intended, UserAccount $user): ?string
+    {
+        if ($intended === '' || ! str_starts_with($intended, url('/').'/')) {
+            return null;
+        }
+        $home = (string) parse_url($this->resolveRedirectUrl($user), PHP_URL_PATH);
+        $prefix = '/'.explode('/', trim($home, '/'))[0].'/';
+        $path = (string) parse_url($intended, PHP_URL_PATH);
+
+        return $prefix !== '//' && str_starts_with($path.'/', $prefix) ? $intended : null;
+    }
+
     protected function resolveRedirectUrl(UserAccount $user): string
     {
         $roleName = $user->role?->nama_role;

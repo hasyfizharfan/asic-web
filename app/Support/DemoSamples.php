@@ -263,7 +263,7 @@ class DemoSamples
     {
         if (class_exists(QrCode::class)) {
             try {
-                return (string) QrCode::format('svg')->size(350)->errorCorrection('H')->generate($token);
+                return (string) QrCode::format('svg')->size(350)->errorCorrection('H')->generate(EventSession::checkinUrlFor($token));
             } catch (Throwable) {
             }
         }

@@ -36,6 +36,18 @@
         this.busy = false; this.qrToken = '';
         this.show(response);
     },
+    cameraOn: false, cameraError: '',
+    async openCamera() {
+        this.cameraError = ''; this.cameraOn = true;
+        await this.$nextTick();
+        try {
+            await window.asicScanner.start('rereg-reader', async (text) => { this.qrToken = String(text || '').trim(); await this.scan(); }, true);
+        } catch (error) {
+            this.cameraOn = false;
+            this.cameraError = this.i18n[window.asicScanner.errorMessage(error)] || this.i18n.camera_failed;
+        }
+    },
+    async closeCamera() { await window.asicScanner.stop(); this.cameraOn = false; },
     async manual() {
         if (!this.idEvent || !this.selected) return;
         this.busy = true; this.result = null;
@@ -67,7 +79,14 @@
 
     <section class="grid gap-5 lg:grid-cols-2">
         <article class="space-y-4 rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5 shadow-sm">
-            <h2 class="font-bold">{{ $t('scan_title') }}</h2>
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="font-bold">{{ $t('scan_title') }}</h2>
+                <button type="button" x-show="!cameraOn" @click="openCamera()" :disabled="!idEvent" class="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><span class="material-symbols-outlined text-[18px]">photo_camera</span>{{ $t('camera_open') }}</button>
+                <button type="button" x-show="cameraOn" @click="closeCamera()" class="inline-flex items-center gap-1.5 rounded-xl border border-surface-container-highest px-4 py-2 text-sm font-bold"><span class="material-symbols-outlined text-[18px]">close</span>{{ $t('camera_close') }}</button>
+            </div>
+            <div x-show="cameraOn" class="overflow-hidden rounded-xl bg-black"><div id="rereg-reader" class="w-full"></div></div>
+            <p class="text-xs text-on-surface-variant">{{ $t('camera_note') }}</p>
+            <p x-show="cameraError" x-text="cameraError" role="alert" class="rounded-xl bg-error-container p-3 text-sm text-on-error-container"></p>
             <form class="flex gap-2" @submit.prevent="scan()"><input x-model="qrToken" required placeholder="{{ $t('scan_placeholder') }}" class="min-w-0 flex-1 rounded-xl border-surface-container-highest font-mono"><button :disabled="!idEvent || busy" class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-40">{{ $t('scan_btn') }}</button></form>
         </article>
 

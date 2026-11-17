@@ -68,14 +68,67 @@ window.asicDateTime = (value) => asicDateFormat(value, true);
 
 /** Gambar QR di klien (paket npm qrcode); token tidak dikirim ke layanan luar. */
 window.asicQr = {
-    render(canvas, text) {
-        return QRCode.toCanvas(canvas, String(text || ''), { width: 240, margin: 2, errorCorrectionLevel: 'M' });
+    render(canvas, text, width = 240) {
+        return QRCode.toCanvas(canvas, String(text || ''), { width, margin: 2, errorCorrectionLevel: 'M' });
     },
     download(canvas, filename) {
         const link = document.createElement('a');
         link.href = canvas.toDataURL('image/png');
         link.download = filename;
         link.click();
+    },
+};
+
+/**
+ * Pemindai QR lewat kamera perangkat (paket html5-qrcode, dimuat saat dibutuhkan).
+ * Gambar kamera diproses di browser, tidak dikirim ke server. Butuh HTTPS dan izin kamera.
+ * continuous=true: tetap menyala untuk banyak peserta (hasil sama diabaikan selama 4 detik).
+ */
+window.asicScanner = {
+    instance: null,
+    async start(elementId, onScan, continuous = false) {
+        await this.stop();
+        const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import('html5-qrcode');
+        const scanner = new Html5Qrcode(elementId, {
+            verbose: false,
+            formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+            experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+        });
+        this.instance = scanner;
+        let last = '';
+        let lastAt = 0;
+        let busy = false;
+        await scanner.start(
+            { facingMode: 'environment' },
+            { fps: 12, qrbox: (w, h) => { const size = Math.max(180, Math.floor(Math.min(w, h) * 0.86)); return { width: size, height: size }; } },
+            async (text) => {
+                const now = Date.now();
+                if (busy || (text === last && now - lastAt < 4000)) return;
+                last = text; lastAt = now; busy = true;
+                if (!continuous) await this.stop();
+                try { await onScan(text); } finally { busy = false; }
+            },
+            () => {},
+        );
+        return scanner;
+    },
+    async stop() {
+        const scanner = this.instance;
+        this.instance = null;
+        if (!scanner) return;
+        try { if (scanner.isScanning) await scanner.stop(); scanner.clear(); } catch (e) { /* kamera sudah tertutup */ }
+    },
+    /** Token sesi dari hasil pindai: QR sesi berisi tautan ...?sesi=TOKEN, token mentah tetap diterima. */
+    sessionToken(text) {
+        const raw = String(text || '').trim();
+        try { return new URL(raw).searchParams.get('sesi') || raw; } catch (e) { return raw; }
+    },
+    errorMessage(error) {
+        const name = error?.name || String(error || '');
+        if (!window.isSecureContext) return 'camera_https';
+        if (/NotAllowed|Permission/i.test(name)) return 'camera_denied';
+        if (/NotFound|Overconstrained|DevicesNotFound/i.test(name)) return 'camera_missing';
+        return 'camera_failed';
     },
 };
 
