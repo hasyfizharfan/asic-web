@@ -24,9 +24,6 @@
     @include('public.partials.navbar', ['overlay' => true])
 
     <div class="relative z-10 flex flex-col gap-6 px-6 pb-14 pt-32 lg:px-16 lg:pt-40">
-        @if($isDemo)
-            <p class="w-fit rounded-full bg-[#F5C518] px-3 py-1 text-xs font-bold text-[#0f3d24]" role="note">{{ $L['demo_banner'] }}</p>
-        @endif
         <p class="flex items-center gap-3 text-[13px] font-semibold uppercase tracking-[2px]"><span class="h-[3px] w-8 bg-[#F5C518]" aria-hidden="true"></span>ASIC 2027 · {{ __('asic-landing.location_badge') }}</p>
         <h1 class="max-w-[1000px] font-serif text-[44px] font-semibold leading-[1.05] tracking-[-1px] sm:text-6xl lg:text-[80px] lg:tracking-[-2px]">
             @if($locale === 'id') Konferensi Internasional <span class="italic text-[#F5C518]">Sistem Agrifood</span> @else Agrifood System <span class="italic text-[#F5C518]">International Conference</span> @endif

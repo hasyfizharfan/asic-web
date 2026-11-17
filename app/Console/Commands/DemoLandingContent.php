@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\ContactPerson;
+use App\Models\DocumentTemplate;
 use App\Models\Event;
 use App\Models\EventContent;
 use App\Models\EventSchedule;
@@ -12,6 +13,8 @@ use App\Models\RegistrationFee;
 use App\Models\RegistrationPeriod;
 use App\Models\Speaker;
 use App\Models\SponsorshipPackage;
+use App\Services\DocumentService;
+use App\Support\DemoSamples;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -43,8 +46,16 @@ class DemoLandingContent extends Command
             // Data contoh lama: cukup lengkapi foto pembicara contoh yang belum punya foto.
             $this->created = json_decode((string) $row->value, true) ?: [];
             $added = $this->attachSpeakerPhotos($this->created['speaker'] ?? []);
+            $this->relabel();
+            $event = Event::whereKey($this->created['event'] ?? [])->first() ?? Event::query()->where('status_event', 'Aktif')->orderByDesc('tanggal_mulai')->first();
+            $samples = [];
+            if ($event) {
+                $demo = new DemoSamples($this->created);
+                $samples = $demo->seed($event);
+                $this->created = $demo->created();
+            }
             DB::table('app_setting')->where('key', self::KEY)->update(['value' => json_encode($this->created), 'updated_at' => now()]);
-            $this->warn('Data contoh sudah ada; foto pembicara ditambahkan: '.$added.'. Jalankan --remove dulu bila ingin mengisi ulang semuanya.');
+            $this->info('Data contoh diperbarui; foto pembicara: '.$added.'; contoh baru: '.(implode(', ', $samples) ?: '-').'.');
 
             return self::SUCCESS;
         }
@@ -81,6 +92,13 @@ class DemoLandingContent extends Command
 
             DB::table('app_setting')->insert(['key' => self::KEY, 'value' => json_encode($this->created), 'created_at' => now(), 'updated_at' => now()]);
         });
+        $event = Event::whereKey($this->created['event'] ?? [])->first() ?? Event::query()->where('status_event', 'Aktif')->orderByDesc('tanggal_mulai')->first();
+        if ($event) {
+            $demo = new DemoSamples($this->created);
+            $demo->seed($event);
+            $this->created = $demo->created();
+            DB::table('app_setting')->where('key', self::KEY)->update(['value' => json_encode($this->created), 'updated_at' => now()]);
+        }
 
         $this->info('Data contoh landing dibuat: '.collect($this->created)->map(fn ($ids, $t) => $t.' '.count($ids))->implode(', ').'.');
 
@@ -101,6 +119,7 @@ class DemoLandingContent extends Command
             'date' => ImportantDate::class, 'content' => EventContent::class, 'faq' => Faq::class, 'contact' => ContactPerson::class,
             'package' => SponsorshipPackage::class, 'event' => Event::class,
         ];
+        DB::transaction(fn () => DemoSamples::remove($created));
         $inUse = DB::table('registration')->whereIn('id_period', $created['period'] ?? [])->exists();
         DB::transaction(function () use ($created, $models, $inUse): void {
             foreach ($models as $key => $model) {
@@ -119,6 +138,13 @@ class DemoLandingContent extends Command
 
                     continue;
                 }
+                if ($ids && $key === 'event') {
+                    // Template nomor dokumen dibuat otomatis untuk event contoh; hapus bersama event.
+                    DocumentTemplate::whereIn('id_event', $ids)->get()->each(function ($t) {
+                        $t->file_template && Storage::disk(app(DocumentService::class)->disk())->delete($t->file_template);
+                        $t->delete();
+                    });
+                }
                 if ($ids) {
                     $model::whereKey($ids)->get()->each->delete();
                 }
@@ -133,7 +159,19 @@ class DemoLandingContent extends Command
         return self::SUCCESS;
     }
 
-    private function track(string $type, int $id): void
+    /** Data contoh lama berlabel "(Contoh)" diganti label netral. */
+    private function relabel(): void
+    {
+        Speaker::whereKey($this->created['speaker'] ?? [])->get()->each(fn (Speaker $s) => $s->update(['nama_speaker' => trim(str_replace('(Contoh)', '', $s->nama_speaker))]));
+        EventContent::whereKey($this->created['content'] ?? [])->where('section', 'committee')->update(['isi_id' => 'Panitia 4th ASIC 2027', 'isi_en' => '4th ASIC 2027 Committee']);
+        foreach (ContactPerson::whereKey($this->created['contact'] ?? [])->get() as $c) {
+            $isTreasurer = str_contains($c->nama, 'Bendahara');
+            $c->update(['nama' => $isTreasurer ? 'Bendahara 4th ASIC 2027' : 'Sekretariat 4th ASIC 2027', 'email' => $isTreasurer ? 'bendahara@asic.unand.ac.id' : 'sekretariat@asic.unand.ac.id']);
+        }
+        SponsorshipPackage::whereKey($this->created['package'] ?? [])->get()->each(fn ($p) => $p->update(['nama' => trim(str_replace('(Contoh)', '', $p->nama))]));
+    }
+
+    private function track(string $type, mixed $id): void
     {
         $this->created[$type][] = $id;
     }
@@ -169,12 +207,12 @@ class DemoLandingContent extends Command
     private function speakers(int $event): void
     {
         $rows = [
-            ['Keynote Speaker 1 (Contoh)', 'Partner University', 'Cambodia', 'Soil health for climate-resilient smart farming'],
-            ['Keynote Speaker 2 (Contoh)', 'Partner University', 'Australia', 'Smart cultivation strategies for limited land systems'],
-            ['Keynote Speaker 3 (Contoh)', 'Partner Research Institute', 'Pakistan', 'Breeding for smart and sustainable agriculture'],
-            ['Keynote Speaker 4 (Contoh)', 'Partner University', 'Vietnam', 'Ecological innovations in smart pest management'],
-            ['Keynote Speaker 5 (Contoh)', 'Partner University', 'Philippines', 'Empowering farmers for smart farming adoption'],
-            ['Keynote Speaker 6 (Contoh)', 'Universitas Andalas', 'Indonesia', 'Local wisdom to enhance smart farming systems'],
+            ['Keynote Speaker 1', 'Partner University', 'Cambodia', 'Soil health for climate-resilient smart farming'],
+            ['Keynote Speaker 2', 'Partner University', 'Australia', 'Smart cultivation strategies for limited land systems'],
+            ['Keynote Speaker 3', 'Partner Research Institute', 'Pakistan', 'Breeding for smart and sustainable agriculture'],
+            ['Keynote Speaker 4', 'Partner University', 'Vietnam', 'Ecological innovations in smart pest management'],
+            ['Keynote Speaker 5', 'Partner University', 'Philippines', 'Empowering farmers for smart farming adoption'],
+            ['Keynote Speaker 6', 'Universitas Andalas', 'Indonesia', 'Local wisdom to enhance smart farming systems'],
         ];
         foreach ($rows as [$name, $institution, $country, $topic]) {
             $this->track('speaker', Speaker::create(['id_event' => $event, 'nama_speaker' => $name, 'institusi' => $institution, 'negara' => $country, 'deskripsi' => $topic])->id_speaker);
@@ -264,7 +302,7 @@ class DemoLandingContent extends Command
             ['venue_info', 'Akses lokasi', 'Getting there', 'Kampus Limau Manis, Padang, sekitar 45–60 menit berkendara dari Bandara Internasional Minangkabau.', 'Limau Manis campus, Padang, about 45–60 minutes by car from Minangkabau International Airport.', null],
         ];
         foreach (['Ketua Panitia', 'Sekretaris', 'Bendahara', 'Bidang Kesekretariatan', 'Bidang Abstrak & Publikasi', 'Bidang Acara', 'Bidang Field Trip', 'Bidang Konsumsi'] as $role) {
-            $blocks[] = ['committee', $role, null, 'Nama panitia (contoh)', 'Committee member (sample)', null];
+            $blocks[] = ['committee', $role, null, 'Panitia 4th ASIC 2027', '4th ASIC 2027 Committee', null];
         }
         foreach ($blocks as $i => [$section, $titleId, $titleEn, $bodyId, $bodyEn, $link]) {
             $this->track('content', EventContent::create([
@@ -285,7 +323,7 @@ class DemoLandingContent extends Command
         foreach ($faqs as $i => [$qId, $qEn, $aId, $aEn]) {
             $this->track('faq', Faq::create(['id_event' => $event, 'pertanyaan_id' => $qId, 'pertanyaan_en' => $qEn, 'jawaban_id' => $aId, 'jawaban_en' => $aEn, 'kategori' => 'Umum', 'status' => 'Dipublikasikan', 'urutan' => $i])->id_faq);
         }
-        foreach ([['Sekretariat ASIC (Contoh)', 'Sekretariat', 'Secretariat', 'sekretariat@example.org'], ['Bendahara ASIC (Contoh)', 'Pembayaran', 'Payments', 'bendahara@example.org']] as $i => [$name, $roleId, $roleEn, $email]) {
+        foreach ([['Sekretariat 4th ASIC 2027', 'Sekretariat', 'Secretariat', 'sekretariat@asic.unand.ac.id'], ['Bendahara 4th ASIC 2027', 'Pembayaran', 'Payments', 'bendahara@asic.unand.ac.id']] as $i => [$name, $roleId, $roleEn, $email]) {
             $this->track('contact', ContactPerson::create(['id_event' => $event, 'nama' => $name, 'peran_id' => $roleId, 'peran_en' => $roleEn, 'email' => $email, 'status' => 'Dipublikasikan', 'urutan' => $i])->id_contact);
         }
         $packages = [
@@ -294,7 +332,7 @@ class DemoLandingContent extends Command
             ['Silver', 'Logo di website dan conference book.', 'Logo on the website and conference book.'],
         ];
         foreach ($packages as $i => [$name, $benefitId, $benefitEn]) {
-            $this->track('package', SponsorshipPackage::create(['id_event' => $event, 'nama' => $name.' (Contoh)', 'manfaat_id' => $benefitId, 'manfaat_en' => $benefitEn, 'harga_teks' => 'Hubungi panitia / Contact the committee', 'status' => 'Dipublikasikan', 'urutan' => $i])->getKey());
+            $this->track('package', SponsorshipPackage::create(['id_event' => $event, 'nama' => $name, 'manfaat_id' => $benefitId, 'manfaat_en' => $benefitEn, 'harga_teks' => 'Hubungi panitia / Contact the committee', 'status' => 'Dipublikasikan', 'urutan' => $i])->getKey());
         }
     }
 }

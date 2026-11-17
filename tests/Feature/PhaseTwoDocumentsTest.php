@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Http\Controllers\DocumentTemplateController;
 use App\Models\Attendance;
 use App\Models\DocumentTemplate;
 use App\Models\Event;
@@ -10,6 +11,7 @@ use App\Models\Invoice;
 use App\Models\IssuedDocument;
 use App\Models\Registration;
 use App\Models\Role;
+use App\Services\DocumentRenderer;
 use App\Services\DocumentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -120,8 +122,10 @@ class PhaseTwoDocumentsTest extends TestCase
 
     public function test_preview_uses_sample_data_and_creates_no_document(): void
     {
-        $html = $this->as(Role::ROLE_ADMIN)->get('/api/document-templates/preview/Sertifikat')->assertOk()->getContent();
-        $this->assertStringContainsString('CONTOH / SAMPLE', $html);
+        $pdf = $this->as(Role::ROLE_ADMIN)->get('/api/document-templates/preview/Sertifikat')->assertOk()->assertHeader('Content-Type', 'application/pdf')->getContent();
+        $this->assertStringStartsWith('%PDF', $pdf);
+        $html = app(DocumentRenderer::class)->html('Sertifikat', DocumentTemplateController::sampleContext('001/CERT'));
+        $this->assertStringContainsString('Pratinjau format dokumen', $html);
         $this->as(Role::ROLE_ADMIN)->get('/api/document-templates/preview/Invoice')->assertOk();
         $this->assertSame(0, IssuedDocument::count());
     }

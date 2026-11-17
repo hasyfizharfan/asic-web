@@ -23,11 +23,11 @@
     .sign { width: 60%; margin: 10px auto 0; }
     .sign img { max-height: 55px; }
     .number { position: absolute; left: 30mm; bottom: 26mm; font-size: 10px; color: #4a5a50; text-align: left; }
-    .sample-watermark { position: fixed; top: 40%; left: 0; right: 0; text-align: center; font-size: 64px; font-weight: bold; color: rgba(200, 0, 0, 0.18); transform: rotate(-20deg); }
+    .sample-note { position: fixed; bottom: -0.9cm; left: 0; right: 0; text-align: center; font-size: 7.5pt; color: #8a8a8a; font-family: 'DejaVu Sans', sans-serif; }
 </style>
 </head>
 <body>
-@if(! empty($sample))<div class="sample-watermark">CONTOH / SAMPLE</div>@endif
+@if(! empty($sample))<div class="sample-note">Pratinjau format dokumen · data peserta pada pratinjau ini bukan data sungguhan</div>@endif
 <div class="frame">
     <p class="line" style="font-weight: bold;">{{ $letterhead['title'] ?? $event_name }}</p>
     <p class="title">{{ $l('title', $primary) }}</p>

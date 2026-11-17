@@ -7,9 +7,11 @@ use App\Http\Requests\UpdateDocumentTemplateRequest;
 use App\Http\Requests\UpsertIssuedTemplateRequest;
 use App\Http\Resources\DocumentTemplateResource;
 use App\Models\DocumentTemplate;
+use App\Models\Event;
 use App\Services\DocumentRenderer;
 use App\Services\DocumentService;
 use App\Support\Audit;
+use App\Support\DateRange;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -161,22 +163,32 @@ class DocumentTemplateController extends Controller
             : null;
         $nomor = str_replace(['{SEQ}', '{SCOPE}', '{EDITION}', '{YYYY}', '{MM}'], ['001', 'CP', config('asic.edition', '4th'), now()->format('Y'), now()->format('m')], $format ?: (DocumentService::DEFAULT_FORMATS[$jenis] ?? '{SEQ}'));
 
-        return response($renderer->html($jenis, self::sampleContext($nomor)), 200, ['Content-Type' => 'text/html; charset=UTF-8', 'Cache-Control' => 'no-store']);
+        // Pratinjau berupa PDF A4 (sertifikat A4 landscape), sama persis dengan dokumen yang diterbitkan.
+        return response($renderer->render($jenis, self::sampleContext($nomor)), 200, [
+            'Content-Type' => 'application/pdf', 'Content-Disposition' => 'inline; filename="pratinjau-'.strtolower($jenis).'.pdf"', 'Cache-Control' => 'no-store',
+        ]);
     }
 
     /** Data contoh berlabel jelas untuk pratinjau; bukan data peserta mana pun. */
     public static function sampleContext(string $nomor): array
     {
-        $sample = 'CONTOH / SAMPLE';
+        $event = Event::where('status_event', 'Aktif')->orderByDesc('tanggal_mulai')->first();
+        $items = [
+            ['jenis_biaya' => 'Registration fee - Regular (Offline)', 'deskripsi' => 'Oral Presenter', 'jumlah' => 1, 'harga_satuan' => 1500000, 'subtotal' => 1500000],
+            ['jenis_biaya' => 'Publication fee - Proceedings', 'deskripsi' => 'IOP Conference Series: EES', 'jumlah' => 1, 'harga_satuan' => 1000000, 'subtotal' => 1000000],
+        ];
 
         return [
-            'sample' => true, 'nomor' => $nomor, 'tanggal' => now(), 'name' => $sample, 'email' => 'sample@example.test', 'institution' => $sample,
-            'country' => 'Indonesia', 'event_name' => $sample, 'event_theme' => $sample, 'period_name' => $sample, 'publication_option' => 'Prosiding',
-            'is_presenter' => true, 'event_dates' => $sample, 'event_location' => $sample, 'registration_type' => 'Regular', 'attendance_mode' => 'Luring',
-            'participation_type' => 'Oral Presenter', 'abstract_title' => $sample, 'presentation_method' => 'Oral', 'review_notes' => null,
-            'invoice_nomor' => $sample, 'invoice_due' => now()->addWeek()->toDateString(), 'currency' => 'IDR', 'total' => 0, 'amount' => 0,
-            'items' => [['jenis_biaya' => $sample, 'deskripsi' => null, 'jumlah' => 1, 'harga_satuan' => 0, 'subtotal' => 0]],
-            'verified_at' => now(), 'payment_qr_info' => null, 'role_label' => $sample, 'certificate_lang' => 'id',
+            'sample' => true, 'nomor' => $nomor, 'tanggal' => now(), 'name' => 'Dr. Rina Wulandari, M.Si.', 'email' => 'rina.wulandari@example.ac.id',
+            'institution' => 'Universitas Andalas', 'country' => 'Indonesia',
+            'event_name' => $event?->nama_event ?: '4th ASIC 2027', 'event_theme' => $event?->tema ?: 'Integrating Smart Farming into Sustainable Agriculture: Innovation, Collaboration, and Resilience',
+            'period_name' => 'Early Bird', 'publication_option' => 'Prosiding', 'is_presenter' => true,
+            'event_dates' => $event ? DateRange::format($event->tanggal_mulai, $event->tanggal_selesai) : '9-10 June 2027',
+            'event_location' => $event?->lokasi ?: 'Convention Hall, Universitas Andalas', 'registration_type' => 'Regular', 'attendance_mode' => 'Luring',
+            'participation_type' => 'Oral Presenter', 'abstract_title' => 'Effect of Biochar on Shallot Growth in Lowland Peat Soil', 'presentation_method' => 'Oral',
+            'review_notes' => 'The topic is outside the scope of the conference.', 'invoice_nomor' => '001/INV/4th ASIC/'.now()->format('Y'),
+            'invoice_due' => now()->addWeek()->toDateString(), 'currency' => 'IDR', 'total' => 2500000, 'amount' => 2500000, 'items' => $items,
+            'verified_at' => now(), 'payment_qr_info' => null, 'role_label' => 'Oral Presenter', 'certificate_lang' => 'id',
         ];
     }
 

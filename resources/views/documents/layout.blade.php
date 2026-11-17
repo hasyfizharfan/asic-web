@@ -28,11 +28,11 @@
     .sign .stempel { position: absolute; left: 0; top: 0; max-height: 80px; max-width: 80px; opacity: 0.85; }
     .sign .name { font-weight: bold; text-decoration: underline; }
     .note { font-size: 10pt; }
-    .sample-watermark { position: fixed; top: 40%; left: 0; right: 0; text-align: center; font-size: 64px; font-weight: bold; color: rgba(200, 0, 0, 0.18); transform: rotate(-30deg); z-index: 1000; }
+    .sample-note { position: fixed; bottom: -0.9cm; left: 0; right: 0; text-align: center; font-size: 7.5pt; color: #8a8a8a; font-family: 'DejaVu Sans', sans-serif; }
 </style>
 </head>
 <body>
-@if(! empty($sample))<div class="sample-watermark">CONTOH / SAMPLE</div>@endif
+@if(! empty($sample))<div class="sample-note">Pratinjau format dokumen · data peserta pada pratinjau ini bukan data sungguhan</div>@endif
 <table class="kop">
     <tr>
         <td class="logo">@if($logoLeft)<img src="{{ $logoLeft }}">@endif</td>
