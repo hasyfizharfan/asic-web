@@ -12,7 +12,7 @@ class EventContent extends Model
 
     public const BILINGUAL = ['judul', 'isi'];
 
-    public const SECTIONS = ['scope', 'accommodation', 'pickup', 'presentation_oral', 'presentation_poster', 'visa', 'travel', 'sponsorship_intro', 'exhibition_intro'];
+    public const SECTIONS = ['scope', 'accommodation', 'pickup', 'presentation_oral', 'presentation_poster', 'visa', 'travel', 'sponsorship_intro', 'exhibition_intro', 'about', 'publication', 'facilities', 'committee', 'venue_info'];
 
     protected $table = 'event_content';
 

@@ -31,6 +31,11 @@ return [
         'travel' => 'Perjalanan & transportasi',
         'sponsorship_intro' => 'Pengantar sponsorship',
         'exhibition_intro' => 'Pengantar exhibition',
+        'about' => 'Tentang konferensi (landing)',
+        'publication' => 'Luaran publikasi (landing)',
+        'facilities' => 'Fasilitas peserta (landing)',
+        'committee' => 'Panitia (landing)',
+        'venue_info' => 'Info lokasi (landing)',
     ],
     'statuses' => [
         'Draft' => 'Draf',

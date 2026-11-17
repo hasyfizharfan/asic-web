@@ -99,7 +99,9 @@ class LegalConsentAndPublicPagesTest extends TestCase
 
     public function test_landing_hides_empty_sections_and_shows_published_content_and_fees(): void
     {
-        $this->get('/')->assertOk()->assertDontSee('id="cfa"', false)->assertSee(__('asic-public.fees_not_announced'));
+        // Enam scope resmi panitia selalu tampil; bagian berbasis data (pembicara, program, panitia) disembunyikan bila kosong.
+        $this->get('/')->assertOk()->assertSee('id="cfa"', false)->assertSee('Crop Production')->assertDontSee('id="speakers"', false)
+            ->assertDontSee('id="program"', false)->assertDontSee('id="committee"', false)->assertSee(__('asic-public.fees_not_announced'));
 
         EventContent::create(['id_event' => $this->event->id_event, 'section' => 'scope', 'judul_id' => 'Proteksi Tanaman', 'status' => 'Dipublikasikan']);
         EventContent::create(['id_event' => $this->event->id_event, 'section' => 'scope', 'judul_id' => 'Draf Tersembunyi', 'status' => 'Draft']);

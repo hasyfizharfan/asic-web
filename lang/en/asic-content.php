@@ -31,6 +31,11 @@ return [
         'travel' => 'Travel & transportation',
         'sponsorship_intro' => 'Sponsorship introduction',
         'exhibition_intro' => 'Exhibition introduction',
+        'about' => 'About the conference (landing)',
+        'publication' => 'Publication outlets (landing)',
+        'facilities' => 'Participant facilities (landing)',
+        'committee' => 'Committee (landing)',
+        'venue_info' => 'Venue information (landing)',
     ],
     'statuses' => [
         'Draft' => 'Draft',

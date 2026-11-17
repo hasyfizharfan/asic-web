@@ -1,75 +1,44 @@
-{{-- Bagian landing berbasis konten panitia: setiap bagian hanya muncul bila ada data terpublikasi. --}}
-@if($importantDates->isNotEmpty())
-<section id="dates" class="bg-white px-6 py-16 text-[#17261D] lg:px-16">
-    <div class="mx-auto max-w-6xl">
-        <h2 class="font-display text-3xl font-bold text-[#0B5D2E]">{{ __('asic-public.important_dates') }}</h2>
-        <ul class="mt-6 grid gap-3 md:grid-cols-2">
-            @foreach($importantDates as $date)
-                <li class="flex items-center justify-between gap-4 border-b border-[#c9d6c2] py-3">
-                    <span class="font-semibold">{{ $date->localized('label') }}</span>
-                    <span class="font-mono text-sm text-[#0B5D2E]">{{ $date->tanggal_mulai?->translatedFormat('d M Y') }}@if($date->tanggal_selesai) – {{ $date->tanggal_selesai->translatedFormat('d M Y') }}@endif</span>
-                </li>
-            @endforeach
-        </ul>
-    </div>
-</section>
-@endif
-
-@if(($pages['venue'] ?? false) || ($pages['travel'] ?? false) || ($pages['guidelines'] ?? false))
-<section class="bg-[#F1F5EC] px-6 py-12 lg:px-16">
-    <div class="mx-auto flex max-w-6xl flex-wrap gap-3">
-        @foreach(['venue', 'guidelines', 'travel'] as $name)
-            @if($pages[$name] ?? false)<a href="{{ route('public.'.$name) }}" class="rounded-xl border border-[#0B5D2E] px-5 py-3 text-sm font-semibold text-[#0B5D2E] hover:bg-white">{{ __('asic-public.nav.'.$name) }}</a>@endif
-        @endforeach
-    </div>
-</section>
-@endif
-
-@if($faqs->isNotEmpty() || $contacts->isNotEmpty())
-<section class="bg-white px-6 py-16 text-[#17261D] lg:px-16">
+{{-- Bagian bawah landing berbasis konten panitia: setiap bagian hanya muncul bila ada data terpublikasi. --}}
+@if($faqs->isNotEmpty() || $contacts->isNotEmpty() || $channels->isNotEmpty())
+<section id="faq" class="bg-white px-6 py-20 text-[#182820] lg:px-16">
     <div class="mx-auto grid max-w-6xl gap-10 md:grid-cols-2">
         @if($faqs->isNotEmpty())
             <div>
-                <h2 class="font-display text-2xl font-bold text-[#0B5D2E]">{{ __('asic-public.faq_short') }}</h2>
-                <div class="mt-4 space-y-3">
+                <h2 class="font-poppins text-3xl font-semibold">{{ __('asic-public.faq_short') }}</h2>
+                <div class="mt-6 space-y-3">
                     @foreach($faqs as $faq)
-                        <details class="rounded-xl border border-[#d9e3d0] p-4"><summary class="cursor-pointer font-semibold">{{ $faq->localized('pertanyaan') }}</summary><p class="mt-2 text-sm">{!! nl2br(e($faq->localized('jawaban'))) !!}</p></details>
+                        <details class="group rounded-2xl border border-[#dce4da] p-4 open:bg-[#F7FAF8]"><summary class="cursor-pointer list-none font-semibold marker:hidden"><span class="flex items-center justify-between gap-3">{{ $faq->localized('pertanyaan') }}<span class="material-symbols-outlined text-[#168348] transition group-open:rotate-45">add</span></span></summary><p class="mt-2 text-sm text-[#3b4a40]">{!! nl2br(e($faq->localized('jawaban'))) !!}</p></details>
                     @endforeach
                 </div>
                 <a href="{{ route('public.faq') }}" class="mt-4 inline-block text-sm font-semibold text-[#0B5D2E] underline">{{ __('asic-public.see_all') }}</a>
             </div>
         @endif
-        @if($contacts->isNotEmpty())
-            <div>
-                <h2 class="font-display text-2xl font-bold text-[#0B5D2E]">{{ __('asic-public.contacts') }}</h2>
-                <div class="mt-4">@include('public._contacts', ['contacts' => $contacts])</div>
-            </div>
-        @endif
-    </div>
-</section>
-@endif
-
-@if($packages->isNotEmpty())
-<section class="bg-[#F1F5EC] px-6 py-16 lg:px-16">
-    <div class="mx-auto max-w-6xl">
-        <h2 class="font-display text-2xl font-bold text-[#0B5D2E]">{{ __('asic-public.sponsors') }}</h2>
-        <div class="mt-4 grid gap-4 md:grid-cols-3">
-            @foreach($packages as $package)
-                <article class="rounded-xl border border-[#d9e3d0] bg-white p-5"><h3 class="font-bold text-[#0B5D2E]">{{ $package->nama }}</h3>@if($package->harga_teks)<p class="mt-1 text-sm">{{ $package->harga_teks }}</p>@endif</article>
-            @endforeach
+        <div class="space-y-6">
+            @if($contacts->isNotEmpty())
+                <div>
+                    <h2 class="font-poppins text-3xl font-semibold">{{ __('asic-public.contacts') }}</h2>
+                    <div class="mt-6">@include('public._contacts', ['contacts' => $contacts])</div>
+                </div>
+            @endif
+            @if($channels->isNotEmpty())
+                <div class="flex flex-wrap gap-3">
+                    @foreach($channels as $channel)
+                        <a href="{{ $channel->url }}" target="_blank" rel="noopener" class="inline-flex h-11 items-center gap-2 rounded-xl bg-[#0B5D2E] px-5 text-sm font-bold text-white hover:bg-[#168348]"><span class="material-symbols-outlined text-[18px]">forum</span>{{ $channel->nama_kanal }}</a>
+                    @endforeach
+                </div>
+            @endif
         </div>
-        <a href="{{ route('public.sponsorship') }}" class="mt-4 inline-block text-sm font-semibold text-[#0B5D2E] underline">{{ __('asic-public.see_all') }}</a>
     </div>
 </section>
 @endif
 
 @if($photos->isNotEmpty())
-<section class="bg-white px-6 py-16 lg:px-16">
+<section class="bg-[#F7FAF8] px-6 py-20 lg:px-16">
     <div class="mx-auto max-w-6xl">
-        <h2 class="font-display text-2xl font-bold text-[#0B5D2E]">{{ __('asic-public.gallery') }}</h2>
-        <div class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
+        <h2 class="font-poppins text-3xl font-semibold text-[#182820]">{{ __('asic-public.gallery') }}</h2>
+        <div class="mt-6 grid grid-cols-2 gap-3 md:grid-cols-3">
             @foreach($photos as $photo)
-                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($photo->file_path) }}" alt="{{ $photo->localized('caption') }}" loading="lazy" class="aspect-[4/3] w-full rounded-xl object-cover">
+                <img src="{{ \Illuminate\Support\Facades\Storage::disk('public')->url($photo->file_path) }}" alt="{{ $photo->localized('caption') }}" loading="lazy" class="aspect-[4/3] w-full rounded-2xl object-cover">
             @endforeach
         </div>
         <a href="{{ route('public.gallery') }}" class="mt-4 inline-block text-sm font-semibold text-[#0B5D2E] underline">{{ __('asic-public.see_all') }}</a>

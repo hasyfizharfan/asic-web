@@ -46,7 +46,7 @@ return [
     'step_2_title' => 'Kirim abstrak',
     'step_2_desc' => 'Kirimkan bersamaan dengan formulir pendaftaran Anda.',
     'step_3_title' => 'Bayar tagihan',
-    'step_3_desc' => 'Melalui transfer QRIS atau PayPal dalam 7 hari.',
+    'step_3_desc' => 'Transfer sesuai invoice lalu unggah bukti, paling lambat 7 hari.',
     'step_4_title' => 'Hadir & terima sertifikat',
     'step_4_desc' => 'Tunjukkan kode QR Anda di lokasi, lalu unduh sertifikat resmi.',
 
@@ -60,4 +60,31 @@ return [
     // Footer
     'footer_affil' => 'Fakultas Pertanian, Universitas Andalas, Padang, Indonesia',
     'footer_email' => 'sec.asic2027@agr.unand.ac.id',
+
+    // Landing lengkap (desain Figma)
+    'sec' => [
+        'nav_label' => 'Navigasi utama', 'menu' => 'Buka menu', 'nav_program' => 'Program', 'nav_speakers' => 'Pembicara', 'nav_venue' => 'Lokasi', 'nav_committee' => 'Panitia', 'nav_sponsorship' => 'Sponsorship',
+        'organized_by' => 'Diselenggarakan oleh Fakultas Pertanian, Universitas Andalas.',
+        'demo_banner' => 'Mode uji coba: sebagian isi halaman ini adalah data contoh dan akan diganti panitia.',
+        'countdown_title' => 'Menuju hari konferensi', 'countdown_desc' => 'Hitung mundur menuju pembukaan konferensi.',
+        'countdown_done' => 'Konferensi sedang atau sudah berlangsung',
+        'cd' => ['days' => 'Hari', 'hours' => 'Jam', 'minutes' => 'Menit', 'seconds' => 'Detik'],
+        'about_default' => 'ASIC adalah konferensi ilmiah internasional Fakultas Pertanian Universitas Andalas yang mempertemukan akademisi, peneliti, praktisi, pembuat kebijakan, dan mahasiswa untuk berbagi riset sistem pertanian dan pangan berkelanjutan.',
+        'history' => 'Perjalanan ASIC',
+        'cfa_lead' => 'Kirim abstrak sesuai salah satu dari enam ruang lingkup berikut, lalu pilih presentasi oral atau poster.',
+        'cfa_rules' => ['Abstrak maksimal 250 kata dalam bahasa Inggris', 'Maksimal 5 kata kunci', 'Pilih satu scope dan metode presentasi'],
+        'templates' => 'Unduh template',
+        'speakers_title' => 'Pembicara utama',
+        'passed' => 'Sudah lewat',
+        'program_title' => 'Susunan acara', 'day' => 'Hari',
+        'fee_category' => 'Kategori', 'fee_mode' => 'Kehadiran', 'fee_active' => 'Berlaku',
+        'fee_note' => 'IDR untuk peserta Indonesia, USD untuk peserta internasional. Tarif yang tampil adalah tarif terendah (belum termasuk biaya publikasi/field trip bila ada).',
+        'mode' => ['Luring' => 'Luring (onsite)', 'Daring' => 'Daring (online)'],
+        'type' => ['Student' => 'Mahasiswa', 'Regular' => 'Umum / dosen', 'Committee' => 'Panitia'],
+        'publication_title' => 'Luaran publikasi', 'facilities_title' => 'Fasilitas peserta',
+        'open_map' => 'Buka peta', 'host' => 'Tuan rumah',
+        'committee_title' => 'Panitia pelaksana',
+        'sponsor_lead' => 'Dukung ASIC 2027 sebagai sponsor atau peserta pameran dan jangkau peneliti serta praktisi pertanian dari berbagai negara.',
+        'sponsor_cta' => 'Ajukan kerja sama',
+    ],
 ];
