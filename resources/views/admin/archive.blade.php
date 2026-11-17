@@ -37,9 +37,9 @@
             </table>
         </div>
     @endif
-    <section class="grid gap-3 md:grid-cols-2 text-sm text-on-surface-variant">
-        <p class="rounded-xl bg-surface-container-low p-4">{{ $t['proceedings_unavailable'] }}</p>
-        <p class="rounded-xl bg-surface-container-low p-4">{{ $t['faculty_unavailable'] }}</p>
-    </section>
+    <aside class="flex gap-3 rounded-2xl border border-[#cfe6d6] bg-[#E6F4EA]/60 p-4 text-sm text-[#3b4a40]">
+        <span class="material-symbols-outlined text-[20px] text-primary">info</span>
+        <p>{{ $t['proceedings_unavailable'] }} {{ $t['faculty_unavailable'] }}</p>
+    </aside>
 </main>
 @endsection

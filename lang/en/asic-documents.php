@@ -124,8 +124,8 @@ return [
         'archive_action' => 'Archive',
         'confirm_archive' => 'Archive this edition? It will appear on the public archive page.',
         'only_from_finished' => 'Archived status can only be set on events with status Finished.',
-        'proceedings_unavailable' => 'Proceedings, DOI, and archive manifest: Not available yet.',
-        'faculty_unavailable' => 'Other Faculty of Agriculture seminars: Not available yet.',
+        'proceedings_unavailable' => 'Proceedings and DOI data are managed outside the system; links can be added through Public content.',
+        'faculty_unavailable' => 'This archive covers ASIC seminar editions only.',
         'load_failed' => 'Failed to load the archive.',
     ],
 ];

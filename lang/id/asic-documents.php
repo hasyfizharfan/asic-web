@@ -124,8 +124,8 @@ return [
         'archive_action' => 'Arsipkan',
         'confirm_archive' => 'Arsipkan edisi ini? Edisi akan tampil di halaman arsip publik.',
         'only_from_finished' => 'Status Arsip hanya dapat diberikan pada event berstatus Selesai.',
-        'proceedings_unavailable' => 'Prosiding, DOI, dan manifest arsip: Belum tersedia.',
-        'faculty_unavailable' => 'Seminar lain di Fakultas Pertanian: Belum tersedia.',
+        'proceedings_unavailable' => 'Data prosiding dan DOI dikelola di luar sistem; tautannya dapat ditambahkan lewat Konten publik.',
+        'faculty_unavailable' => 'Arsip ini khusus edisi seminar ASIC.',
         'load_failed' => 'Arsip gagal dimuat.',
     ],
 ];

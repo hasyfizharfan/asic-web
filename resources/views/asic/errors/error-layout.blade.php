@@ -21,7 +21,7 @@
             <img src="{{ asset('images/asic/logo.svg') }}" alt="ASIC Logo" class="w-8 h-8 rounded-md bg-white p-0.5 shadow-sm">
             <div>
                 <span class="block text-base font-bold tracking-tight text-white font-display">ASIC 2027</span>
-                <span class="block text-[10px] text-[#a7f4b6] font-semibold uppercase tracking-wider">Universitas Andalas</span>
+                <span class="block text-[10px] text-[#cfe6d6] font-semibold uppercase tracking-wider">Universitas Andalas</span>
             </div>
         </a>
         <a href="{{ route('portal.landing') }}" class="text-xs font-semibold text-white/80 hover:text-white transition">

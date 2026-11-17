@@ -19,30 +19,30 @@
     --color-primary: #0B5D2E; /* Figma: Primary Green */
     --color-primary-container: #168348; /* Figma: Bright Green */
     --color-on-primary: #ffffff;
-    --color-on-primary-container: #9ce9ab;
-    --color-primary-fixed: #a7f4b6;
-    --color-primary-fixed-dim: #8cd79b;
-    --color-on-primary-fixed: #00210c;
+    --color-on-primary-container: #E6F4EA;
+    --color-primary-fixed: #E6F4EA;
+    --color-primary-fixed-dim: #cfe6d6;
+    --color-on-primary-fixed: #084A26;
     --color-on-primary-fixed-variant: #0B5D2E;
-    --color-inverse-primary: #8cd79b;
+    --color-inverse-primary: #cfe6d6;
 
-    --color-secondary: #745b00;
-    --color-secondary-container: #fdcc22;
+    --color-secondary: #7a5d00; /* teks di atas kuning muda */
+    --color-secondary-container: #F5C518; /* Figma: Accent Yellow */
     --color-on-secondary: #ffffff;
-    --color-on-secondary-container: #6e5700;
-    --color-secondary-fixed: #ffe08b;
-    --color-secondary-fixed-dim: #f0c110;
-    --color-on-secondary-fixed: #241a00;
-    --color-on-secondary-fixed-variant: #584400;
+    --color-on-secondary-container: #182820;
+    --color-secondary-fixed: #FEF6D8;
+    --color-secondary-fixed-dim: #F5C518;
+    --color-on-secondary-fixed: #182820;
+    --color-on-secondary-fixed-variant: #7a5d00;
 
-    --color-tertiary: #2d4f00;
-    --color-tertiary-container: #3e6900;
+    --color-tertiary: #168348; /* Figma: Bright Green */
+    --color-tertiary-container: #0B5D2E;
     --color-on-tertiary: #ffffff;
-    --color-on-tertiary-container: #aee96b;
-    --color-tertiary-fixed: #b9f474;
-    --color-tertiary-fixed-dim: #9ed75b;
-    --color-on-tertiary-fixed: #0f2000;
-    --color-on-tertiary-fixed-variant: #2e4f00;
+    --color-on-tertiary-container: #E6F4EA;
+    --color-tertiary-fixed: #E6F4EA; /* Figma: Light Green */
+    --color-tertiary-fixed-dim: #cfe6d6;
+    --color-on-tertiary-fixed: #084A26;
+    --color-on-tertiary-fixed-variant: #0B5D2E;
 
     --color-surface: #F7FAF8; /* Figma: Background */
     --color-background: #F7FAF8;
@@ -357,6 +357,11 @@ body {
  * seperti "rounded-xl border-surface-container-highest" (warna tanpa ketebalan garis) sehingga input tak terlihat.
  * Gaya dasar ini memberi garis, latar, ukuran sentuh 44px, dan fokus yang jelas untuk SEMUA form.
  */
+/* Tailwind v4: warna garis bawaan = currentColor (hitam). Samakan dengan garis lembut palet. */
+@layer base {
+    *, ::before, ::after, ::backdrop, ::file-selector-button { border-color: var(--color-surface-container-highest, #dde6df); }
+}
+
 @layer base {
     input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='hidden']):not([type='range']):not([type='color']),
     select,

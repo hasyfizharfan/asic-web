@@ -34,7 +34,7 @@
                             <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white p-1.5"><img src="{{ asset('images/asic/logo.svg') }}" alt="" class="h-full w-full"></span>
                             <div>
                                 <p class="font-serif text-2xl font-semibold text-white">ASIC 2027</p>
-                                <p class="text-xs font-semibold uppercase tracking-wider text-[#a7f4b6]">Agrifood System International Conference</p>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-[#cfe6d6]">Agrifood System International Conference</p>
                             </div>
                         </div>
                         <p class="max-w-md text-[15px] leading-relaxed text-white/70">{{ $F['about'] }}</p>
@@ -59,7 +59,7 @@
                             @endforeach
                         </ul>
                         @if(config('asic.contact_email'))
-                            <a href="mailto:{{ config('asic.contact_email') }}" class="mt-4 inline-flex items-center gap-2 text-sm text-[#a7f4b6] hover:underline"><span class="material-symbols-outlined text-[18px]">mail</span>{{ config('asic.contact_email') }}</a>
+                            <a href="mailto:{{ config('asic.contact_email') }}" class="mt-4 inline-flex items-center gap-2 text-sm text-[#cfe6d6] hover:underline"><span class="material-symbols-outlined text-[18px]">mail</span>{{ config('asic.contact_email') }}</a>
                         @endif
                         <a href="{{ route('auth.participant.register') }}" class="mt-6 inline-flex items-center gap-2 rounded-full bg-[#F5C518] px-5 py-2.5 text-sm font-bold text-[#0f3d24] hover:bg-[#fed649]">{{ __('asic-landing.btn_register') }} <span class="material-symbols-outlined text-[18px]">arrow_outward</span></a>
                     </div>

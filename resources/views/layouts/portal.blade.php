@@ -52,12 +52,9 @@
             </main>
 
             <!-- Portal Footer -->
-            <footer class="py-4 px-6 border-t border-surface-container-highest text-xs text-on-surface-variant flex flex-col sm:flex-row items-center justify-between gap-2 bg-surface-container-lowest">
-                <div>&copy; {{ date('Y') }} ASIC 2027 — Faculty of Agriculture, Universitas Andalas.</div>
-                <div class="flex items-center gap-2">
-                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span>System Online (ASIC 2027 Portal)</span>
-                </div>
+            <footer class="flex flex-col items-center justify-between gap-2 border-t border-surface-container-highest bg-surface-container-lowest px-6 py-4 text-xs text-on-surface-variant sm:flex-row">
+                <div>&copy; {{ date('Y') }} ASIC 2027 · {{ __('asic-landing.fact_organizer_val') }}</div>
+                <a href="{{ route('portal.landing') }}" class="font-semibold text-primary hover:underline">{{ __('asic-auth.back_to_home') }}</a>
             </footer>
         </div>
     </div>

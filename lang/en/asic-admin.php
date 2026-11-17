@@ -225,4 +225,5 @@ return [
         'activity' => 'Recent activity', 'activity_hint' => 'Registrations, payment verifications, and abstract reviews.', 'no_activity' => 'No activity yet.',
         'act_registration' => 'Registration', 'act_payment' => 'Payment verification', 'act_review' => 'Abstract review',
     ],
+    'access' => ['full_access' => 'Full access', 'view_only' => 'View only', 'restricted' => 'No access'],
 ];

@@ -225,4 +225,5 @@ return [
         'activity' => 'Aktivitas terbaru', 'activity_hint' => 'Registrasi, verifikasi pembayaran, dan review abstrak.', 'no_activity' => 'Belum ada aktivitas.',
         'act_registration' => 'Registrasi', 'act_payment' => 'Verifikasi pembayaran', 'act_review' => 'Review abstrak',
     ],
+    'access' => ['full_access' => 'Akses penuh', 'view_only' => 'Lihat saja', 'restricted' => 'Tidak ada akses'],
 ];
