@@ -56,6 +56,7 @@ class PublicPortalController extends Controller
             'faqs' => $hasContent ? $content->faqs($event)->take(4) : collect(),
             'contacts' => $hasContent ? $content->contacts($event) : collect(),
             'packages' => $hasContent ? $content->packages($event)->take(3) : collect(),
+            'sponsors' => $hasContent ? $content->sponsors($event) : collect(),
             'photos' => $hasContent ? $content->photos($event)->take(6) : collect(),
             'channels' => $hasContent ? $content->channels($event) : collect(),
             'pages' => $hasContent ? $content->availablePages($event) : [],

@@ -7,16 +7,17 @@
         'faqs' => [['pertanyaan_id', 'text'], ['pertanyaan_en', 'text'], ['jawaban_id', 'textarea'], ['jawaban_en', 'textarea'], ['kategori', 'text']],
         'contacts' => [['nama', 'text'], ['peran_id', 'text'], ['peran_en', 'text'], ['email', 'text'], ['telepon', 'text'], ['whatsapp', 'text']],
         'photos' => [['file', 'file'], ['caption_id', 'text'], ['caption_en', 'text']],
+        'sponsors' => [['logo', 'file'], ['nama', 'text'], ['kategori', 'select', \App\Models\EventSponsor::CATEGORIES], ['tingkat', 'text'], ['url', 'text']],
         'sponsorship-packages' => [['nama', 'text'], ['deskripsi_id', 'textarea'], ['deskripsi_en', 'textarea'], ['manfaat_id', 'textarea'], ['manfaat_en', 'textarea'], ['harga_teks', 'text'], ['kuota', 'number']],
         'legal-documents' => [['jenis', 'select', \App\Models\LegalDocument::TYPES], ['versi', 'text'], ['berlaku_mulai', 'date'], ['judul_id', 'text'], ['judul_en', 'text'], ['isi_id', 'textarea'], ['isi_en', 'textarea']],
     ];
-    $titleField = ['event-content' => 'judul', 'important-dates' => 'label', 'faqs' => 'pertanyaan', 'contacts' => 'nama', 'photos' => 'caption', 'sponsorship-packages' => 'nama', 'legal-documents' => 'judul', 'sponsorship-inquiries' => 'nama_organisasi'];
-    $keys = ['event-content' => 'id_content', 'important-dates' => 'id_date', 'faqs' => 'id_faq', 'contacts' => 'id_contact', 'photos' => 'id_photo', 'sponsorship-packages' => 'id_package', 'sponsorship-inquiries' => 'id_inquiry', 'legal-documents' => 'id_legal'];
+    $titleField = ['event-content' => 'judul', 'important-dates' => 'label', 'faqs' => 'pertanyaan', 'contacts' => 'nama', 'photos' => 'caption', 'sponsors' => 'nama', 'sponsorship-packages' => 'nama', 'legal-documents' => 'judul', 'sponsorship-inquiries' => 'nama_organisasi'];
+    $keys = ['event-content' => 'id_content', 'important-dates' => 'id_date', 'faqs' => 'id_faq', 'contacts' => 'id_contact', 'photos' => 'id_photo', 'sponsors' => 'id_sponsor', 'sponsorship-packages' => 'id_package', 'sponsorship-inquiries' => 'id_inquiry', 'legal-documents' => 'id_legal'];
 @endphp
 <section class="space-y-5" x-data="{
     i18n: @js($m), sections: @js(trans('asic-content.sections')), statuses: @js(trans('asic-content.statuses')), legalTypes: @js(trans('asic-content.legal_types')),
     fieldDefs: @js($fieldDefs), titleField: @js($titleField), keys: @js($keys),
-    inquiryStatuses: @js(\App\Models\SponsorshipInquiry::STATUSES),
+    inquiryStatuses: @js(\App\Models\SponsorshipInquiry::STATUSES), sponsorCategories: @js(trans('asic-content.sponsor_categories')),
     tab: 'event-content', events: [], idEvent: '', rows: [], loading: true, error: '',
     modal: false, editing: null, form: {}, fieldErrors: {}, formError: '', saving: false,
     missingLegal: [], preview: null,
@@ -56,6 +57,10 @@
         if (this.tab === 'photos' && !this.editing) {
             const data = new FormData(event.target); data.append('id_event', this.idEvent);
             response = await window.asicApi.upload(base, data);
+        } else if (this.tab === 'sponsors') {
+            const data = new FormData(event.target);
+            if (!this.editing) data.append('id_event', this.idEvent);
+            response = await window.asicApi.upload(this.editing ? base + '/' + this.editing : base, data);
         } else {
             response = this.editing ? await window.asicApi.patch(base + '/' + this.editing, this.payload()) : await window.asicApi.post(base, this.payload());
         }
@@ -143,6 +148,8 @@
                     <tr class="border-b border-surface-container-highest align-top">
                         <td class="p-3 text-xs text-on-surface-variant" x-text="index + 1"></td>
                         <td class="p-3">
+                            <img x-show="tab === 'sponsors' && row.logo_url" :src="row.logo_url" :alt="row.nama" class="mb-2 h-12 w-auto max-w-[140px] object-contain">
+                            <p class="text-xs text-on-surface-variant" x-show="tab === 'sponsors'" x-text="[sponsorCategories[row.kategori] || row.kategori, row.tingkat].filter(Boolean).join(' · ')"></p>
                             <img x-show="tab === 'photos' && row.url" :src="row.url" :alt="row.caption_id || row.caption_en || ''" class="mb-2 h-16 w-24 rounded object-cover">
                             <p class="font-semibold" x-text="title(row)"></p>
                             <p class="text-xs text-on-surface-variant" x-show="tab === 'event-content'" x-text="sections[row.section] || row.section"></p>
@@ -186,11 +193,12 @@
             <p x-show="formError" x-text="formError" role="alert" class="text-sm text-error"></p>
             <form @submit.prevent="save($event)" class="space-y-3">
                 <template x-for="[name, type, options] in fieldDefs[tab] || []" :key="name">
-                    <div x-show="!(editing && (type === 'file' || (tab === 'legal-documents' && (name === 'jenis' || name === 'versi'))))">
+                    <div x-show="!(editing && ((type === 'file' && tab !== 'sponsors') || (tab === 'legal-documents' && (name === 'jenis' || name === 'versi'))))">
                         <label class="block space-y-1 text-sm"><span x-text="label(name)"></span>
                             <template x-if="type === 'textarea'"><textarea x-model="form[name]" :name="name" rows="5" class="w-full rounded-lg border-surface-container-highest"></textarea></template>
-                            <template x-if="type === 'select'"><select x-model="form[name]" :name="name" class="w-full rounded-lg border-surface-container-highest"><template x-for="option in options" :key="option"><option :value="option" x-text="sections[option] || legalTypes[option] || option"></option></template></select></template>
+                            <template x-if="type === 'select'"><select x-model="form[name]" :name="name" class="w-full rounded-lg border-surface-container-highest"><template x-for="option in options" :key="option"><option :value="option" x-text="sections[option] || legalTypes[option] || sponsorCategories[option] || option"></option></template></select></template>
                             <template x-if="type === 'file'"><input type="file" :name="name" accept="image/jpeg,image/png,image/webp" class="w-full text-sm"></template>
+                            <template x-if="type === 'file' && tab === 'sponsors'"><span class="block text-xs text-on-surface-variant" x-text="editing ? i18n.logo_keep : i18n.logo_hint"></span></template>
                             <template x-if="['text', 'date', 'number'].includes(type)"><input :type="type" x-model="form[name]" :name="name" class="w-full rounded-lg border-surface-container-highest"></template>
                         </label>
                         <p x-show="fieldErrors[name]" x-text="(fieldErrors[name] || [])[0]" class="text-xs text-error"></p>

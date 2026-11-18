@@ -70,7 +70,10 @@
                         @endforeach
                     </section>
                 @endif
-                @if($blocks->isEmpty() && $packages->isEmpty())<p class="rounded-2xl bg-white p-6 text-sm text-[#3b4a40]">{{ __('asic-public.empty_page') }}</p>@endif
+                @if($sponsors->isNotEmpty())
+                    <section class="rounded-2xl bg-white p-6 sm:p-8"><h2 class="mb-8 text-center font-serif text-2xl font-semibold text-[#182820]">{{ __('asic-public.partners_title') }}</h2>@include('public.partials.sponsor-logos', ['sponsors' => $sponsors])</section>
+                @endif
+                @if($blocks->isEmpty() && $packages->isEmpty() && $sponsors->isEmpty())<p class="rounded-2xl bg-white p-6 text-sm text-[#3b4a40]">{{ __('asic-public.empty_page') }}</p>@endif
                 @if($event)@include('public._sponsorship_form', ['event' => $event, 'packages' => $packages])@endif
                 @break
 

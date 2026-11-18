@@ -7,6 +7,7 @@ use App\Models\ContactPerson;
 use App\Models\Event;
 use App\Models\EventContent;
 use App\Models\EventPhoto;
+use App\Models\EventSponsor;
 use App\Models\Faq;
 use App\Models\ImportantDate;
 use App\Models\LegalDocument;
@@ -82,6 +83,12 @@ class PublicContent
             ->orderBy('urutan')->orderBy('id_photo')->get() : new Collection;
     }
 
+    public function sponsors(?Event $event): Collection
+    {
+        return $event && Schema::hasTable('event_sponsor') ? EventSponsor::query()->where('id_event', $event->id_event)->where('status', 'Dipublikasikan')
+            ->orderBy('urutan')->orderBy('id_sponsor')->get() : new Collection;
+    }
+
     public function packages(?Event $event): Collection
     {
         return $event ? SponsorshipPackage::query()->where('id_event', $event->id_event)->where('status', 'Dipublikasikan')
@@ -107,7 +114,7 @@ class PublicContent
             'guidelines' => $has(['presentation_oral', 'presentation_poster']),
             'faq' => $this->faqs($event)->isNotEmpty(),
             'contact' => $this->contacts($event)->isNotEmpty() || $this->channels($event)->isNotEmpty(),
-            'sponsorship' => $this->packages($event)->isNotEmpty() || $has(['sponsorship_intro', 'exhibition_intro']),
+            'sponsorship' => $this->packages($event)->isNotEmpty() || $this->sponsors($event)->isNotEmpty() || $has(['sponsorship_intro', 'exhibition_intro']),
             'travel' => $has(['visa', 'travel']),
             'gallery' => $this->photos($event)->isNotEmpty(),
         ] + collect(LegalDocument::TYPES)->mapWithKeys(fn ($jenis) => [$jenis => in_array($jenis, $published, true)])->all();

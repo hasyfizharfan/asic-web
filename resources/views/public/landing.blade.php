@@ -442,6 +442,16 @@
     </div>
 </section>
 
+{{-- PENYELENGGARA & MITRA (logo dari Konten > Sponsor & mitra) --}}
+@if(($sponsors ?? collect())->isNotEmpty())
+<section id="partners" class="scroll-mt-24 bg-white px-6 py-16 lg:px-16">
+    <div class="mx-auto max-w-6xl">
+        <h2 class="text-center font-serif text-3xl font-semibold text-[#182820] sm:text-4xl">{{ __('asic-public.partners_title') }}</h2>
+        <div class="mt-10">@include('public.partials.sponsor-logos', ['sponsors' => $sponsors])</div>
+    </div>
+</section>
+@endif
+
 {{-- AJAKAN BERGABUNG --}}
 <section class="px-6 py-24 lg:px-16">
     <div class="mx-auto grid max-w-7xl overflow-hidden rounded-[32px] bg-white ring-1 ring-[#dce4da] lg:grid-cols-2">

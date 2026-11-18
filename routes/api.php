@@ -11,6 +11,7 @@ use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\CommunicationChannelController;
 use App\Http\Controllers\ContentItemController;
 use App\Http\Controllers\ContentPhotoController;
+use App\Http\Controllers\ContentSponsorController;
 use App\Http\Controllers\DigitalSignatureController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTemplateController;
@@ -266,6 +267,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
                 Route::get($contentType.'/{content_id}', [ContentItemController::class, 'show'])->whereNumber('content_id')->defaults('content_type', $contentType)->name($contentType.'.show');
             }
             Route::get('photos', [ContentPhotoController::class, 'index'])->name('photos.index');
+            Route::get('sponsors', [ContentSponsorController::class, 'index'])->name('sponsors.index');
             Route::get('sponsorship-inquiries', [SponsorshipInquiryController::class, 'index'])->name('sponsorship-inquiries.index');
             Route::get('sponsorship-inquiries/{id_inquiry}', [SponsorshipInquiryController::class, 'show'])->whereNumber('id_inquiry')->name('sponsorship-inquiries.show');
             Route::get('legal-documents', [LegalDocumentController::class, 'index'])->name('legal-documents.index');
@@ -294,6 +296,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
                 Route::delete($contentType.'/{content_id}', [ContentItemController::class, 'destroy'])->whereNumber('content_id')->defaults('content_type', $contentType)->name($contentType.'.destroy');
             }
             Route::post('photos', [ContentPhotoController::class, 'store'])->name('photos.store');
+            Route::patch('sponsors/reorder', [ContentSponsorController::class, 'reorder'])->name('sponsors.reorder');
+            Route::post('sponsors', [ContentSponsorController::class, 'store'])->name('sponsors.store');
+            Route::match(['post', 'patch'], 'sponsors/{id_sponsor}', [ContentSponsorController::class, 'update'])->whereNumber('id_sponsor')->name('sponsors.update');
+            Route::delete('sponsors/{id_sponsor}', [ContentSponsorController::class, 'destroy'])->whereNumber('id_sponsor')->name('sponsors.destroy');
             Route::patch('photos/{id_photo}', [ContentPhotoController::class, 'update'])->whereNumber('id_photo')->name('photos.update');
             Route::delete('photos/{id_photo}', [ContentPhotoController::class, 'destroy'])->whereNumber('id_photo')->name('photos.destroy');
             Route::patch('sponsorship-inquiries/{id_inquiry}', [SponsorshipInquiryController::class, 'update'])->whereNumber('id_inquiry')->name('sponsorship-inquiries.update');

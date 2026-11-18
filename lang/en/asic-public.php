@@ -61,4 +61,12 @@ return [
         'failed' => 'The request could not be sent. Check the form and try again.',
     ],
     'register_terms' => 'I have read and agree to the :terms, :privacy, and :ethics.',
+    'partners_title' => 'Organizers & partners',
+    'partner_groups' => [
+        'Penyelenggara' => 'Organized by',
+        'Pendukung' => 'Supported by',
+        'Sponsor' => 'Sponsors',
+        'Mitra Publikasi' => 'Publication partners',
+        'Mitra Media' => 'Media partners',
+    ],
 ];

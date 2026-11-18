@@ -61,4 +61,12 @@ return [
         'failed' => 'Permintaan gagal dikirim. Periksa isian lalu coba lagi.',
     ],
     'register_terms' => 'Saya telah membaca dan menyetujui :terms, :privacy, dan :ethics.',
+    'partners_title' => 'Penyelenggara & mitra',
+    'partner_groups' => [
+        'Penyelenggara' => 'Diselenggarakan oleh',
+        'Pendukung' => 'Didukung oleh',
+        'Sponsor' => 'Sponsor',
+        'Mitra Publikasi' => 'Mitra publikasi',
+        'Mitra Media' => 'Mitra media',
+    ],
 ];
