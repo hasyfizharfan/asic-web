@@ -111,6 +111,7 @@ return [
         'narasumber_berhasil_ditambahkan' => 'The speaker has been added.',
         'narasumber_tidak_ditemukan' => 'Speaker not found.',
         'naskah_abstrak_belum_dikirimkan_untuk_pendaftaran' => 'No abstract manuscript has been submitted for this registration.',
+        'abstract_already_decided' => 'The abstract has already been decided by the Abstract Team (:status), so it cannot be resubmitted.',
         'naskah_abstrak_berhasil_diunggah_dengan_status_dia' => 'The abstract manuscript has been uploaded with status Submitted.',
         'pendaftaran_aktif_dengan_pembayaran_terverifikasi' => 'No active registration with verified payment was found for this session.',
         'pendaftaran_kegiatan_seminar_berhasil_disimpan' => 'The seminar registration has been saved.',

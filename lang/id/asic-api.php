@@ -111,6 +111,7 @@ return [
         'narasumber_berhasil_ditambahkan' => 'Narasumber berhasil ditambahkan.',
         'narasumber_tidak_ditemukan' => 'Narasumber tidak ditemukan.',
         'naskah_abstrak_belum_dikirimkan_untuk_pendaftaran' => 'Naskah abstrak belum dikirimkan untuk pendaftaran ini.',
+        'abstract_already_decided' => 'Abstrak sudah diputuskan Tim Abstrak (:status) sehingga tidak dapat dikirim ulang.',
         'naskah_abstrak_berhasil_diunggah_dengan_status_dia' => 'Naskah abstrak berhasil diunggah dengan status Diajukan.',
         'pendaftaran_aktif_dengan_pembayaran_terverifikasi' => 'Pendaftaran aktif dengan pembayaran terverifikasi tidak ditemukan untuk sesi ini.',
         'pendaftaran_kegiatan_seminar_berhasil_disimpan' => 'Pendaftaran kegiatan seminar berhasil disimpan.',

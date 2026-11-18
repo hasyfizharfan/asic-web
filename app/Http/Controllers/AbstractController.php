@@ -160,6 +160,15 @@ class AbstractController extends Controller
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
+        // Abstrak yang sudah diputuskan Tim Abstrak tidak boleh diganti (status tidak boleh kembali ke Diajukan).
+        $decided = $registration->abstractSubmission?->status_abstrak;
+        if ($decided !== null && $decided !== 'Diajukan') {
+            return response()->json([
+                'success' => false,
+                'message' => __('asic-api.messages.abstract_already_decided', ['status' => $decided]),
+            ], Response::HTTP_CONFLICT);
+        }
+
         $validated = $request->validated();
         $file = $request->file('file_abstrak');
 
