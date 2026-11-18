@@ -138,11 +138,16 @@ class AuthController extends Controller
         // Muat relasi role dan participant beserta accessor full_name
         $user->load(['role', 'participant']);
 
-        // Email konfirmasi pendaftaran (akun langsung aktif; gagal kirim tidak membatalkan pendaftaran).
+        // Verifikasi email: hanya bila email benar-benar bisa dikirim; bila tidak, akun langsung aktif.
+        $canMail = MailGuard::allows($user->email);
+        $needsVerification = $canMail && config('asic.require_email_verification', true);
+        if ($needsVerification) {
+            $user->forceFill(['email_verified_at' => null])->save();
+        }
         $emailSent = false;
         try {
-            if (MailGuard::allows($user->email)) {
-                $user->notify((new WelcomeParticipant)->locale(MailGuard::localeForCountry($user->participant?->country)));
+            if ($canMail) {
+                $user->notifyNow((new WelcomeParticipant)->locale(MailGuard::localeForCountry($user->participant?->country)));
                 $emailSent = true;
             }
         } catch (\Throwable $e) {
@@ -151,15 +156,16 @@ class AuthController extends Controller
         if ($request->hasSession()) {
             $request->session()->flash('registered_email', $user->email);
             $request->session()->flash('registered_email_sent', $emailSent);
+            $request->session()->flash('registered_needs_verification', $needsVerification);
         }
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => $emailSent
-                    ? __('asic-api.messages.register_success_email', ['email' => $user->email])
-                    : __('asic-api.messages.register_success'),
-                'activation_link_required' => false,
+                'message' => $needsVerification
+                    ? __('asic-api.messages.register_success_verify', ['email' => $user->email])
+                    : ($emailSent ? __('asic-api.messages.register_success_email', ['email' => $user->email]) : __('asic-api.messages.register_success')),
+                'activation_link_required' => $needsVerification,
                 'confirmation_email_sent' => $emailSent,
                 'data' => [
                     'id_user' => $user->id_user,
@@ -253,6 +259,20 @@ class AuthController extends Controller
             throw ValidationException::withMessages([
                 'email' => ['Akun Anda berstatus Nonaktif. Silakan hubungi Administrator.'],
             ]);
+        }
+
+        // 4b. Peserta yang mendaftar sendiri wajib memverifikasi email terlebih dahulu
+        $user->loadMissing('role');
+        if ($user->needsEmailVerification()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('asic-auth.verify.required', ['email' => $user->email]),
+                    'needs_verification' => true,
+                ], Response::HTTP_FORBIDDEN);
+            }
+
+            throw ValidationException::withMessages(['email' => [__('asic-auth.verify.required', ['email' => $user->email])]]);
         }
 
         // 5. Eksekusi login sesi

@@ -36,6 +36,8 @@ return [
 
     // Notifikasi status juga dikirim ke email peserta (butuh MAIL_* di .env; MAIL_MAILER=log = hanya dicatat).
     'notify_email' => (bool) env('ASIC_NOTIFY_EMAIL', true),
+    // Peserta yang mendaftar sendiri wajib mengklik tautan verifikasi di email sebelum bisa masuk.
+    'require_email_verification' => (bool) env('ASIC_REQUIRE_EMAIL_VERIFICATION', true),
     // Jangan kirim email ke domain uji (.test/.example/.invalid), mis. peserta contoh @demo.asic.test.
     'skip_reserved_email_domains' => (bool) env('ASIC_SKIP_RESERVED_EMAIL_DOMAINS', true),
     'event_short_name' => env('ASIC_EVENT_SHORT_NAME', '4th ASIC 2027'),

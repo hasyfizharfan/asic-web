@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'verify' => [
+        'title' => 'Account created, please verify your email',
+        'sent' => 'We have sent a verification link to :email. Open that email (also check your Spam folder), click "Verify my email", then sign in here.',
+        'required' => 'The email :email has not been verified yet. Click the verification link we sent to your email (also check your Spam folder), or resend the link.',
+        'resend' => 'Resend verification link',
+        'resending' => 'Sending…',
+        'resent' => 'If that email is registered and not yet verified, a new verification link has been sent. Check your Inbox and Spam folder.',
+        'verified_title' => 'Email verified',
+        'verified_body' => 'Your account is now active. Please sign in.',
+        'invalid_title' => 'Verification link is not valid',
+        'invalid_body' => 'The link has expired or is incomplete. Enter your email and choose "Resend verification link".',
+    ],
     'registered_title' => 'Account created',
     'registered_sent' => 'A confirmation email has been sent to :email. If it is not in your Inbox, check your Spam folder. Please sign in with your email and password.',
     'registered_plain' => 'Please sign in with the email and password you just created.',

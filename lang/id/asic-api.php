@@ -27,6 +27,7 @@ return [
         'akun_admin_tidak_dapat_menonaktifkan_atau_menghapu' => 'Akun Admin tidak dapat menonaktifkan atau menghapus akunnya sendiri.',
         'akun_admin_tidak_dapat_menurunkan_perannya_sendiri' => 'Akun Admin tidak dapat menurunkan perannya sendiri.',
         'akun_anda_berstatus_nonaktif_silakan_hubungi_admin' => 'Akun Anda berstatus Nonaktif. Silakan hubungi Administrator.',
+        'register_success_verify' => 'Akun berhasil dibuat. Tautan verifikasi telah dikirim ke :email. Klik tautan itu sebelum masuk.',
         'register_success' => 'Akun berhasil dibuat. Silakan masuk.',
         'register_success_email' => 'Akun berhasil dibuat. Email konfirmasi telah dikirim ke :email.',
         'akun_delegasi_berhasil_dibuat_tautan_aktivasi_inst' => 'Akun delegasi berhasil dibuat. Tautan aktivasi instan telah dikirimkan ke alamat email institusi Anda.',

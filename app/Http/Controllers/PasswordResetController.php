@@ -207,6 +207,10 @@ class PasswordResetController extends Controller
         $user->update([
             'password' => Hash::make($validated['password']),
         ]);
+        // Tautan reset dikirim ke email ini, jadi email terbukti milik pengguna.
+        if ($user->email_verified_at === null) {
+            $user->forceFill(['email_verified_at' => now()])->save();
+        }
 
         // Hapus token yang telah berhasil digunakan
         DB::table('password_reset_tokens')->where('email', $email)->delete();

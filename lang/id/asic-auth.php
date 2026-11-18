@@ -1,6 +1,18 @@
 <?php
 
 return [
+    'verify' => [
+        'title' => 'Akun berhasil dibuat, tinggal verifikasi email',
+        'sent' => 'Kami telah mengirim tautan verifikasi ke :email. Buka email itu (periksa juga folder Spam), klik "Verifikasi email saya", lalu masuk di sini.',
+        'required' => 'Email :email belum diverifikasi. Klik tautan verifikasi yang kami kirim ke email Anda (periksa juga folder Spam), atau kirim ulang tautannya.',
+        'resend' => 'Kirim ulang tautan verifikasi',
+        'resending' => 'Mengirim…',
+        'resent' => 'Bila email tersebut terdaftar dan belum diverifikasi, tautan verifikasi baru sudah dikirim. Periksa Kotak Masuk dan folder Spam.',
+        'verified_title' => 'Email berhasil diverifikasi',
+        'verified_body' => 'Akun Anda sudah aktif. Silakan masuk.',
+        'invalid_title' => 'Tautan verifikasi tidak berlaku',
+        'invalid_body' => 'Tautan sudah kedaluwarsa atau tidak lengkap. Masukkan email Anda lalu pilih "Kirim ulang tautan verifikasi".',
+    ],
     'registered_title' => 'Akun berhasil dibuat',
     'registered_sent' => 'Email konfirmasi telah dikirim ke :email. Bila tidak ada di Kotak Masuk, periksa folder Spam. Silakan masuk dengan email dan kata sandi Anda.',
     'registered_plain' => 'Silakan masuk dengan email dan kata sandi yang baru Anda buat.',

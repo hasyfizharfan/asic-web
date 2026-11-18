@@ -16,6 +16,10 @@ return [
         'reregistered' => ['title' => 'Re-registration recorded', 'body' => 'Re-registration for registration #:id has been recorded at the secretariat desk.'],
     ],
     'welcome' => [
+        'subject_verify' => 'Verify your email - :event',
+        'created_verify' => 'Thank you for registering for :event with the email :email. One more step: click the button below to verify your email and activate your account.',
+        'verify_button' => 'Verify my email',
+        'verify_expiry' => 'The link is valid for :hours hours. If it expires, open the sign-in page and choose "Resend verification link".',
         'subject' => 'Account registration successful - :event',
         'created' => 'Your :event account has been created with the email :email and is ready to use.',
         'next' => 'Next steps: sign in to the participant portal, complete the registration form (choose your participant type), then submit your abstract if you are a presenter. All documents (LoA, invoice, receipt, certificate) will also be sent to this email.',

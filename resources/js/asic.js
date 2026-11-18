@@ -317,12 +317,29 @@ document.querySelectorAll('form[data-asic-login], form[data-asic-api-form]').for
         if (submit) submit.disabled = false;
         if (!result.ok) {
             showFormErrors(form, result);
+            if (result.data?.needs_verification) document.querySelector('[data-resend-verification]')?.classList.remove('hidden');
             return;
         }
 
         window.asicApi.showToast(result.data?.message || asicT('success'), 'success');
         const redirect = result.data?.data?.redirect_url || form.dataset.successRedirect || '/login';
         window.location.assign(redirect);
+    });
+});
+
+// Kirim ulang tautan verifikasi email (halaman masuk peserta).
+document.querySelectorAll('[data-resend-btn]').forEach((button) => {
+    button.addEventListener('click', async () => {
+        const email = document.querySelector('form[data-asic-login] input[name="email"]')?.value?.trim();
+        const msg = button.closest('[data-resend-verification]')?.querySelector('[data-resend-msg]');
+        if (!email) { document.querySelector('form[data-asic-login] input[name="email"]')?.focus(); return; }
+        const label = button.querySelector('span:last-child');
+        button.disabled = true;
+        if (label) label.textContent = button.dataset.busy;
+        const result = await window.asicApi.post('/api/email/verification-notification', { email });
+        button.disabled = false;
+        if (label) label.textContent = button.dataset.label;
+        if (msg) { msg.textContent = result.data?.message || result.error || ''; msg.classList.remove('hidden'); }
     });
 });
 

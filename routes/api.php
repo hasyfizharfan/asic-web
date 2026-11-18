@@ -14,6 +14,7 @@ use App\Http\Controllers\ContentPhotoController;
 use App\Http\Controllers\DigitalSignatureController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\DocumentTemplateController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventScheduleController;
 use App\Http\Controllers\EventSessionController;
@@ -45,6 +46,8 @@ use Illuminate\Support\Facades\Route;
 // =========================================================================
 Route::post('/register', [AuthController::class, 'register'])->name('api.register');
 Route::post('/login', [AuthController::class, 'login'])->name('api.login');
+Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+    ->middleware('throttle:3,1')->name('api.verification.resend');
 Route::post('/password/forgot-username', [AuthController::class, 'forgotUsername'])->name('api.password.forgot-username');
 Route::post('/password/email', [PasswordResetController::class, 'sendResetLinkEmail'])->name('api.password.email');
 Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLinkEmail'])->name('api.password.forgot');

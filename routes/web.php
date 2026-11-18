@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthPageController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\Portal\AdminController;
 use App\Http\Controllers\Portal\ParticipantController;
 use App\Http\Controllers\Portal\ReviewerController;
@@ -41,6 +42,8 @@ Route::get('/secretariat/login', [AuthPageController::class, 'login'])->defaults
 Route::get('/treasurer/login', [AuthPageController::class, 'login'])->defaults('portal', 'treasurer')->name('auth.treasurer.login');
 Route::get('/reviewer/login', [AuthPageController::class, 'login'])->defaults('portal', 'reviewer')->name('auth.reviewer.login');
 Route::get('/admin/login', [AuthPageController::class, 'login'])->defaults('portal', 'admin')->name('auth.admin.login');
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->whereNumber('id')->middleware(['signed', 'throttle:10,1'])->name('verification.verify');
 Route::get('/password/reset/{token}', [AuthPageController::class, 'passwordReset'])->name('password.reset');
 
 Route::middleware('auth:sanctum')->group(function (): void {

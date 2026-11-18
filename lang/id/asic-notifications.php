@@ -16,6 +16,10 @@ return [
         'reregistered' => ['title' => 'Registrasi ulang tercatat', 'body' => 'Registrasi ulang untuk registrasi #:id sudah tercatat di meja sekretariat.'],
     ],
     'welcome' => [
+        'subject_verify' => 'Verifikasi email Anda - :event',
+        'created_verify' => 'Terima kasih telah mendaftar di :event dengan email :email. Satu langkah lagi: klik tombol di bawah untuk memverifikasi email dan mengaktifkan akun Anda.',
+        'verify_button' => 'Verifikasi email saya',
+        'verify_expiry' => 'Tautan berlaku :hours jam. Bila kedaluwarsa, buka halaman masuk lalu pilih "Kirim ulang tautan verifikasi".',
         'subject' => 'Pendaftaran akun berhasil - :event',
         'created' => 'Akun Anda untuk :event sudah berhasil dibuat dengan email :email dan sudah bisa langsung dipakai.',
         'next' => 'Langkah berikutnya: masuk ke portal peserta, lengkapi formulir registrasi (pilih jenis peserta), lalu kirim abstrak bila Anda pemakalah. Semua dokumen (LoA, invoice, receipt, sertifikat) juga akan dikirim ke email ini.',
