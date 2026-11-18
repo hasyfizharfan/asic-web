@@ -6,14 +6,15 @@
 @source '../**/*.js';
 
 @theme {
-    /* Fonts: Plus Jakarta Sans (UI), Fraunces (judul landing) */
-    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-    --font-calibri: 'Plus Jakarta Sans', sans-serif;
-    --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-    --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
-    --font-outfit: 'Plus Jakarta Sans', sans-serif;
+    /* Font: Calibri sesuai permintaan mitra (K-03). Calibri milik Microsoft dan tidak di-host di server;
+       perangkat tanpa Calibri (Android, iPhone, Linux) memakai Carlito dari Google Fonts (lebar huruf sama, lisensi OFL). */
+    --font-sans: Calibri, 'Carlito', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    --font-calibri: Calibri, 'Carlito', sans-serif;
+    --font-display: Calibri, 'Carlito', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: Calibri, 'Carlito', ui-sans-serif, system-ui, sans-serif;
+    --font-outfit: Calibri, 'Carlito', sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    --font-poppins: 'Fraunces', Georgia, serif;
+    --font-poppins: Calibri, 'Carlito', sans-serif;
 
     /* ASIC Material 3 Color System (Portal) */
     --color-primary: #0B5D2E; /* Figma: Primary Green */
@@ -96,6 +97,8 @@
 /* Base Body Styles */
 body {
     font-family: var(--font-sans);
+    /* Huruf kecil Calibri lebih pendek dari font sebelumnya; disamakan tingginya agar tetap mudah dibaca. */
+    font-size-adjust: 0.5;
     color: var(--color-on-surface);
     background-color: var(--color-surface);
     -webkit-font-smoothing: antialiased;

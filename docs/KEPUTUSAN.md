@@ -12,7 +12,7 @@ Status:
 |---|---|---|---|---|---|---|
 | K-01 | Metode pembayaran | Transfer bank Mandiri (peserta dalam & luar negeri), PayPal (hanya tagihan USD), Wise/Flip ke rekening bank yang sama. Peserta memilih metode saat unggah bukti; Bendahara memverifikasi manual. Tanpa payment gateway. | Template invoice panitia (Mandiri + SWIFT, PayPal/Wise/Flip untuk peserta internasional) | Ditetapkan tim | 18 Nov 2026 | Pengaturan > Informasi pembayaran |
 | K-02 | QR kehadiran | Dua QR: QR pribadi (dipindai panitia di meja registrasi ulang luring) dan QR sesi (dipindai peserta untuk absen, luring & daring). | Meeting 2: QR untuk semua peserta + QR per sesi | Ditetapkan tim | 18 Nov 2026 | Sekretariat > Kehadiran |
-| K-03 | Font | Plus Jakarta Sans + Fraunces. Permintaan mitra (Calibri) belum diterapkan. | Keputusan tim desain | Sementara | 18 Nov 2026 | `resources/css/asic.css` |
+| K-03 | Font | Calibri di seluruh website dan email. Perangkat tanpa Calibri (Android, iPhone, Linux) memakai Carlito, pengganti Calibri berlisensi bebas dengan lebar huruf sama. Dokumen PDF tetap DejaVu Sans. | Meeting 2: permintaan mitra | Disepakati mitra | 18 Nov 2026 | `resources/css/asic.css`, `partials/fonts.blade.php` |
 | K-04 | Biaya transfer | Semua biaya transfer, biaya PayPal, dan selisih kurs ditanggung peserta; dana yang diterima harus sama dengan tagihan. Transfer bank internasional memakai opsi biaya OUR. Kekurangan dana ditolak Bendahara dengan alasan, lalu peserta mengunggah bukti kekurangannya. | Praktik umum konferensi internasional | Sementara | 18 Nov 2026 | Teks di halaman bayar & invoice PDF |
 | K-05 | Perpanjangan batas bayar | Hanya invoice bertarif reguler. Dilakukan Bendahara (Detail pembayaran > Perpanjang), maksimal **2 kali**. Jika lewat jatuh tempo lagi setelah perpanjangan ke-2, registrasi otomatis **Dibatalkan** dan peserta diberi tahu. Invoice reguler yang lewat jatuh tempo tanpa perpanjangan berstatus Kedaluwarsa (tidak otomatis batal). | Meeting 2: "harga reguler bisa diperpanjang 1–2 kali, setelah itu peserta dibatalkan" (dipakai angka atas: 2) | Sementara (angka 2) | 18 Nov 2026 | `ASIC_MAX_INVOICE_EXTENSIONS` (.env) |
 | K-06 | Early bird telat bayar | Invoice early bird tidak bisa diperpanjang. Saat lewat jatuh tempo, sistem otomatis memindahkan invoice ke tarif periode berikutnya (reguler) dengan **nomor invoice sama**, PDF bertanda "Revised invoice", batas bayar baru 7 hari, dan notifikasi + email ke peserta. Dicek tiap jam (`invoices:process-overdue`). | Meeting 2: diskon hangus bila lewat; "kalau bisa dipindah ke harga reguler" | Sementara | 18 Nov 2026 | `App\Services\OverdueInvoiceProcessor` |
@@ -27,6 +27,7 @@ Status:
 ## Riwayat perubahan
 - 18 Nov 2026: dokumen dibuat (K-01 s.d. K-13); K-04 s.d. K-08 diterapkan di kode (ea1c8e4).
 - 18 Nov 2026: audit QA (505a1dc): kontak publik memakai alamat resmi panitia dari template (`asic@agr.unand.ac.id`); alamat `@asic.unand.ac.id` hanya dipakai sebagai nama login akun uji (domainnya tidak menerima email).
+- 18 Nov 2026: K-03 diubah dari Plus Jakarta Sans (sementara) ke Calibri sesuai permintaan mitra (keputusan tim, Bang).
 
 ## Yang perlu ditanyakan ke panitia
 1. K-05: perpanjangan maksimal 1 atau 2 kali?
@@ -34,4 +35,3 @@ Status:
 3. K-04/K-07: biaya transfer & kurs ditanggung peserta? Berapa persen biaya PayPal yang dibebankan? Kurs USD→IDR yang dipakai?
 4. K-08: apakah abstrak boleh dikembalikan untuk diperbaiki, atau cukup diterima/ditolak dengan saran?
 5. K-12: kategori peserta "Lecturer" atau "Regular"?
-6. K-03: tetap Calibri sesuai permintaan awal?
