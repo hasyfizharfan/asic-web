@@ -59,7 +59,7 @@ return [
 
     // Footer
     'footer_affil' => 'Fakultas Pertanian, Universitas Andalas, Padang, Indonesia',
-    'footer_email' => 'sec.asic2027@agr.unand.ac.id',
+    'footer_email' => 'asic@agr.unand.ac.id',
 
     // Landing lengkap (desain Figma)
     'sec' => [

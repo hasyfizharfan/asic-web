@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponses;
+use App\Models\Role;
 use App\Services\ReportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -48,6 +49,11 @@ class RecapController extends Controller
 
     public function attendance(Request $request, ReportService $r): JsonResponse
     {
+        // Peserta punya izin scan_attendance_qr (untuk absen), tetapi rekap kehadiran hanya untuk panitia.
+        if ($request->user()?->role?->nama_role === Role::ROLE_PESERTA) {
+            return $this->fail(__('asic-api.forbidden'), 403);
+        }
+
         return $this->ok(__('asic-api.messages.rekap_kehadiran_per_sesi_berhasil_dimuat'), $r->attendance(self::filters($request)));
     }
 }

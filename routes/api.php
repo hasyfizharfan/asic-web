@@ -44,14 +44,14 @@ use Illuminate\Support\Facades\Route;
 // =========================================================================
 // 1. PUBLIC ROUTES (KF-08: Registrasi, Login, dan Reset Kata Sandi)
 // =========================================================================
-Route::post('/register', [AuthController::class, 'register'])->name('api.register');
-Route::post('/login', [AuthController::class, 'login'])->name('api.login');
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register')->name('api.register');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('api.login');
 Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
     ->middleware('throttle:3,1')->name('api.verification.resend');
-Route::post('/password/forgot-username', [AuthController::class, 'forgotUsername'])->name('api.password.forgot-username');
-Route::post('/password/email', [PasswordResetController::class, 'sendResetLinkEmail'])->name('api.password.email');
-Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLinkEmail'])->name('api.password.forgot');
-Route::post('/password/reset', [PasswordResetController::class, 'resetPassword'])->name('api.password.update');
+Route::post('/password/forgot-username', [AuthController::class, 'forgotUsername'])->middleware('throttle:password')->name('api.password.forgot-username');
+Route::post('/password/email', [PasswordResetController::class, 'sendResetLinkEmail'])->middleware('throttle:password')->name('api.password.email');
+Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLinkEmail'])->middleware('throttle:password')->name('api.password.forgot');
+Route::post('/password/reset', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:password')->name('api.password.update');
 
 // Tarif pendaftaran (read-only publik: hanya event & periode Aktif)
 Route::get('/public/registration-fees', [RegistrationFeeController::class, 'publicIndex'])->name('api.public.registration-fees.index');

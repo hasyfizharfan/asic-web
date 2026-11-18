@@ -7,6 +7,9 @@ use App\Models\Role;
 use App\Observers\RegistrationObserver;
 use App\Services\PublicContent;
 use App\Support\PermissionMatrix;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,6 +29,18 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Registration::observe(RegistrationObserver::class);
+
+        // Audit QA 18 Nov 2026: batasi tebakan kata sandi & spam pendaftaran. Per IP dibuat longgar
+        // karena peserta satu kampus bisa berbagi IP yang sama (NAT).
+        RateLimiter::for('login', fn (Request $r) => [
+            Limit::perMinute(5)->by('login|'.strtolower((string) $r->input('email')).'|'.$r->ip()),
+            Limit::perMinute(60)->by('login-ip|'.$r->ip()),
+        ]);
+        RateLimiter::for('register', fn (Request $r) => Limit::perMinute(10)->by('register|'.$r->ip()));
+        RateLimiter::for('password', fn (Request $r) => [
+            Limit::perMinute(3)->by('password|'.strtolower((string) ($r->input('email') ?? $r->input('query'))).'|'.$r->ip()),
+            Limit::perMinute(20)->by('password-ip|'.$r->ip()),
+        ]);
 
         // Nav/footer publik: tautan halaman hanya untuk halaman yang punya isi terpublikasi.
         View::composer(['layouts.public', 'public._topnav'], function ($view): void {

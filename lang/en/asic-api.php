@@ -168,4 +168,7 @@ return [
         'extend_limit' => 'The extension limit has been reached (maximum :max times).',
         'extend_early_bird' => 'Early bird rates cannot be extended. After the due date the invoice automatically moves to the regular rate, which can then be extended.',
     ],
+    'too_many_attempts' => 'Too many attempts. Please try again in :seconds seconds.',
+    'forbidden' => 'Access denied by the permission matrix.',
+    'forgot_username_hint' => 'Participant accounts use the email address as the username. Try the email you registered with, or contact the secretariat at :email.',
 ];

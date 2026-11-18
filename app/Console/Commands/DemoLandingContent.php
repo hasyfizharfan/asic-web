@@ -166,7 +166,7 @@ class DemoLandingContent extends Command
         EventContent::whereKey($this->created['content'] ?? [])->where('section', 'committee')->update(['isi_id' => 'Panitia 4th ASIC 2027', 'isi_en' => '4th ASIC 2027 Committee']);
         foreach (ContactPerson::whereKey($this->created['contact'] ?? [])->get() as $c) {
             $isTreasurer = str_contains($c->nama, 'Bendahara');
-            $c->update(['nama' => $isTreasurer ? 'Bendahara 4th ASIC 2027' : 'Sekretariat 4th ASIC 2027', 'email' => $isTreasurer ? 'bendahara@asic.unand.ac.id' : 'sekretariat@asic.unand.ac.id']);
+            $c->update(['nama' => $isTreasurer ? 'Bendahara 4th ASIC 2027' : 'Sekretariat 4th ASIC 2027', 'email' => config('asic.contact_email') ?: 'asic@agr.unand.ac.id']);
         }
         SponsorshipPackage::whereKey($this->created['package'] ?? [])->get()->each(fn ($p) => $p->update(['nama' => trim(str_replace('(Contoh)', '', $p->nama))]));
     }
@@ -323,7 +323,7 @@ class DemoLandingContent extends Command
         foreach ($faqs as $i => [$qId, $qEn, $aId, $aEn]) {
             $this->track('faq', Faq::create(['id_event' => $event, 'pertanyaan_id' => $qId, 'pertanyaan_en' => $qEn, 'jawaban_id' => $aId, 'jawaban_en' => $aEn, 'kategori' => 'Umum', 'status' => 'Dipublikasikan', 'urutan' => $i])->id_faq);
         }
-        foreach ([['Sekretariat 4th ASIC 2027', 'Sekretariat', 'Secretariat', 'sekretariat@asic.unand.ac.id'], ['Bendahara 4th ASIC 2027', 'Pembayaran', 'Payments', 'bendahara@asic.unand.ac.id']] as $i => [$name, $roleId, $roleEn, $email]) {
+        foreach ([['Sekretariat 4th ASIC 2027', 'Sekretariat', 'Secretariat', config('asic.contact_email') ?: 'asic@agr.unand.ac.id'], ['Bendahara 4th ASIC 2027', 'Pembayaran', 'Payments', config('asic.contact_email') ?: 'asic@agr.unand.ac.id']] as $i => [$name, $roleId, $roleEn, $email]) {
             $this->track('contact', ContactPerson::create(['id_event' => $event, 'nama' => $name, 'peran_id' => $roleId, 'peran_en' => $roleEn, 'email' => $email, 'status' => 'Dipublikasikan', 'urutan' => $i])->id_contact);
         }
         $packages = [

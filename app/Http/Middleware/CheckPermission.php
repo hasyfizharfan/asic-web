@@ -16,7 +16,7 @@ class CheckPermission
         $user = Auth::user();
 
         if (! ($user instanceof UserAccount) || ! app(PermissionMatrix::class)->allows($user, $permission, $minimum)) {
-            return response()->json(['success' => false, 'message' => 'Akses ditolak berdasarkan matriks hak akses.'], Response::HTTP_FORBIDDEN);
+            return response()->json(['success' => false, 'message' => __('asic-api.forbidden')], Response::HTTP_FORBIDDEN);
         }
 
         return $next($request);

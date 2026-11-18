@@ -106,7 +106,7 @@
                     <span>•</span>
                     <span>Format: <strong class="text-on-surface" x-text="abstractData?.metode_presentasi"></strong></span>
                     <span>•</span><span>Tanggal submit: <strong class="text-on-surface" x-text="asicDateTime(abstractData?.tanggal_submit)"></strong></span>
-                    <span>•</span><span>Status: <strong class="text-on-surface" x-text="abstractData?.status_abstrak"></strong></span>
+                    <span>•</span><span>Status: <strong class="text-on-surface" x-text="asicStatus(abstractData?.status_abstrak)"></strong></span>
                 </div>
             </div>
 
@@ -145,7 +145,7 @@
         <div class="lg:col-span-7 bg-surface-container-lowest p-6 rounded-2xl border border-surface-container-highest shadow-xs space-y-3">
             <h2 class="text-sm font-bold text-on-surface uppercase tracking-wider">Riwayat Review</h2>
             <template x-for="review in (abstractData?.reviews || [])" :key="review.id_review">
-                <div class="rounded-xl bg-surface-container-low p-4 space-y-1"><div class="flex justify-between gap-3 text-xs"><strong x-text="review.hasil_review"></strong><time class="text-on-surface-variant" x-text="asicDateTime(review.tanggal_review)"></time></div><p class="text-sm text-on-surface-variant whitespace-pre-line" x-text="review.catatan_review || 'Tanpa catatan'"></p></div>
+                <div class="rounded-xl bg-surface-container-low p-4 space-y-1"><div class="flex justify-between gap-3 text-xs"><strong x-text="asicStatus(review.hasil_review)"></strong><time class="text-on-surface-variant" x-text="asicDateTime(review.tanggal_review)"></time></div><p class="text-sm text-on-surface-variant whitespace-pre-line" x-text="review.catatan_review || 'Tanpa catatan'"></p></div>
             </template>
             <p x-show="abstractData && !abstractData.reviews?.length" class="text-sm text-on-surface-variant">Belum ada riwayat review.</p>
             <div x-show="warnings.length" class="rounded-xl bg-[#fff3c4] text-[#745b00] p-4"><p class="font-bold text-xs">Peringatan tindak lanjut</p><template x-for="(warning, index) in warnings" :key="index"><p class="text-xs mt-1" x-text="warning"></p></template></div>

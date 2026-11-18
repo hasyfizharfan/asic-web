@@ -347,22 +347,12 @@ class AuthController extends Controller
             'query' => ['required', 'string', 'min:3'],
         ]);
 
-        $search = trim($request->string('query'));
-        $users = UserAccount::with(['role', 'participant'])
-            ->where('email', 'like', "%{$search}%")
-            ->orWhereHas('participant', function ($p) use ($search) {
-                $p->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
-            })
-            ->take(5)
-            ->get();
-
+        // Audit QA 18 Nov 2026: dulu mengembalikan jumlah akun yang cocok (nama/email/telepon), sehingga
+        // orang luar bisa mengecek apakah seseorang terdaftar. Kini selalu jawaban umum yang sama.
         return response()->json([
             'success' => true,
             'message' => __('asic-api.messages.instruksi_bantuan_pencarian_username_email_berhasi'),
-            'count' => $users->count(),
-            'hint' => 'Silakan hubungi sekretariat via asic@agr.unand.ac.id jika akun Anda belum ditemukan.',
+            'hint' => __('asic-api.forgot_username_hint', ['email' => config('asic.contact_email') ?: 'asic@agr.unand.ac.id']),
         ], Response::HTTP_OK);
     }
 

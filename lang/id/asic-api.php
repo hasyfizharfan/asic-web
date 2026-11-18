@@ -168,4 +168,7 @@ return [
         'extend_limit' => 'Batas perpanjangan sudah tercapai (maksimal :max kali).',
         'extend_early_bird' => 'Harga early bird tidak dapat diperpanjang. Setelah jatuh tempo, invoice otomatis dipindah ke harga reguler dan baru dapat diperpanjang.',
     ],
+    'too_many_attempts' => 'Terlalu banyak percobaan. Coba lagi dalam :seconds detik.',
+    'forbidden' => 'Akses ditolak berdasarkan matriks hak akses.',
+    'forgot_username_hint' => 'Akun peserta memakai alamat email sebagai nama pengguna. Coba alamat email yang Anda pakai saat mendaftar, atau hubungi sekretariat di :email.',
 ];

@@ -33,6 +33,7 @@
     
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/asic/logo.svg') }}">
     @include('partials.asic-i18n')
+    <script>window.ASIC_STATUS = @js(trans('asic-common.status_values')); window.asicStatus = (v) => (v && window.ASIC_STATUS[v]) || v || '';</script>
     @vite(['resources/css/asic.css', 'resources/js/asic.js'])
     @stack('styles')
 </head>

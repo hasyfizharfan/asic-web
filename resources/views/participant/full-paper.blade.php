@@ -48,7 +48,7 @@
             <button type="submit" :disabled="uploading" class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50 sm:col-span-2" x-text="uploading ? i18n.uploading : i18n.upload"></button>
         </form>
         <div class="space-y-3"><h2 class="text-lg font-bold">{{ $t['uploaded_files'] }}</h2><p x-show="!loading && files.length === 0" class="rounded-xl border border-surface-container-highest p-5 text-sm text-on-surface-variant">{{ $t['empty'] }}</p>
-            <template x-for="file in files" :key="file.id_file"><article class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-surface-container-highest bg-surface-container-lowest p-4"><div><p class="font-semibold" x-text="file.nama_file"></p><p class="text-xs text-on-surface-variant" x-text="file.jenis_file + ' · ' + file.status_file + ' · ' + asicDateTime(file.tanggal_upload)"></p></div><a :href="'/api/participant-files/' + file.id_file + '/download'" class="font-semibold text-primary">{{ $t['download'] }}</a></article></template>
+            <template x-for="file in files" :key="file.id_file"><article class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-surface-container-highest bg-surface-container-lowest p-4"><div><p class="font-semibold" x-text="file.nama_file"></p><p class="text-xs text-on-surface-variant" x-text="file.jenis_file + ' · ' + asicStatus(file.status_file) + ' · ' + asicDateTime(file.tanggal_upload)"></p></div><a :href="'/api/participant-files/' + file.id_file + '/download'" class="font-semibold text-primary">{{ $t['download'] }}</a></article></template>
         </div>
     </section>
 </main>

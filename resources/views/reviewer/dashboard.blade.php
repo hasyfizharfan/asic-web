@@ -47,7 +47,7 @@
                                 <td class="max-w-[260px] truncate px-3 py-3 font-semibold" title="{{ $abstract->judul_abstrak }}">{{ $abstract->judul_abstrak }}</td>
                                 <td class="px-3 py-3">{{ $codeOf($abstract->scope) }}</td>
                                 <td class="px-3 py-3">{{ $abstract->metode_presentasi }}</td>
-                                <td class="px-3 py-3"><x-ui.badge size="sm" :variant="$badge($abstract->status_abstrak)">{{ $abstract->status_abstrak }}</x-ui.badge></td>
+                                <td class="px-3 py-3"><x-ui.badge size="sm" :variant="$badge($abstract->status_abstrak)">{{ \App\Support\StatusLabel::of($abstract->status_abstrak) }}</x-ui.badge></td>
                                 <td class="px-5 py-3 text-right">
                                     <a href="{{ route('portal.reviewer.abstracts.show', ['id' => $abstract->id_abstract]) }}" class="inline-flex min-h-9 items-center rounded-[9px] px-4 py-1.5 text-xs font-bold {{ $abstract->status_abstrak === 'Diajukan' ? 'bg-[#F5C518] text-[#182820] hover:bg-[#fed649]' : 'border border-surface-container-highest text-primary hover:border-primary' }}">{{ $abstract->status_abstrak === 'Diajukan' ? $t['review'] : $t['view'] }}</a>
                                 </td>

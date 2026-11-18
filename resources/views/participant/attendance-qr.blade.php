@@ -108,7 +108,7 @@
                 <h3 class="mt-5 text-sm font-bold">{{ $t('history_title') }}</h3>
                 <p x-show="!sessions.length" class="mt-1 text-sm text-on-surface-variant">{{ $t('history_empty') }}</p>
                 <ul class="mt-2 space-y-2 text-sm" x-show="sessions.length">
-                    <template x-for="row in sessions" :key="row.id_session || row.id_attendance"><li class="flex items-start justify-between gap-2 border-t border-surface-container-high pt-2"><span><span class="block font-semibold" x-text="row.event_session?.nama_sesi || row.nama_sesi || ''"></span><span class="block text-xs text-on-surface-variant" x-text="asicDateTime(row.tanggal_check_in)"></span></span><span class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-primary"><span class="material-symbols-outlined text-[16px]">check_circle</span><span x-text="row.status_kehadiran || ''"></span></span></li></template>
+                    <template x-for="row in sessions" :key="row.id_session || row.id_attendance"><li class="flex items-start justify-between gap-2 border-t border-surface-container-high pt-2"><span><span class="block font-semibold" x-text="row.event_session?.nama_sesi || row.nama_sesi || ''"></span><span class="block text-xs text-on-surface-variant" x-text="asicDateTime(row.tanggal_check_in)"></span></span><span class="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-primary"><span class="material-symbols-outlined text-[16px]">check_circle</span><span x-text="asicStatus(row.status_kehadiran) || ''"></span></span></li></template>
                 </ul>
             </article>
 

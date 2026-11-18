@@ -37,6 +37,9 @@ return [
     // Email panitia penerima permintaan sponsorship/exhibition (opsional; kosong = tanpa email).
     'contact_email' => env('ASIC_CONTACT_EMAIL'),
 
+    // Dokumentasi API (/api/documentation, /docs) disembunyikan di production kecuali diaktifkan.
+    'public_api_docs' => (bool) env('ASIC_PUBLIC_API_DOCS', false),
+
     // Notifikasi status juga dikirim ke email peserta (butuh MAIL_* di .env; MAIL_MAILER=log = hanya dicatat).
     'notify_email' => (bool) env('ASIC_NOTIFY_EMAIL', true),
     // Peserta yang mendaftar sendiri wajib mengklik tautan verifikasi di email sebelum bisa masuk.

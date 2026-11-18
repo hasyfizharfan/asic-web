@@ -39,13 +39,13 @@
     <p x-show="loading" role="status" class="rounded-xl bg-surface-container-low p-4 text-sm">{{ $t['loading'] }}</p>
     <p x-show="loadError" x-text="loadError" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-on-error-container"></p>
     <section x-show="registration" class="space-y-4 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5">
-        <p class="text-sm">{{ $t['registration'] }} <strong x-text="registration?.id_registration"></strong> · {{ $t['payment'] }} <strong x-text="registration?.invoice?.status_pembayaran || @js(__('asic-participant.flow.invoice_after_acceptance'))"></strong></p>
+        <p class="text-sm">{{ $t['registration'] }} <strong x-text="registration?.id_registration"></strong> · {{ $t['payment'] }} <strong x-text="asicStatus(registration?.invoice?.status_pembayaran) || @js(__('asic-participant.flow.invoice_after_acceptance'))"></strong></p>
         <p x-show="!registration?.invoice" class="text-xs text-on-surface-variant">{{ __('asic-participant.flow.abstract_payment_note') }}</p>
         <p class="text-xs"><a href="{{ route('public.downloads') }}" target="_blank" rel="noopener" class="font-semibold text-primary underline">{{ __('asic-documents.public.title') }}</a></p>
         <template x-if="abstractSubmission">
             <div class="space-y-3 rounded-xl bg-surface-container-low p-4">
                 <p class="text-sm">{{ $t['title_label'] }}: <strong x-text="abstractSubmission.judul_abstrak"></strong></p>
-                <p class="text-sm">{{ $t['status_label'] }}: <strong x-text="abstractSubmission.status_abstrak"></strong></p>
+                <p class="text-sm">{{ $t['status_label'] }}: <strong x-text="asicStatus(abstractSubmission.status_abstrak)"></strong></p>
                 <template x-if="abstractSubmission.status_abstrak !== 'Diajukan' && abstractSubmission.latest_review?.catatan_review">
                     <div class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3 text-sm"><p class="font-semibold">{{ $t['review_note'] }}</p><p class="mt-1 whitespace-pre-line" x-text="abstractSubmission.latest_review.catatan_review"></p></div>
                 </template>

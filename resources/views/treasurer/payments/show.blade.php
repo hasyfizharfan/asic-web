@@ -56,7 +56,7 @@
             <div><dt class="text-sm text-on-surface-variant">{{ $t['invoice_no'] }}</dt><dd class="font-semibold" x-text="invoice?.nomor_invoice"></dd></div>
             <div><dt class="text-sm text-on-surface-variant">{{ $t['participant'] }}</dt><dd x-text="invoice?.registration?.participant?.full_name || invoice?.registration?.participant?.user_account?.email"></dd></div>
             <div><dt class="text-sm text-on-surface-variant">{{ $t['total'] }}</dt><dd class="font-semibold" x-text="window.asicMoney(invoice?.total_tagihan, invoice?.mata_uang)"></dd></div>
-            <div><dt class="text-sm text-on-surface-variant">{{ $t['status'] }}</dt><dd x-text="invoice?.status_pembayaran + (ext.registration_status === 'Dibatalkan' ? ' · ' + i18n.cancelled : '')"></dd></div>
+            <div><dt class="text-sm text-on-surface-variant">{{ $t['status'] }}</dt><dd x-text="asicStatus(invoice?.status_pembayaran) + (ext.registration_status === 'Dibatalkan' ? ' · ' + i18n.cancelled : '')"></dd></div>
             <div><dt class="text-sm text-on-surface-variant">{{ $t['due'] }}</dt><dd x-text="asicDate(invoice?.tanggal_jatuh_tempo_baru || invoice?.tanggal_jatuh_tempo)"></dd></div>
             <div><dt class="text-sm text-on-surface-variant">{{ $t['extensions'] }}</dt><dd x-text="ext.count + ' / ' + ext.max + (ext.early_bird ? ' · ' + i18n.early_bird : '')"></dd></div>
             <template x-if="latestProof">

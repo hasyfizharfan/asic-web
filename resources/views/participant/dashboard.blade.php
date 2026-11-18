@@ -179,7 +179,7 @@
                         <h2 class="text-lg font-bold">{{ $t['my_registrations'] }}</h2>
                         @foreach($registrations as $item)
                             <article class="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-4">
-                                <div><h3 class="font-bold">{{ $item->event?->nama_event ?? 'ASIC 2027' }}</h3><p class="text-xs text-on-surface-variant">#{{ $item->id_registration }} · {{ $item->participation_type }} · {{ $item->registration_status }}</p></div>
+                                <div><h3 class="font-bold">{{ $item->event?->nama_event ?? 'ASIC 2027' }}</h3><p class="text-xs text-on-surface-variant">#{{ $item->id_registration }} · {{ $item->participation_type }} · {{ \App\Support\StatusLabel::of($item->registration_status) }}</p></div>
                                 <div class="flex flex-wrap gap-3 text-sm">
                                     @if($item->invoice)<a class="font-semibold text-primary" href="{{ route('portal.participant.payment.checkout', ['id_registration' => $item->id_registration]) }}">Invoice {{ $item->invoice->nomor_invoice }}</a>@endif
                                     <a class="font-semibold text-primary" href="{{ route('portal.participant.documents', ['id_registration' => $item->id_registration]) }}">{{ $t['documents'] }}</a>

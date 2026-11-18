@@ -98,9 +98,9 @@
             <section x-show="selected" class="space-y-3 rounded-xl bg-surface-container-low p-4">
                 <div><h3 class="font-bold" x-text="selected?.participant?.full_name"></h3><p class="text-xs text-on-surface-variant" x-text="selected?.participant?.institution || i18n.institution_missing"></p></div>
                 <div class="grid gap-3 text-sm sm:grid-cols-4">
-                    <div><span class="block text-xs text-on-surface-variant">{{ $t('col_registration') }}</span><strong x-text="selected?.registration_status"></strong></div>
+                    <div><span class="block text-xs text-on-surface-variant">{{ $t('col_registration') }}</span><strong x-text="asicStatus(selected?.registration_status)"></strong></div>
                     <div><span class="block text-xs text-on-surface-variant">{{ $t('col_mode') }}</span><strong x-text="selected?.attendance_mode"></strong></div>
-                    <div><span class="block text-xs text-on-surface-variant">{{ $t('col_payment') }}</span><strong x-text="selected?.invoice?.status_pembayaran || i18n.no_invoice"></strong></div>
+                    <div><span class="block text-xs text-on-surface-variant">{{ $t('col_payment') }}</span><strong x-text="asicStatus(selected?.invoice?.status_pembayaran) || i18n.no_invoice"></strong></div>
                     <div><span class="block text-xs text-on-surface-variant">{{ $t('col_rereg') }}</span><strong x-text="selected?.reregistered_at ? asicDateTime(selected.reregistered_at) : i18n.not_yet"></strong></div>
                 </div>
                 <button type="button" @click="manual()" :disabled="!idEvent || busy" class="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-white disabled:opacity-40">{{ $t('manual_btn') }}</button>
