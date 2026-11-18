@@ -66,7 +66,7 @@
         <p x-show="payError" x-text="payError" role="alert" class="rounded-xl bg-error-container p-3 text-sm text-on-error-container"></p>
         <p x-show="payMessage" x-text="payMessage" role="status" class="rounded-xl bg-secondary-container p-3 text-sm text-on-secondary-container"></p>
         <form @submit.prevent="savePay()" class="grid gap-3 sm:grid-cols-2">
-            @foreach(['bank_name', 'account_name', 'account_no', 'swift_code', 'branch'] as $field)
+            @foreach(['bank_name', 'account_name', 'account_no', 'swift_code', 'branch', 'paypal_account'] as $field)
                 <label class="text-sm">{{ $t['fields'][$field] }}<input x-model="pay.{{ $field }}" class="mt-1 block w-full rounded-lg border-surface-container-highest"><span x-show="payErrors.{{ $field }}" x-text="payErrors.{{ $field }}?.[0]" class="text-xs text-error"></span></label>
             @endforeach
             @foreach(['qr_info', 'international_note'] as $field)

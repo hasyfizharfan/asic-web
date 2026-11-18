@@ -21,7 +21,10 @@ class PaymentProof extends Model
 
     public $timestamps = false;
 
-    protected $fillable = ['id_invoice', 'file_bukti', 'tanggal_upload', 'nominal_transfer', 'catatan_peserta'];
+    protected $fillable = ['id_invoice', 'file_bukti', 'tanggal_upload', 'nominal_transfer', 'metode_pembayaran', 'catatan_peserta'];
+
+    /** Metode pembayaran yang diterima panitia (kesepakatan mitra). */
+    public const METHODS = ['bank', 'paypal', 'wise', 'flip'];
 
     protected function casts(): array
     {

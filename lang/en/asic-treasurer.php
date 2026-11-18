@@ -188,7 +188,8 @@ return [
             'swift_code' => 'SWIFT code',
             'branch' => 'Bank branch address',
             'qr_info' => 'QR/other payment channel information',
-            'international_note' => 'Note for international participants (PayPal/Wise/Flip)',
+            'paypal_account' => 'Committee PayPal account (email or paypal.me link)',
+            'international_note' => 'Additional note for international participants (transfer fees, exchange rate, etc.)',
         ],
     ],
     'payment_queue' => [
@@ -199,7 +200,7 @@ return [
         'search' => 'Search invoice number', 'search_btn' => 'Search', 'status_filter' => 'Status', 'all' => 'All', 'waiting' => 'Awaiting verification', 'verified' => 'Verified', 'rejected' => 'Rejected',
         'loading' => 'Loading payments…', 'load_failed' => 'Failed to load the payment queue.', 'empty' => 'No payments for this filter.',
         'col_invoice' => 'Invoice', 'col_participant' => 'Participant & institution', 'col_amount' => 'Amount', 'col_due' => 'Due date', 'col_status' => 'Status', 'col_proof' => 'Proof', 'col_action' => 'Action',
-        'domestic' => 'Domestic rate', 'international' => 'International rate', 'overdue' => 'OVERDUE', 'view_proof' => 'View proof',
+        'domestic' => 'Domestic rate', 'international' => 'International rate', 'overdue' => 'OVERDUE', 'method' => 'Method', 'view_proof' => 'View proof',
         'verify' => 'Verify', 'reject' => 'Reject', 'reject_prompt' => 'Reason for rejecting the transfer proof:', 'verify_failed' => 'Verification failed.', 'updated' => 'Payment status updated.',
     ],
     'refund_policy' => [
@@ -207,5 +208,25 @@ return [
         'rules_title' => 'Refund rules',
         'rules' => ['Publication fees can be refunded if the article is not processed.', 'Seminar fees are not refunded even if the participant does not attend.', 'Refund transfers are made manually by the treasurer and recorded in the committee financial report.'],
         'to_payments' => 'Open payment queue',
+    ],
+    'payment_detail' => [
+        'title' => 'Payment detail', 'back' => 'Back to queue', 'loading' => 'Loading invoice…', 'load_failed' => 'The invoice could not be loaded.',
+        'invoice_no' => 'Invoice number', 'participant' => 'Participant', 'total' => 'Total', 'status' => 'Status', 'method' => 'Payment method', 'note' => 'Participant note',
+        'uploaded_at' => 'Uploaded', 'view_proof' => 'View transfer proof', 'verify' => 'Verify', 'reject' => 'Reject', 'reject_prompt' => 'Reason for rejection:',
+        'verify_failed' => 'Verification failed.', 'updated' => 'Payment updated.',
+    ],
+
+    'dashboard_page' => [
+        'title' => 'Treasurer overview',
+        'heading' => 'Treasurer overview',
+        'subtitle' => 'Summary of invoices and payment proofs in the system.',
+        'pending' => 'Proofs awaiting verification',
+        'verified_total' => 'Total verified payments',
+        'expired' => 'Expired invoices',
+        'by_category' => 'Verified payments by category',
+        'no_verified' => 'No verified payments yet.',
+        'latest_pending' => 'Latest proofs awaiting verification',
+        'open_queue' => 'Open queue',
+        'none_pending' => 'No proofs awaiting verification.',
     ],
 ];

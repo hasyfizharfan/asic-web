@@ -4,6 +4,7 @@
     'Account No.' => $payment['account_no'] ?? null,
     'Swift code' => $payment['swift_code'] ?? null,
     'Bank branch address' => $payment['branch'] ?? null,
+    'PayPal' => $payment['paypal_account'] ?? null,
 ]))
 @if($pay)
 <table class="info">
@@ -12,5 +13,6 @@
     @endforeach
 </table>
 @endif
+@if(!empty($payment['account_no']))<p class="note">International participants may also pay via Wise or Flip to the bank account above{{ !empty($payment['paypal_account']) ? ', or via PayPal' : '' }}.</p>@endif
 @if(!empty($payment_qr_info))<p class="note">Payment QR: {{ $payment_qr_info }}</p>@endif
 @if(!empty($payment['international_note']))<p class="note">{{ $payment['international_note'] }}</p>@endif

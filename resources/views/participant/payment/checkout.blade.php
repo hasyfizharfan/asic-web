@@ -42,6 +42,8 @@
     },
     paymentInfo: @js(\App\Support\PaymentSettings::current()),
     internationalNote: @js(\App\Support\PaymentSettings::current()['international_note']),
+    get hasBank() { return Boolean(this.paymentInfo.account_no); },
+    methods: @js(collect(\App\Models\PaymentProof::METHODS)->reject(fn ($m) => $m === 'paypal' && blank(\App\Support\PaymentSettings::current()['paypal_account']))->mapWithKeys(fn ($m) => [$m => __('asic-common.payment_methods.'.$m)])),
     formatAmount(value) { return window.asicMoney(value, this.invoice?.mata_uang); }
 }">
     <header class="space-y-1">
@@ -60,15 +62,29 @@
                 <div><dt class="text-on-surface-variant">{{ $t['due'] }}</dt><dd x-text="asicDate(invoice.tanggal_jatuh_tempo_baru || invoice.tanggal_jatuh_tempo)"></dd></div>
                 <div><dt class="text-on-surface-variant">Total</dt><dd class="text-lg font-bold text-primary" x-text="formatAmount(invoice.total_tagihan)"></dd></div>
             </dl>
-            <div class="rounded-xl bg-surface-container-low p-4 text-sm">
-                <h2 class="font-bold">{{ $t['instructions'] }}</h2>
-                <p class="mt-1 whitespace-pre-line" x-text="invoice.payment_qr_info || i18n.contact_treasurer"></p>
-                <dl class="mt-2 grid gap-1 text-xs sm:grid-cols-2">
-                    <template x-for="[key, label] in [['bank_name', @js(__('asic-participant.pay_info.bank'))], ['account_name', @js(__('asic-participant.pay_info.account_name'))], ['account_no', @js(__('asic-participant.pay_info.account_no'))], ['swift_code', 'SWIFT'], ['branch', @js(__('asic-participant.pay_info.branch'))]]" :key="key">
-                        <div x-show="paymentInfo[key]"><dt class="text-on-surface-variant" x-text="label"></dt><dd class="font-mono font-semibold" x-text="paymentInfo[key]"></dd></div>
-                    </template>
-                </dl>
-                <p x-show="invoice.mata_uang === 'USD' && internationalNote" class="mt-2 whitespace-pre-line font-semibold" x-text="internationalNote"></p>
+            <div class="space-y-3 rounded-xl bg-surface-container-low p-4 text-sm">
+                <h2 class="font-bold">{{ $t['methods_title'] }}</h2>
+                <p x-show="invoice.payment_qr_info" class="whitespace-pre-line" x-text="invoice.payment_qr_info"></p>
+                <p x-show="!hasBank && !paymentInfo.paypal_account && !invoice.payment_qr_info" x-text="i18n.contact_treasurer"></p>
+                <article x-show="hasBank" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3">
+                    <h3 class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">account_balance</span>{{ __('asic-common.payment_methods.bank') }}<span x-show="paymentInfo.bank_name" x-text="'· ' + paymentInfo.bank_name"></span></h3>
+                    <p class="mt-0.5 text-xs text-on-surface-variant">{{ $t['method_bank_desc'] }}</p>
+                    <dl class="mt-2 grid gap-1 text-xs sm:grid-cols-2">
+                        <template x-for="[key, label] in [['account_name', @js(__('asic-participant.pay_info.account_name'))], ['account_no', @js(__('asic-participant.pay_info.account_no'))], ['swift_code', 'SWIFT'], ['branch', @js(__('asic-participant.pay_info.branch'))]]" :key="key">
+                            <div x-show="paymentInfo[key]"><dt class="text-on-surface-variant" x-text="label"></dt><dd class="break-words font-mono font-semibold" x-text="paymentInfo[key]"></dd></div>
+                        </template>
+                    </dl>
+                </article>
+                <article x-show="paymentInfo.paypal_account" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3">
+                    <h3 class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">payments</span>PayPal</h3>
+                    <p class="mt-0.5 text-xs text-on-surface-variant">{{ $t['method_paypal_desc'] }}</p>
+                    <p class="mt-2 break-all font-mono text-xs font-semibold" x-text="paymentInfo.paypal_account"></p>
+                </article>
+                <article x-show="hasBank" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3">
+                    <h3 class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">public</span>{{ $t['method_wiseflip'] }}</h3>
+                    <p class="mt-0.5 text-xs text-on-surface-variant">{{ $t['method_wiseflip_desc'] }}</p>
+                </article>
+                <p x-show="internationalNote" class="whitespace-pre-line font-semibold" x-text="internationalNote"></p>
             </div>
             <template x-if="invoice.status_pembayaran === 'Menunggu Pembayaran' || invoice.status_pembayaran === 'Ditolak'">
                 <form class="space-y-4 border-t border-surface-container-highest pt-5" @submit.prevent="uploadProof($event)">
@@ -79,6 +95,13 @@
                         <p class="mt-1 text-xs text-on-surface-variant">{{ $t['amount_note'] }}</p>
                     </div>
                     <x-ui.spam-note />
+                    <label class="block text-sm font-semibold">{{ $t['method'] }}
+                        <select name="metode_pembayaran" required class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
+                            <option value="">{{ $t['method_choose'] }}</option>
+                            <template x-for="(label, key) in methods" :key="key"><option :value="key" x-text="label"></option></template>
+                        </select>
+                    </label>
+                    <p x-show="fieldErrors.metode_pembayaran" x-text="fieldErrors.metode_pembayaran?.[0]" class="text-sm text-error"></p>
                     <label class="block text-sm font-semibold">{{ $t['proof'] }}
                         <input type="file" name="file_bukti" accept=".jpg,.jpeg,.png,.pdf" required class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
                     </label>

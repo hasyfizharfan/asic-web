@@ -35,4 +35,10 @@ return [
         'network_error' => 'Connection problem. Check your network and try again.',
         'success' => 'Done.',
     ],
+    'payment_methods' => [
+        'bank' => 'Bank transfer',
+        'paypal' => 'PayPal',
+        'wise' => 'Wise',
+        'flip' => 'Flip',
+    ],
 ];

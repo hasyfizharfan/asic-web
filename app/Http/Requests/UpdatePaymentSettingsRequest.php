@@ -19,6 +19,7 @@ class UpdatePaymentSettingsRequest extends FormRequest
             'account_no' => ['sometimes', 'nullable', 'string', 'max:50', 'regex:/^[0-9A-Za-z\-\s]+$/'],
             'swift_code' => ['sometimes', 'nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9]+$/'],
             'branch' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'paypal_account' => ['sometimes', 'nullable', 'string', 'max:150'],
             'qr_info' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'international_note' => ['sometimes', 'nullable', 'string', 'max:1000'],
         ];

@@ -4,7 +4,7 @@
 
 @section('content')
 <main class="space-y-6" x-data="{
-    i18n: @js($t), invoices: [], loading: true, loadError: '', actionError: '', status: 'Menunggu Verifikasi', search: '',
+    i18n: @js($t), methods: @js(trans('asic-common.payment_methods')), invoices: [], loading: true, loadError: '', actionError: '', status: 'Menunggu Verifikasi', search: '',
     async init() { await this.load(); },
     async load() {
         this.loading = true; this.loadError = '';
@@ -85,7 +85,7 @@
                 <td class="px-3 py-3"><p class="font-bold" x-text="window.asicMoney(invoice.total_tagihan, invoice.mata_uang)"></p><p class="text-xs text-on-surface-variant" x-text="invoice.mata_uang === 'USD' ? i18n.international : i18n.domestic"></p></td>
                 <td class="px-3 py-3"><span x-text="asicDate(invoice.tanggal_jatuh_tempo_baru || invoice.tanggal_jatuh_tempo)"></span> <span x-show="isOverdue(invoice)" class="ml-1 rounded-full bg-error-container px-2 py-0.5 text-[11px] font-bold text-on-error-container">{{ $t['overdue'] }}</span></td>
                 <td class="px-3 py-3"><span class="rounded-full px-2.5 py-1 text-xs font-semibold" :class="badge(invoice.status_pembayaran)" x-text="invoice.status_pembayaran"></span></td>
-                <td class="px-3 py-3"><template x-if="invoice.latest_payment_proof"><a :href="'/api/payment-proofs/' + invoice.latest_payment_proof.id_payment_proof + '/file'" target="_blank" rel="noopener" class="inline-flex items-center gap-1 font-semibold text-primary"><span class="material-symbols-outlined text-[18px]">attach_file</span>{{ $t['view_proof'] }}</a></template><span x-show="!invoice.latest_payment_proof">—</span></td>
+                <td class="px-3 py-3"><template x-if="invoice.latest_payment_proof"><a :href="'/api/payment-proofs/' + invoice.latest_payment_proof.id_payment_proof + '/file'" target="_blank" rel="noopener" class="inline-flex items-center gap-1 font-semibold text-primary"><span class="material-symbols-outlined text-[18px]">attach_file</span>{{ $t['view_proof'] }}</a></template><p x-show="invoice.latest_payment_proof?.metode_pembayaran" class="mt-0.5 text-xs text-on-surface-variant" x-text="methods[invoice.latest_payment_proof?.metode_pembayaran] || ''"></p><span x-show="!invoice.latest_payment_proof">—</span></td>
                 <td class="px-5 py-3"><div class="flex gap-2" x-show="invoice.status_pembayaran === 'Menunggu Verifikasi' && invoice.latest_payment_proof"><button type="button" @click="verify(invoice, invoice.latest_payment_proof, true)" class="min-h-9 rounded-[9px] bg-primary px-3 py-1.5 text-xs font-bold text-white hover:bg-primary-container">{{ $t['verify'] }}</button><button type="button" @click="verify(invoice, invoice.latest_payment_proof, false)" class="min-h-9 rounded-[9px] border border-error px-3 py-1.5 text-xs font-bold text-error">{{ $t['reject'] }}</button></div></td>
             </tr></template></tbody>
         </table>

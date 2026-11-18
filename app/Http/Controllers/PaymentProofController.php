@@ -30,6 +30,7 @@ class PaymentProofController extends Controller
 
         $input = $request->validate([
             'file_bukti' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'metode_pembayaran' => ['nullable', 'string', 'in:'.implode(',', PaymentProof::METHODS)],
             'catatan_peserta' => ['nullable', 'string', 'max:1000'],
         ], [
             'file_bukti.required' => 'Berkas bukti pembayaran wajib diunggah.',
@@ -65,6 +66,7 @@ class PaymentProofController extends Controller
                 // Peserta mentransfer sesuai total tagihan (nominal tidak diisi/diubah peserta);
                 // kecocokan dana dengan mutasi rekening diperiksa Bendahara.
                 'nominal_transfer' => $invoice->total_tagihan,
+                'metode_pembayaran' => $input['metode_pembayaran'] ?? null,
                 'catatan_peserta' => $input['catatan_peserta'] ?? null,
             ]);
             $invoice->update(['status_pembayaran' => 'Menunggu Verifikasi']);

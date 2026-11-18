@@ -188,7 +188,8 @@ return [
             'swift_code' => 'Kode SWIFT',
             'branch' => 'Alamat cabang bank',
             'qr_info' => 'Informasi QR/kanal pembayaran lain',
-            'international_note' => 'Catatan untuk peserta internasional (PayPal/Wise/Flip)',
+            'paypal_account' => 'Akun PayPal panitia (email atau tautan paypal.me)',
+            'international_note' => 'Catatan tambahan untuk peserta internasional (biaya transfer, kurs, dll.)',
         ],
     ],
     'payment_queue' => [
@@ -199,7 +200,7 @@ return [
         'search' => 'Cari nomor invoice', 'search_btn' => 'Cari', 'status_filter' => 'Status', 'all' => 'Semua', 'waiting' => 'Menunggu verifikasi', 'verified' => 'Terverifikasi', 'rejected' => 'Ditolak',
         'loading' => 'Memuat pembayaran…', 'load_failed' => 'Antrean pembayaran gagal dimuat.', 'empty' => 'Tidak ada pembayaran untuk filter ini.',
         'col_invoice' => 'Invoice', 'col_participant' => 'Peserta & institusi', 'col_amount' => 'Nominal', 'col_due' => 'Jatuh tempo', 'col_status' => 'Status', 'col_proof' => 'Bukti', 'col_action' => 'Tindakan',
-        'domestic' => 'Tarif domestik', 'international' => 'Tarif internasional', 'overdue' => 'LEWAT', 'view_proof' => 'Lihat bukti',
+        'domestic' => 'Tarif domestik', 'international' => 'Tarif internasional', 'overdue' => 'LEWAT', 'method' => 'Metode', 'view_proof' => 'Lihat bukti',
         'verify' => 'Verifikasi', 'reject' => 'Tolak', 'reject_prompt' => 'Alasan penolakan bukti transfer:', 'verify_failed' => 'Verifikasi gagal.', 'updated' => 'Status pembayaran diperbarui.',
     ],
     'refund_policy' => [
@@ -207,5 +208,25 @@ return [
         'rules_title' => 'Aturan pengembalian',
         'rules' => ['Biaya publikasi dapat dikembalikan bila artikel batal diproses.', 'Biaya seminar tidak dikembalikan walau peserta batal hadir.', 'Transfer pengembalian dilakukan manual oleh bendahara dan dicatat di laporan keuangan panitia.'],
         'to_payments' => 'Buka antrean pembayaran',
+    ],
+    'payment_detail' => [
+        'title' => 'Detail pembayaran', 'back' => 'Kembali ke antrean', 'loading' => 'Memuat invoice…', 'load_failed' => 'Invoice gagal dimuat.',
+        'invoice_no' => 'Nomor invoice', 'participant' => 'Peserta', 'total' => 'Total', 'status' => 'Status', 'method' => 'Metode pembayaran', 'note' => 'Catatan peserta',
+        'uploaded_at' => 'Diunggah', 'view_proof' => 'Lihat bukti transfer', 'verify' => 'Verifikasi', 'reject' => 'Tolak', 'reject_prompt' => 'Alasan penolakan:',
+        'verify_failed' => 'Verifikasi gagal.', 'updated' => 'Pembayaran diperbarui.',
+    ],
+
+    'dashboard_page' => [
+        'title' => 'Ringkasan Bendahara',
+        'heading' => 'Ringkasan Bendahara',
+        'subtitle' => 'Ringkasan invoice dan bukti pembayaran dari sistem.',
+        'pending' => 'Bukti menunggu verifikasi',
+        'verified_total' => 'Total pembayaran terverifikasi',
+        'expired' => 'Invoice kedaluwarsa',
+        'by_category' => 'Pembayaran terverifikasi per kategori',
+        'no_verified' => 'Belum ada pembayaran terverifikasi.',
+        'latest_pending' => 'Bukti terbaru menunggu verifikasi',
+        'open_queue' => 'Buka antrean',
+        'none_pending' => 'Tidak ada bukti menunggu verifikasi.',
     ],
 ];

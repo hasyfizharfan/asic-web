@@ -35,4 +35,10 @@ return [
         'network_error' => 'Koneksi bermasalah. Periksa jaringan lalu coba lagi.',
         'success' => 'Berhasil.',
     ],
+    'payment_methods' => [
+        'bank' => 'Transfer bank',
+        'paypal' => 'PayPal',
+        'wise' => 'Wise',
+        'flip' => 'Flip',
+    ],
 ];
