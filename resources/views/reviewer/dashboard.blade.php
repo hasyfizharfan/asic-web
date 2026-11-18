@@ -35,7 +35,7 @@
                 <h2 class="font-bold">{{ $t['queue'] }}</h2>
                 <a href="{{ route('portal.reviewer.queue') }}" class="inline-flex min-h-10 items-center rounded-[9px] bg-[#F5C518] px-4 py-2 text-sm font-bold text-[#182820] hover:bg-[#fed649]">{{ $t['full_list'] }}</a>
             </div>
-            <div class="overflow-x-auto">
+            <div class="relative overflow-x-auto">
                 <table class="w-full min-w-[640px] text-left text-sm">
                     <thead class="bg-surface-container-low text-[11px] font-bold uppercase tracking-wider text-on-surface-variant">
                         <tr><th class="px-5 py-3">ID</th><th class="px-3 py-3">{{ $t['col_title'] }}</th><th class="px-3 py-3">Scope</th><th class="px-3 py-3">{{ $t['col_type'] }}</th><th class="px-3 py-3">Status</th><th class="px-5 py-3 text-right"><span class="sr-only">{{ $t['col_action'] }}</span></th></tr>

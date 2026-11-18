@@ -112,7 +112,7 @@
         <div class="flex flex-wrap gap-2" role="tablist">
             <template x-for="(tabLabel, key) in i18n.tabs" :key="key"><button type="button" role="tab" :aria-selected="tab === key" @click="switchTab(key)" :class="tab === key ? 'bg-primary text-white' : 'bg-surface-container'" class="rounded-lg px-3 py-2 text-sm" x-text="tabLabel"></button></template>
         </div>
-        <label x-show="eventScoped" class="ml-auto text-sm font-semibold">{{ $m['event'] }}<select x-model="idEvent" @change="load()" class="mt-1 block rounded-xl border-surface-container-highest"><template x-for="item in events" :key="item.id_event"><option :value="String(item.id_event)" x-text="item.nama_event"></option></template></select></label>
+        <label x-show="eventScoped" class="w-full min-w-0 text-sm font-semibold sm:ml-auto sm:w-auto">{{ $m['event'] }}<select x-model="idEvent" @change="load()" class="mt-1 block w-full max-w-full rounded-xl border-surface-container-highest sm:max-w-sm"><template x-for="item in events" :key="item.id_event"><option :value="String(item.id_event)" x-text="item.nama_event"></option></template></select></label>
     </div>
 
     <p x-show="loading" role="status" class="rounded-xl bg-surface-container-low p-4 text-sm">{{ $m['loading'] }}</p>

@@ -77,7 +77,7 @@
         <p class="mt-1 text-sm" x-show="result?.data" x-text="(result?.data?.participant?.full_name || '') + ' · #' + (result?.data?.id_registration || '') + ' · ' + (result?.data?.attendance_mode || '') + (result?.data?.reregistered_at ? ' · ' + asicDateTime(result.data.reregistered_at) : '')"></p>
     </section>
 
-    <section class="grid gap-5 lg:grid-cols-2">
+    <section class="grid grid-cols-1 gap-5 lg:grid-cols-2">
         <article class="space-y-4 rounded-2xl border border-surface-container-high bg-surface-container-lowest p-5 shadow-sm">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-bold">{{ $t('scan_title') }}</h2>
