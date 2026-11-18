@@ -12,7 +12,12 @@
         'reviewer' => 'portal.reviewer.profile',
         default => null,
     };
-    $bellUrl = $role === 'participant' ? route('portal.participant.notifications') : null;
+    $bellRoute = match ($role) {
+        'participant' => 'portal.participant.notifications',
+        'secretariat', 'treasurer', 'reviewer', 'admin' => 'portal.'.$role.'.notifications',
+        default => null,
+    };
+    $bellUrl = $bellRoute && \Illuminate\Support\Facades\Route::has($bellRoute) ? route($bellRoute) : null;
 @endphp
 
 <header class="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-surface-container-highest bg-surface-container-lowest px-4 sm:px-6">
@@ -29,7 +34,7 @@
 
     <div class="flex items-center gap-2 sm:gap-3">
         {{-- KF-30: lonceng notifikasi popup (notifikasi milik pengguna sendiri) --}}
-        <x-layout.notification-bell :all-url="$bellUrl" />
+        <x-layout.notification-bell :all-url="$bellUrl" :staff="$role !== 'participant'" />
 
         <x-layout.lang-switcher theme="light" />
 

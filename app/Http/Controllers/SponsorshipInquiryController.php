@@ -6,7 +6,9 @@ use App\Http\Requests\StoreSponsorshipInquiryRequest;
 use App\Http\Requests\UpdateSponsorshipInquiryRequest;
 use App\Http\Resources\ContentItemResource;
 use App\Models\Event;
+use App\Models\Role;
 use App\Models\SponsorshipInquiry;
+use App\Services\StaffNotifier;
 use App\Support\Audit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -62,6 +64,12 @@ class SponsorshipInquiryController extends Controller
         $data = $request->safe()->except('website');
         $data['status'] = 'Baru';
         $inquiry = SponsorshipInquiry::create($data);
+        app(StaffNotifier::class)->notifyRole(
+            Role::ROLE_SEKRETARIAT, 'sponsorship_inquiry',
+            ($url = StaffNotifier::url('portal.secretariat.content')) ? $url.'?tab=sponsorship-inquiries' : null,
+            ['org' => $inquiry->nama_organisasi, 'jenis' => $inquiry->jenis],
+            'inquiry:'.$inquiry->id_inquiry,
+        );
 
         $to = config('asic.contact_email');
         if ($to) {

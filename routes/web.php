@@ -6,6 +6,7 @@ use App\Http\Controllers\Portal\AdminController;
 use App\Http\Controllers\Portal\ParticipantController;
 use App\Http\Controllers\Portal\ReviewerController;
 use App\Http\Controllers\Portal\SecretariatController;
+use App\Http\Controllers\Portal\StaffNotificationController;
 use App\Http\Controllers\Portal\TreasurerController;
 use App\Http\Controllers\PortalController;
 use App\Http\Controllers\PublicArchiveController;
@@ -75,6 +76,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/recap', [SecretariatController::class, 'recap'])->name('recap');
         Route::get('/announcements', [SecretariatController::class, 'announcements'])->name('announcements');
         Route::get('/content', [SecretariatController::class, 'content'])->name('content');
+        Route::get('/notifications', StaffNotificationController::class)->defaults('portal', 'secretariat')->name('notifications');
     });
 
     Route::prefix('treasurer')->name('portal.treasurer.')->middleware('permission:access_treasurer_portal')->group(function (): void {
@@ -85,6 +87,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/payments/{id}', [TreasurerController::class, 'paymentDetails'])->whereNumber('id')->name('payments.show');
         Route::get('/receipts/preview', [TreasurerController::class, 'receipts'])->name('receipts.preview');
         Route::get('/refunds', [TreasurerController::class, 'refunds'])->name('refunds');
+        Route::get('/notifications', StaffNotificationController::class)->defaults('portal', 'treasurer')->name('notifications');
     });
 
     Route::prefix('reviewer')->name('portal.reviewer.')->middleware('permission:access_reviewer_portal')->group(function (): void {
@@ -93,11 +96,13 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/queue', [ReviewerController::class, 'queue'])->name('queue');
         Route::get('/abstracts/{id}', [ReviewerController::class, 'show'])->whereNumber('id')->name('abstracts.show');
         Route::get('/profile', [ReviewerController::class, 'profile'])->name('profile');
+        Route::get('/notifications', StaffNotificationController::class)->defaults('portal', 'reviewer')->name('notifications');
     });
 
     Route::prefix('admin')->name('portal.admin.')->middleware('permission:access_admin_portal')->group(function (): void {
         Route::get('/', fn () => redirect()->route('portal.admin.dashboard'));
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/notifications', StaffNotificationController::class)->defaults('portal', 'admin')->name('notifications');
         Route::get('/overview', [AdminController::class, 'overview'])->name('overview');
         Route::get('/users', [AdminController::class, 'users'])->name('users');
         Route::get('/permissions', [AdminController::class, 'permissions'])->name('permissions');

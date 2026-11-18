@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreAbstractRequest;
 use App\Models\AbstractSubmission;
 use App\Models\Registration;
+use App\Models\Role;
 use App\Models\UserAccount;
+use App\Services\StaffNotifier;
 use App\Support\PermissionMatrix;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -189,6 +192,12 @@ class AbstractController extends Controller
                 'tanggal_submit' => now(),
                 'status_abstrak' => 'Diajukan',
             ]
+        );
+        // Tim Abstrak diberi tahu tanpa nama peserta (cukup judul & bidang).
+        app(StaffNotifier::class)->notifyRole(
+            Role::ROLE_TIM_ABSTRAK, $existingAbstract ? 'abstract_resubmitted' : 'abstract_submitted',
+            StaffNotifier::url('portal.reviewer.abstracts.show', ['id' => $abstract->id_abstract]),
+            ['title' => Str::limit((string) $abstract->judul_abstrak, 90), 'scope' => $abstract->scope ?: '-'],
         );
 
         if ($request->expectsJson()) {

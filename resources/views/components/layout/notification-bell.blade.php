@@ -3,7 +3,7 @@
     milik pengguna sendiri, keadaan kosong/gagal/memuat, tandai semua dibaca, dan tautan "Lihat semua" (peserta).
     Klik satu notifikasi → ditandai dibaca lalu membuka halamannya. Di HP panel melebar selebar layar.
 --}}
-@props(['allUrl' => null])
+@props(['allUrl' => null, 'staff' => false])
 @php($b = trans('asic-notifications.bell'))
 @php($bellJs = ['failed' => $b['failed'], 'just_now' => $b['just_now'], 'unread' => $b['unread']])
 <div class="relative" x-data="{
@@ -13,11 +13,12 @@
         loa_issued: 'verified', invoice_issued: 'receipt_long', receipt_issued: 'task_alt', rejection_issued: 'cancel',
         certificate_issued: 'workspace_premium', invoice_extended: 'event_repeat', invoice_expired: 'event_busy',
         invoice_repriced: 'price_change', registration_cancelled: 'block', payment_valid: 'paid', payment_invalid: 'money_off',
-        abstract_accepted: 'thumb_up', abstract_rejected: 'thumb_down', reregistered: 'how_to_reg'
+        abstract_accepted: 'thumb_up', abstract_rejected: 'thumb_down', reregistered: 'how_to_reg',
+        payment_proof_submitted: 'upload_file', abstract_submitted: 'description', abstract_resubmitted: 'restart_alt', sponsorship_inquiry: 'handshake'
     },
     tone(kind) {
         if (['rejection_issued', 'invoice_expired', 'registration_cancelled', 'payment_invalid', 'abstract_rejected'].includes(kind)) return 'bg-[#FDECEA] text-error';
-        if (['invoice_extended', 'invoice_repriced'].includes(kind)) return 'bg-[#FEF6D8] text-[#7a5d00]';
+        if (['invoice_extended', 'invoice_repriced', 'abstract_resubmitted'].includes(kind)) return 'bg-[#FEF6D8] text-[#7a5d00]';
         return 'bg-[#E6F4EA] text-primary';
     },
     async count() {
@@ -89,7 +90,7 @@
             <div x-show="loaded && !error && items.length === 0" class="px-6 py-10 text-center">
                 <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#E6F4EA] text-primary"><span class="material-symbols-outlined text-[28px]" aria-hidden="true">notifications_off</span></span>
                 <p class="mt-3 font-bold text-on-surface">{{ $b['empty_title'] }}</p>
-                <p class="mx-auto mt-1 max-w-[260px] text-sm text-on-surface-variant">{{ $allUrl ? $b['empty_body'] : $b['empty_body_staff'] }}</p>
+                <p class="mx-auto mt-1 max-w-[260px] text-sm text-on-surface-variant">{{ $staff ? $b['empty_body_staff'] : $b['empty_body'] }}</p>
             </div>
 
             <ul x-show="!error && items.length > 0" class="divide-y divide-surface-container-highest">

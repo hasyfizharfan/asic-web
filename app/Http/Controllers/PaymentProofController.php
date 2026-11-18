@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Models\Invoice;
 use App\Models\PaymentProof;
+use App\Models\Role;
 use App\Models\UserAccount;
+use App\Services\StaffNotifier;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -79,6 +81,12 @@ class PaymentProofController extends Controller
         }
 
         Log::info('payment.proof_uploaded', ['id_invoice' => $outcome['invoice']->id_invoice, 'id_payment_proof' => $outcome['proof']->id_payment_proof]);
+        app(StaffNotifier::class)->notifyRole(
+            Role::ROLE_BENDAHARA, 'payment_proof_submitted',
+            StaffNotifier::url('portal.treasurer.payments.show', ['id' => $outcome['invoice']->id_invoice]),
+            ['number' => $outcome['invoice']->nomor_invoice, 'name' => $outcome['invoice']->registration?->participant?->full_name],
+            'proof:'.$outcome['proof']->id_payment_proof,
+        );
 
         return $this->ok(__('asic-api.messages.bukti_pembayaran_berhasil_diunggah_dan_menunggu_ve'), [
             'id_payment_proof' => $outcome['proof']->id_payment_proof,

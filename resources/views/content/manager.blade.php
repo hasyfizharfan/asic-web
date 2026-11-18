@@ -24,6 +24,8 @@
     get eventScoped() { return !['legal-documents'].includes(this.tab); },
     get canAdd() { return !['sponsorship-inquiries'].includes(this.tab); },
     async init() {
+        const wanted = new URLSearchParams(window.location.search).get('tab'); // tautan dari notifikasi, mis. ?tab=sponsorship-inquiries
+        if (wanted && Object.prototype.hasOwnProperty.call(this.keys, wanted)) this.tab = wanted;
         const response = await window.asicApi.get('/api/content/events', { per_page: 100 });
         if (response.ok) { this.events = response.data?.data || []; this.idEvent = String(this.events[0]?.id_event || ''); }
         await this.load();
