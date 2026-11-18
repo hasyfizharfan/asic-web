@@ -9,6 +9,8 @@ return [
         'certificate_issued' => ['title' => 'Sertifikat terbit', 'body' => 'Sertifikat untuk registrasi #:id sudah dapat diunduh.'],
         'invoice_extended' => ['title' => 'Jatuh tempo invoice diperpanjang', 'body' => 'Batas pembayaran registrasi #:id diperpanjang sampai :due.'],
         'invoice_expired' => ['title' => 'Invoice kedaluwarsa', 'body' => 'Invoice registrasi #:id sudah kedaluwarsa. Hubungi panitia bila membutuhkan bantuan.'],
+        'invoice_repriced' => ['title' => 'Invoice diperbarui ke harga reguler', 'body' => 'Batas bayar harga early bird registrasi #:id sudah lewat, sehingga invoice diperbarui ke harga reguler (:total). Bayar sebelum :due.'],
+        'registration_cancelled' => ['title' => 'Registrasi dibatalkan', 'body' => 'Registrasi #:id dibatalkan karena pembayaran tidak diterima sampai batas perpanjangan terakhir. Hubungi sekretariat bila ada pertanyaan.'],
         'payment_valid' => ['title' => 'Pembayaran terverifikasi', 'body' => 'Bendahara telah memverifikasi pembayaran registrasi #:id.'],
         'payment_invalid' => ['title' => 'Bukti bayar ditolak', 'body' => 'Bukti bayar registrasi #:id ditolak: :reason. Silakan unggah ulang bukti yang benar.'],
         'abstract_accepted' => ['title' => 'Abstrak diterima', 'body' => 'Abstrak untuk registrasi #:id diterima. LoA dan invoice akan tersedia di akun Anda.'],

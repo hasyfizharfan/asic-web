@@ -69,6 +69,9 @@
             @foreach(['bank_name', 'account_name', 'account_no', 'swift_code', 'branch', 'paypal_account'] as $field)
                 <label class="text-sm">{{ $t['fields'][$field] }}<input x-model="pay.{{ $field }}" class="mt-1 block w-full rounded-lg border-surface-container-highest"><span x-show="payErrors.{{ $field }}" x-text="payErrors.{{ $field }}?.[0]" class="text-xs text-error"></span></label>
             @endforeach
+            @foreach(['usd_idr_rate' => '1', 'paypal_fee_percent' => '0.1'] as $field => $step)
+                <label class="text-sm">{{ $t['fields'][$field] }}<input type="number" min="0" step="{{ $step }}" x-model="pay.{{ $field }}" class="mt-1 block w-full rounded-lg border-surface-container-highest"><span class="mt-0.5 block text-xs text-on-surface-variant">{{ $t['hints'][$field] }}</span><span x-show="payErrors.{{ $field }}" x-text="payErrors.{{ $field }}?.[0]" class="text-xs text-error"></span></label>
+            @endforeach
             @foreach(['qr_info', 'international_note'] as $field)
                 <label class="text-sm sm:col-span-2">{{ $t['fields'][$field] }}<textarea x-model="pay.{{ $field }}" rows="2" class="mt-1 block w-full rounded-lg border-surface-container-highest"></textarea></label>
             @endforeach

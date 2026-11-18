@@ -51,27 +51,7 @@ class InvoiceIssuer
                 return $this->skipped('Layanan tambahan (add-on) hanya tersedia dalam IDR; invoice USD tidak dapat memuat add-on.');
             }
 
-            $items = [[
-                'jenis_biaya' => 'Biaya Registrasi '.$reg->registration_type.' ('.$reg->attendance_mode.')',
-                'deskripsi' => 'Publikasi: '.$reg->publication_option,
-                'jumlah' => 1,
-                'harga_satuan' => (float) $fee->amount,
-                'subtotal' => (float) $fee->amount,
-            ]];
-            if ((float) $fee->discount > 0) {
-                $items[] = [
-                    'jenis_biaya' => 'Potongan Harga', 'deskripsi' => null,
-                    'jumlah' => 1, 'harga_satuan' => -(float) $fee->discount, 'subtotal' => -(float) $fee->discount,
-                ];
-            }
-            foreach ($reg->registrationAddOns as $line) {
-                $qty = max(1, (int) $line->jumlah);
-                $items[] = [
-                    'jenis_biaya' => 'Add-on: '.($line->addOn?->nama_add_on ?? 'Layanan tambahan'),
-                    'deskripsi' => null, 'jumlah' => $qty,
-                    'harga_satuan' => round((float) $line->subtotal / $qty, 2), 'subtotal' => (float) $line->subtotal,
-                ];
-            }
+            $items = $this->lineItems($reg, $fee);
             $total = max(0.0, round(array_sum(array_column($items, 'subtotal')), 2));
 
             $template = $this->documents->resolveTemplate($reg->id_event, 'Invoice');
@@ -100,6 +80,39 @@ class InvoiceIssuer
 
             return ['status' => 'issued', 'invoice' => $invoice, 'reason' => null];
         });
+    }
+
+    /**
+     * Rincian biaya invoice dari satu tarif (dipakai saat terbit dan saat pindah ke tarif reguler).
+     *
+     * @return list<array{jenis_biaya: string, deskripsi: ?string, jumlah: int, harga_satuan: float, subtotal: float}>
+     */
+    public function lineItems(Registration $reg, RegistrationFee $fee): array
+    {
+        $reg->loadMissing('registrationAddOns.addOn');
+        $items = [[
+            'jenis_biaya' => 'Biaya Registrasi '.$reg->registration_type.' ('.$reg->attendance_mode.')',
+            'deskripsi' => 'Publikasi: '.$reg->publication_option,
+            'jumlah' => 1,
+            'harga_satuan' => (float) $fee->amount,
+            'subtotal' => (float) $fee->amount,
+        ]];
+        if ((float) $fee->discount > 0) {
+            $items[] = [
+                'jenis_biaya' => 'Potongan Harga', 'deskripsi' => null,
+                'jumlah' => 1, 'harga_satuan' => -(float) $fee->discount, 'subtotal' => -(float) $fee->discount,
+            ];
+        }
+        foreach ($reg->registrationAddOns as $line) {
+            $qty = max(1, (int) $line->jumlah);
+            $items[] = [
+                'jenis_biaya' => 'Add-on: '.($line->addOn?->nama_add_on ?? 'Layanan tambahan'),
+                'deskripsi' => null, 'jumlah' => $qty,
+                'harga_satuan' => round((float) $line->subtotal / $qty, 2), 'subtotal' => (float) $line->subtotal,
+            ];
+        }
+
+        return $items;
     }
 
     private function skipped(string $reason): array

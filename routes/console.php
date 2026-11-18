@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\EventSession;
+use App\Services\OverdueInvoiceProcessor;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +22,12 @@ Artisan::command('registration-periods:close-expired', function () {
     $this->info("{$closed} periode pendaftaran ditutup.");
 })->purpose('Tutup periode pendaftaran yang telah melewati tanggal selesai');
 
+// Jatuh tempo invoice: early bird → reguler, reguler → Kedaluwarsa, lewat batas perpanjangan → registrasi dibatalkan.
+Artisan::command('invoices:process-overdue', function () {
+    $counts = app(OverdueInvoiceProcessor::class)->processAll();
+    $this->info("Pindah ke reguler: {$counts['repriced']}, kedaluwarsa: {$counts['expired']}, dibatalkan: {$counts['cancelled']}");
+})->purpose('Proses invoice yang lewat jatuh tempo');
+
 Artisan::command('asic:session-qr-refresh', function () {
     $count = 0;
     foreach (EventSession::whereNotNull('qr_token')->get() as $session) {
@@ -34,5 +41,6 @@ Artisan::command('asic:session-qr-refresh', function () {
 })->purpose('Perbarui gambar QR sesi agar berisi tautan check-in');
 
 Schedule::command('registration-periods:close-expired')->hourly();
+Schedule::command('invoices:process-overdue')->hourly()->withoutOverlapping();
 // Email notifikasi (QUEUE_CONNECTION=database): diproses tiap menit, berhenti saat antrean kosong.
 Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')->everyMinute()->withoutOverlapping();

@@ -65,6 +65,8 @@ class RegistrationController extends Controller
             'registrationPeriod',
             'addOns',
             'abstractSubmission',
+            // Catatan Tim Abstrak untuk peserta (tanpa identitas reviewer — blind review).
+            'abstractSubmission.latestReview' => fn ($q) => $q->select(['abstract_review.id_review', 'abstract_review.id_abstract', 'abstract_review.hasil_review', 'abstract_review.catatan_review', 'abstract_review.tanggal_review']),
             'attendance',
             'participantFiles',
         ]);

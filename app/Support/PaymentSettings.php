@@ -12,7 +12,7 @@ use Throwable;
  */
 final class PaymentSettings
 {
-    public const FIELDS = ['bank_name', 'account_name', 'account_no', 'swift_code', 'branch', 'paypal_account', 'qr_info', 'international_note'];
+    public const FIELDS = ['bank_name', 'account_name', 'account_no', 'swift_code', 'branch', 'paypal_account', 'usd_idr_rate', 'paypal_fee_percent', 'qr_info', 'international_note'];
 
     private const PREFIX = 'payment.';
 

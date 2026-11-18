@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ExtendInvoiceRequest;
 use App\Models\Invoice;
 use App\Models\UserAccount;
+use App\Services\OverdueInvoiceProcessor;
 use App\Services\StatusNotifier;
 use App\Support\PermissionMatrix;
 use Illuminate\Http\JsonResponse;
@@ -69,9 +70,9 @@ class InvoiceController extends Controller
             ], Response::HTTP_FORBIDDEN);
         }
 
-        if ($invoice->isKedaluwarsa() && $invoice->status_pembayaran === 'Menunggu Pembayaran') {
-            $invoice->update(['status_pembayaran' => 'Kedaluwarsa']);
-            app(StatusNotifier::class)->notify($invoice->registration, 'invoice_expired', 'invoice_expired:'.$invoice->id_invoice);
+        // Jatuh tempo diproses saat dibuka juga (selain jadwal invoices:process-overdue tiap jam).
+        if (app(OverdueInvoiceProcessor::class)->process($invoice)) {
+            $invoice->refresh();
         }
 
         return response()->json([
@@ -127,6 +128,18 @@ class InvoiceController extends Controller
     public function extendDueDate(ExtendInvoiceRequest $request, int $id_invoice): JsonResponse
     {
         $invoice = Invoice::with(['registration.participant'])->findOrFail($id_invoice);
+        $processor = app(OverdueInvoiceProcessor::class);
+        $max = OverdueInvoiceProcessor::maxExtensions();
+        $refuse = match (true) {
+            $invoice->registration?->registration_status === 'Dibatalkan' => __('asic-api.invoice.extend_cancelled'),
+            ! in_array($invoice->status_pembayaran, ['Menunggu Pembayaran', 'Ditolak', 'Kedaluwarsa', 'Kadaluwarsa'], true) => __('asic-api.invoice.extend_status', ['status' => $invoice->status_pembayaran]),
+            (int) $invoice->jumlah_perpanjangan >= $max => __('asic-api.invoice.extend_limit', ['max' => $max]),
+            $processor->isEarlyBird($invoice) => __('asic-api.invoice.extend_early_bird'),
+            default => null,
+        };
+        if ($refuse) {
+            return response()->json(['success' => false, 'message' => $refuse], Response::HTTP_CONFLICT);
+        }
 
         $validated = $request->validated();
         $invoice->perpanjangJatuhTempo($validated['tanggal_jatuh_tempo_baru']);

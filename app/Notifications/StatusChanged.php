@@ -26,7 +26,7 @@ class StatusChanged extends Notification implements ShouldQueue
 
     public const KINDS = [
         'loa_issued', 'invoice_issued', 'receipt_issued', 'rejection_issued', 'certificate_issued',
-        'invoice_extended', 'invoice_expired',
+        'invoice_extended', 'invoice_expired', 'invoice_repriced', 'registration_cancelled',
         'payment_valid', 'payment_invalid',
         'abstract_accepted', 'abstract_rejected',
         'reregistered',

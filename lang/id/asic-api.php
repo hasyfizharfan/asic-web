@@ -162,4 +162,10 @@ return [
         'in_use' => 'Periode sudah dipakai tarif atau pendaftaran sehingga tidak dapat dihapus. Ubah statusnya menjadi Tidak Aktif.',
         'end_before_start' => 'Tanggal selesai tidak boleh sebelum tanggal mulai.',
     ],
+    'invoice' => [
+        'extend_cancelled' => 'Registrasi sudah dibatalkan; invoice tidak dapat diperpanjang.',
+        'extend_status' => 'Invoice berstatus :status tidak dapat diperpanjang.',
+        'extend_limit' => 'Batas perpanjangan sudah tercapai (maksimal :max kali).',
+        'extend_early_bird' => 'Harga early bird tidak dapat diperpanjang. Setelah jatuh tempo, invoice otomatis dipindah ke harga reguler dan baru dapat diperpanjang.',
+    ],
 ];

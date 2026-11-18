@@ -162,4 +162,10 @@ return [
         'in_use' => 'The period is already used by fees or registrations and cannot be deleted. Set its status to Inactive instead.',
         'end_before_start' => 'The end date cannot be before the start date.',
     ],
+    'invoice' => [
+        'extend_cancelled' => 'The registration has been cancelled; the invoice cannot be extended.',
+        'extend_status' => 'An invoice with status :status cannot be extended.',
+        'extend_limit' => 'The extension limit has been reached (maximum :max times).',
+        'extend_early_bird' => 'Early bird rates cannot be extended. After the due date the invoice automatically moves to the regular rate, which can then be extended.',
+    ],
 ];

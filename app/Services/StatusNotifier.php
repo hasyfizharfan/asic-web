@@ -56,7 +56,7 @@ class StatusNotifier
     private function urlFor(string $kind, int $idRegistration): ?string
     {
         $route = match ($kind) {
-            'invoice_issued', 'invoice_extended', 'invoice_expired', 'payment_invalid' => 'portal.participant.payment.checkout',
+            'invoice_issued', 'invoice_extended', 'invoice_expired', 'invoice_repriced', 'registration_cancelled', 'payment_invalid' => 'portal.participant.payment.checkout',
             'abstract_accepted', 'abstract_rejected' => 'portal.participant.abstract',
             'reregistered' => 'portal.participant.attendance',
             default => 'portal.participant.documents',

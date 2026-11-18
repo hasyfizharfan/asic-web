@@ -4,7 +4,11 @@
 @section('content')
 <main class="mx-auto max-w-3xl space-y-6" x-data="{
     i18n: @js($t), registrations: [], registration: null, abstractSubmission: null,
-    loading: true, submitting: false, loadError: '', fieldErrors: {},
+    loading: true, submitting: false, loadError: '', fieldErrors: {}, editing: false,
+    startEdit() {
+        this.editing = true;
+        this.$nextTick(() => { const f = this.$refs.absForm; f.judul_abstrak.value = this.abstractSubmission.judul_abstrak || ''; f.scope.value = this.abstractSubmission.scope || ''; f.metode_presentasi.value = this.abstractSubmission.metode_presentasi || 'Oral'; f.judul_abstrak.focus(); });
+    },
     async init() { await this.load(); },
     async load() {
         this.loading = true;
@@ -23,6 +27,7 @@
         const response = await window.asicApi.upload('/api/registrations/' + this.registration.id_registration + '/abstract', new FormData(event.target));
         this.submitting = false;
         if (!response.ok) { this.fieldErrors = response.errors || {}; window.asicApi.showToast(response.error || this.i18n.submit_failed); return; }
+        this.editing = false; event.target.reset();
         await this.load();
         window.asicApi.showToast(response.data?.message || this.i18n.submitted, 'success');
     }
@@ -41,10 +46,18 @@
             <div class="space-y-3 rounded-xl bg-surface-container-low p-4">
                 <p class="text-sm">{{ $t['title_label'] }}: <strong x-text="abstractSubmission.judul_abstrak"></strong></p>
                 <p class="text-sm">{{ $t['status_label'] }}: <strong x-text="abstractSubmission.status_abstrak"></strong></p>
-                <a :href="'/api/registrations/' + registration.id_registration + '/abstract/download'" class="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">{{ $t['download'] }}</a>
+                <template x-if="abstractSubmission.status_abstrak !== 'Diajukan' && abstractSubmission.latest_review?.catatan_review">
+                    <div class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3 text-sm"><p class="font-semibold">{{ $t['review_note'] }}</p><p class="mt-1 whitespace-pre-line" x-text="abstractSubmission.latest_review.catatan_review"></p></div>
+                </template>
+                <div class="flex flex-wrap gap-2">
+                    <a :href="'/api/registrations/' + registration.id_registration + '/abstract/download'" class="inline-flex rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">{{ $t['download'] }}</a>
+                    <button type="button" x-show="abstractSubmission.status_abstrak === 'Diajukan' && !editing" @click="startEdit()" class="inline-flex rounded-lg border border-primary px-4 py-2 text-sm font-semibold text-primary">{{ $t['replace'] }}</button>
+                </div>
+                <p x-show="abstractSubmission.status_abstrak === 'Diajukan'" class="text-xs text-on-surface-variant">{{ $t['replace_hint'] }}</p>
             </div>
         </template>
-        <form x-show="!abstractSubmission" class="space-y-4" @submit.prevent="submit($event)">
+        <form x-show="!abstractSubmission || editing" x-ref="absForm" class="space-y-4" @submit.prevent="submit($event)">
+            <h2 x-show="editing" class="font-bold">{{ $t['replace'] }}</h2>
             <label class="block text-sm font-semibold">{{ $t['field_title'] }}
                 <input name="judul_abstrak" required maxlength="255" class="mt-1 block w-full rounded-xl border-surface-container-highest">
             </label>
@@ -63,7 +76,10 @@
                 <input type="file" name="file_abstrak" required accept=".pdf,.doc,.docx" class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
             </label>
             <p x-show="fieldErrors.file_abstrak" x-text="fieldErrors.file_abstrak?.[0]" class="text-sm text-error"></p>
-            <button type="submit" :disabled="submitting" class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50" x-text="submitting ? i18n.submitting : i18n.submit"></button>
+            <div class="flex flex-wrap gap-2">
+                <button type="submit" :disabled="submitting" class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50" x-text="submitting ? i18n.submitting : i18n.submit"></button>
+                <button type="button" x-show="editing" @click="editing = false; fieldErrors = {}" class="rounded-xl border border-surface-container-highest px-5 py-2.5 text-sm font-semibold">{{ $t['cancel_edit'] }}</button>
+            </div>
         </form>
     </section>
 </main>

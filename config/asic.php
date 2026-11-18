@@ -7,6 +7,9 @@ return [
     // Lama jatuh tempo invoice (hari) sejak terbit — PRD §6: 1 minggu.
     'invoice_due_days' => 7,
 
+    // Batas perpanjangan jatuh tempo invoice bertarif reguler (kesepakatan mitra: 1–2 kali; K-05 docs/KEPUTUSAN.md).
+    'max_invoice_extensions' => (int) env('ASIC_MAX_INVOICE_EXTENSIONS', 2),
+
     // Aktif karena respons API reviewer menyamarkan seluruh identitas penulis.
     'blind_review_active' => true,
 

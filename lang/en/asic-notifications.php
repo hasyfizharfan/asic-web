@@ -9,6 +9,8 @@ return [
         'certificate_issued' => ['title' => 'Certificate issued', 'body' => 'The certificate for registration #:id is ready to download.'],
         'invoice_extended' => ['title' => 'Invoice due date extended', 'body' => 'The payment deadline for registration #:id has been extended to :due.'],
         'invoice_expired' => ['title' => 'Invoice expired', 'body' => 'The invoice for registration #:id has expired. Contact the committee if you need help.'],
+        'invoice_repriced' => ['title' => 'Invoice updated to the regular rate', 'body' => 'The early bird payment deadline for registration #:id has passed, so the invoice now uses the regular rate (:total). Please pay before :due.'],
+        'registration_cancelled' => ['title' => 'Registration cancelled', 'body' => 'Registration #:id has been cancelled because payment was not received by the last extended deadline. Contact the secretariat if you have questions.'],
         'payment_valid' => ['title' => 'Payment verified', 'body' => 'The treasurer has verified the payment for registration #:id.'],
         'payment_invalid' => ['title' => 'Payment proof rejected', 'body' => 'The payment proof for registration #:id was rejected: :reason. Please upload a correct proof.'],
         'abstract_accepted' => ['title' => 'Abstract accepted', 'body' => 'The abstract for registration #:id has been accepted. The LoA and invoice will be available in your account.'],

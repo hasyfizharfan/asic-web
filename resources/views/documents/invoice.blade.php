@@ -20,6 +20,8 @@
     </tr>
 </table>
 
+@if(!empty($revision_note))<p class="note"><strong>{{ $revision_note }}</strong></p>@endif
+
 <table class="grid">
     <tr><th>DESCRIPTION OF FEE PAYMENT</th><th class="right" style="width:30%">AMOUNT ({{ $currency ?? 'IDR' }})</th></tr>
     @foreach($items as $item)

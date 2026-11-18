@@ -43,6 +43,13 @@
     paymentInfo: @js(\App\Support\PaymentSettings::current()),
     internationalNote: @js(\App\Support\PaymentSettings::current()['international_note']),
     get hasBank() { return Boolean(this.paymentInfo.account_no); },
+    get isUsd() { return this.invoice?.mata_uang === 'USD'; },
+    get rate() { return Number(this.paymentInfo.usd_idr_rate) || 0; },
+    get paypalFee() { return Number(this.paymentInfo.paypal_fee_percent) || 0; },
+    get idrEquivalent() { return this.isUsd && this.rate ? Math.ceil(Number(this.invoice.total_tagihan) * this.rate) : 0; },
+    get paypalAmount() { const t = Number(this.invoice?.total_tagihan || 0); return this.paypalFee > 0 && this.paypalFee < 50 ? Math.ceil(t / (1 - this.paypalFee / 100) * 100) / 100 : t; },
+    get methodOptions() { return Object.fromEntries(Object.entries(this.methods).filter(([key]) => key !== 'paypal' || this.isUsd)); },
+    get cancelled() { return this.registration?.registration_status === 'Dibatalkan'; },
     methods: @js(collect(\App\Models\PaymentProof::METHODS)->reject(fn ($m) => $m === 'paypal' && blank(\App\Support\PaymentSettings::current()['paypal_account']))->mapWithKeys(fn ($m) => [$m => __('asic-common.payment_methods.'.$m)])),
     formatAmount(value) { return window.asicMoney(value, this.invoice?.mata_uang); }
 }">
@@ -69,24 +76,30 @@
                 <article x-show="hasBank" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3">
                     <h3 class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">account_balance</span>{{ __('asic-common.payment_methods.bank') }}<span x-show="paymentInfo.bank_name" x-text="'· ' + paymentInfo.bank_name"></span></h3>
                     <p class="mt-0.5 text-xs text-on-surface-variant">{{ $t['method_bank_desc'] }}</p>
+                    <p x-show="idrEquivalent" class="mt-2 rounded-lg bg-[#E6F4EA] px-3 py-2 text-xs font-semibold text-primary" x-text="i18n.idr_equivalent.replace(':idr', window.asicMoney(idrEquivalent, 'IDR')).replace(':rate', window.asicMoney(rate, 'IDR'))"></p>
                     <dl class="mt-2 grid gap-1 text-xs sm:grid-cols-2">
                         <template x-for="[key, label] in [['account_name', @js(__('asic-participant.pay_info.account_name'))], ['account_no', @js(__('asic-participant.pay_info.account_no'))], ['swift_code', 'SWIFT'], ['branch', @js(__('asic-participant.pay_info.branch'))]]" :key="key">
                             <div x-show="paymentInfo[key]"><dt class="text-on-surface-variant" x-text="label"></dt><dd class="break-words font-mono font-semibold" x-text="paymentInfo[key]"></dd></div>
                         </template>
                     </dl>
                 </article>
-                <article x-show="paymentInfo.paypal_account" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3">
+                <article x-show="paymentInfo.paypal_account && isUsd" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3">
                     <h3 class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">payments</span>PayPal</h3>
                     <p class="mt-0.5 text-xs text-on-surface-variant">{{ $t['method_paypal_desc'] }}</p>
                     <p class="mt-2 break-all font-mono text-xs font-semibold" x-text="paymentInfo.paypal_account"></p>
+                    <p x-show="paypalFee" class="mt-2 rounded-lg bg-[#E6F4EA] px-3 py-2 text-xs font-semibold text-primary" x-text="i18n.paypal_amount.replace(':amount', formatAmount(paypalAmount)).replace(':fee', paypalFee)"></p>
                 </article>
                 <article x-show="hasBank" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3">
                     <h3 class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">public</span>{{ $t['method_wiseflip'] }}</h3>
                     <p class="mt-0.5 text-xs text-on-surface-variant">{{ $t['method_wiseflip_desc'] }}</p>
+                    <p x-show="idrEquivalent" class="mt-2 text-xs font-semibold" x-text="i18n.wise_exact.replace(':idr', window.asicMoney(idrEquivalent, 'IDR'))"></p>
                 </article>
+                <p class="text-xs text-on-surface-variant" x-text="isUsd ? i18n.fee_note_intl : i18n.fee_note_domestic"></p>
                 <p x-show="internationalNote" class="whitespace-pre-line font-semibold" x-text="internationalNote"></p>
             </div>
-            <template x-if="invoice.status_pembayaran === 'Menunggu Pembayaran' || invoice.status_pembayaran === 'Ditolak'">
+            <p x-show="cancelled" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-on-error-container">{{ $t['cancelled'] }}</p>
+            <p x-show="!cancelled && ['Kedaluwarsa', 'Kadaluwarsa'].includes(invoice.status_pembayaran)" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-on-error-container">{{ $t['expired'] }}</p>
+            <template x-if="!cancelled && (invoice.status_pembayaran === 'Menunggu Pembayaran' || invoice.status_pembayaran === 'Ditolak')">
                 <form class="space-y-4 border-t border-surface-container-highest pt-5" @submit.prevent="uploadProof($event)">
                     <h2 class="font-bold">{{ $t['upload_title'] }}</h2>
                     <div class="rounded-xl border border-[#cfe3d5] bg-[#E6F4EA] px-4 py-3">
@@ -98,7 +111,7 @@
                     <label class="block text-sm font-semibold">{{ $t['method'] }}
                         <select name="metode_pembayaran" required class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
                             <option value="">{{ $t['method_choose'] }}</option>
-                            <template x-for="(label, key) in methods" :key="key"><option :value="key" x-text="label"></option></template>
+                            <template x-for="(label, key) in methodOptions" :key="key"><option :value="key" x-text="label"></option></template>
                         </select>
                     </label>
                     <p x-show="fieldErrors.metode_pembayaran" x-text="fieldErrors.metode_pembayaran?.[0]" class="text-sm text-error"></p>

@@ -9,6 +9,7 @@ use App\Models\PaymentProof;
 use App\Models\PaymentVerification;
 use App\Models\UserAccount;
 use App\Services\DocumentService;
+use App\Services\OverdueInvoiceProcessor;
 use App\Services\StatusNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -74,6 +75,12 @@ class PaymentVerificationController extends Controller
         }
 
         $data = $invoice->toArray();
+        $data['extension'] = [
+            'count' => (int) $invoice->jumlah_perpanjangan,
+            'max' => OverdueInvoiceProcessor::maxExtensions(),
+            'early_bird' => app(OverdueInvoiceProcessor::class)->isEarlyBird($invoice),
+            'registration_status' => $invoice->registration?->registration_status,
+        ];
         $data['proofs_files'] = $invoice->paymentProofs->map(fn ($p) => [
             'id_payment_proof' => $p->id_payment_proof,
             'file_url' => route('api.payment-proofs.file', $p->id_payment_proof),

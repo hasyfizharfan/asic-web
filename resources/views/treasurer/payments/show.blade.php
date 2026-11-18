@@ -30,6 +30,21 @@
         this.invoice.status_pembayaran = result.data?.data?.status_pembayaran || this.invoice.status_pembayaran;
         await this.load();
         window.asicApi.showToast(result.data?.message || this.i18n.updated, 'success');
+    },
+    newDue: new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10),
+    get ext() { return this.invoice?.extension || { count: 0, max: 2, early_bird: false }; },
+    get canExtend() {
+        return this.invoice && this.ext.registration_status !== 'Dibatalkan' && !this.ext.early_bird && this.ext.count < this.ext.max
+            && ['Menunggu Pembayaran', 'Ditolak', 'Kedaluwarsa', 'Kadaluwarsa'].includes(this.invoice.status_pembayaran);
+    },
+    async extend() {
+        if (!window.confirm(this.i18n.extend_confirm.replace(':date', asicDate(this.newDue)))) return;
+        this.busy = true;
+        const result = await window.asicApi.post('/api/invoices/' + this.id + '/extend', { tanggal_jatuh_tempo_baru: this.newDue });
+        this.busy = false;
+        if (!result.ok) { window.asicApi.showToast(result.error || this.i18n.extend_failed); return; }
+        await this.load();
+        window.asicApi.showToast(result.data?.message || this.i18n.updated, 'success');
     }
 }">
     <a href="{{ route('portal.treasurer.payments.index') }}" class="text-sm text-primary underline">{{ $t['back'] }}</a>
@@ -41,7 +56,9 @@
             <div><dt class="text-sm text-on-surface-variant">{{ $t['invoice_no'] }}</dt><dd class="font-semibold" x-text="invoice?.nomor_invoice"></dd></div>
             <div><dt class="text-sm text-on-surface-variant">{{ $t['participant'] }}</dt><dd x-text="invoice?.registration?.participant?.full_name || invoice?.registration?.participant?.user_account?.email"></dd></div>
             <div><dt class="text-sm text-on-surface-variant">{{ $t['total'] }}</dt><dd class="font-semibold" x-text="window.asicMoney(invoice?.total_tagihan, invoice?.mata_uang)"></dd></div>
-            <div><dt class="text-sm text-on-surface-variant">{{ $t['status'] }}</dt><dd x-text="invoice?.status_pembayaran"></dd></div>
+            <div><dt class="text-sm text-on-surface-variant">{{ $t['status'] }}</dt><dd x-text="invoice?.status_pembayaran + (ext.registration_status === 'Dibatalkan' ? ' · ' + i18n.cancelled : '')"></dd></div>
+            <div><dt class="text-sm text-on-surface-variant">{{ $t['due'] }}</dt><dd x-text="asicDate(invoice?.tanggal_jatuh_tempo_baru || invoice?.tanggal_jatuh_tempo)"></dd></div>
+            <div><dt class="text-sm text-on-surface-variant">{{ $t['extensions'] }}</dt><dd x-text="ext.count + ' / ' + ext.max + (ext.early_bird ? ' · ' + i18n.early_bird : '')"></dd></div>
             <template x-if="latestProof">
                 <div><dt class="text-sm text-on-surface-variant">{{ $t['method'] }}</dt><dd class="font-semibold" x-text="methods[latestProof.metode_pembayaran] || '—'"></dd></div>
             </template>
@@ -57,6 +74,16 @@
             <button type="button" :disabled="busy" @click="verify(true)" class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white">{{ $t['verify'] }}</button>
             <button type="button" :disabled="busy" @click="verify(false)" class="rounded-lg border border-error px-4 py-2 text-sm font-semibold text-error">{{ $t['reject'] }}</button>
         </div>
+    </section>
+    <section x-show="!loading && invoice && invoice.status_pembayaran !== 'Terverifikasi'" class="space-y-3 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-6">
+        <h2 class="font-bold">{{ $t['extend_title'] }}</h2>
+        <p class="text-sm text-on-surface-variant">{{ $t['extend_help'] }}</p>
+        <p x-show="ext.early_bird" class="rounded-xl bg-surface-container-low p-3 text-sm">{{ $t['extend_early_bird'] }}</p>
+        <p x-show="!ext.early_bird && ext.count >= ext.max" class="rounded-xl bg-error-container p-3 text-sm text-on-error-container" x-text="i18n.extend_limit.replace(':max', ext.max)"></p>
+        <form x-show="canExtend" @submit.prevent="extend()" class="flex flex-wrap items-end gap-3">
+            <label class="text-sm font-semibold">{{ $t['extend_date'] }}<input type="date" x-model="newDue" required :min="new Date(Date.now() + 864e5).toISOString().slice(0, 10)" class="mt-1 block rounded-xl border-surface-container-highest"></label>
+            <button type="submit" :disabled="busy" class="rounded-xl border border-primary px-4 py-2 text-sm font-bold text-primary disabled:opacity-50">{{ $t['extend_btn'] }}</button>
+        </form>
     </section>
 </main>
 @endsection
