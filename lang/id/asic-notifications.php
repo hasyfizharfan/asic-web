@@ -58,4 +58,18 @@ return [
         'unread_badge' => ':count belum dibaca',
         'bell_label' => 'Notifikasi',
     ],
+    'bell' => [
+        'title' => 'Notifikasi',
+        'open' => 'Buka notifikasi',
+        'mark_all' => 'Tandai semua dibaca',
+        'see_all' => 'Lihat semua notifikasi',
+        'loading' => 'Memuat notifikasi…',
+        'failed' => 'Notifikasi gagal dimuat.',
+        'retry' => 'Coba lagi',
+        'empty_title' => 'Tidak ada notifikasi',
+        'empty_body' => 'Kabar terbaru soal abstrak, invoice, pembayaran, dan dokumen Anda akan muncul di sini.',
+        'empty_body_staff' => 'Belum ada pemberitahuan untuk akun ini.',
+        'unread' => 'Belum dibaca',
+        'just_now' => 'baru saja',
+    ],
 ];

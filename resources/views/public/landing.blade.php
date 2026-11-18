@@ -432,9 +432,13 @@
         @if($packages->isNotEmpty())
             <div class="grid gap-3">
                 @foreach($packages as $package)
-                    <article class="flex items-start justify-between gap-4 rounded-[22px] bg-white/10 p-5 ring-1 ring-white/15 backdrop-blur">
-                        <div><h3 class="font-serif text-xl font-semibold">{{ $package->nama }}</h3>@if($package->localized('manfaat'))<p class="mt-1 text-sm text-white/80">{{ $package->localized('manfaat') }}</p>@endif</div>
-                        @if($package->harga_teks)<span class="shrink-0 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold">{{ $package->harga_teks }}</span>@endif
+                    {{-- Label harga selalu di bawah judul & manfaat, agar teks harga yang panjang tidak keluar kartu di HP. --}}
+                    <article class="flex min-w-0 flex-col items-start gap-3 rounded-[22px] bg-white/10 p-5 ring-1 ring-white/15 backdrop-blur">
+                        <div class="min-w-0">
+                            <h3 class="font-serif text-xl font-semibold">{{ $package->nama }}</h3>
+                            @if($package->localized('manfaat'))<p class="mt-1 whitespace-pre-line break-words text-sm text-white/80">{{ $package->localized('manfaat') }}</p>@endif
+                        </div>
+                        @if($package->harga_teks)<span class="max-w-full break-words rounded-2xl bg-white/15 px-3 py-1.5 text-xs font-semibold leading-snug">{{ $package->harga_teks }}</span>@endif
                     </article>
                 @endforeach
             </div>

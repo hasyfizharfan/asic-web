@@ -171,6 +171,19 @@ class StatusNotificationTest extends TestCase
             ->assertSee(__('asic-notifications.page.mark_all_read'))->assertDontSee('Belum tersedia');
     }
 
+    /** Lonceng = popup: keadaan kosong + "Lihat semua" untuk peserta; staf tanpa halaman notifikasi tidak diberi tautan itu. */
+    public function test_bell_popup_has_empty_state_and_see_all_link_for_participants_only(): void
+    {
+        $this->listener('bell');
+        $this->as(Role::ROLE_PESERTA, 'bell')->get('/participant/dashboard')->assertOk()
+            ->assertSee('id="asic-bell-panel"', false)->assertSee(__('asic-notifications.bell.empty_title'))
+            ->assertSee(__('asic-notifications.bell.see_all'))->assertSee('href="'.route('portal.participant.notifications').'"', false);
+
+        $this->as(Role::ROLE_BENDAHARA)->get(route('portal.treasurer.dashboard'))->assertOk()
+            ->assertSee('id="asic-bell-panel"', false)->assertSee(__('asic-notifications.bell.empty_body_staff'))
+            ->assertDontSee(__('asic-notifications.bell.see_all'));
+    }
+
     /** Email notifikasi benar-benar terkirim (transport array) dengan lampiran PDF, bahasa sesuai negara peserta. */
     /** Mailer sungguhan dengan transport array (setUp memakai Mail::fake). */
     private function realArrayMailer(): TransportInterface

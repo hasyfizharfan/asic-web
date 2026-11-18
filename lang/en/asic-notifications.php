@@ -58,4 +58,18 @@ return [
         'unread_badge' => ':count unread',
         'bell_label' => 'Notifications',
     ],
+    'bell' => [
+        'title' => 'Notifications',
+        'open' => 'Open notifications',
+        'mark_all' => 'Mark all as read',
+        'see_all' => 'See all notifications',
+        'loading' => 'Loading notifications…',
+        'failed' => 'Notifications could not be loaded.',
+        'retry' => 'Try again',
+        'empty_title' => 'No notifications',
+        'empty_body' => 'Updates about your abstract, invoice, payment, and documents will appear here.',
+        'empty_body_staff' => 'There are no notifications for this account yet.',
+        'unread' => 'Unread',
+        'just_now' => 'just now',
+    ],
 ];

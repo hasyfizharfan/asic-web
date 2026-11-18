@@ -28,13 +28,8 @@
     </div>
 
     <div class="flex items-center gap-2 sm:gap-3">
-        {{-- KF-30: lonceng notifikasi (jumlah belum dibaca milik pengguna sendiri) --}}
-        <div x-data="{ unread: 0 }" x-init="window.asicApi.get('/api/me/notifications/unread-count').then(r => { if (r.ok) unread = Number(r.data?.data?.unread_count || 0); })">
-            <{{ $bellUrl ? 'a href='.e($bellUrl) : 'span' }} class="relative inline-flex rounded-lg p-2 text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface" aria-label="{{ __('asic-notifications.page.bell_label') }}" title="{{ __('asic-notifications.page.bell_label') }}" data-asic-bell>
-                <span class="material-symbols-outlined text-[24px]">notifications</span>
-                <span x-show="unread > 0" x-text="unread > 99 ? '99+' : unread" class="absolute -right-0.5 -top-0.5 min-w-[18px] rounded-full bg-error px-1 text-center text-[10px] font-bold leading-[18px] text-white" style="display: none;"></span>
-            </{{ $bellUrl ? 'a' : 'span' }}>
-        </div>
+        {{-- KF-30: lonceng notifikasi popup (notifikasi milik pengguna sendiri) --}}
+        <x-layout.notification-bell :all-url="$bellUrl" />
 
         <x-layout.lang-switcher theme="light" />
 

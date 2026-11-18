@@ -26,6 +26,7 @@
         if (!response.ok) { window.asicApi.showToast(response.error || this.i18n.action_failed); return; }
         item.read_at = response.data?.data?.read_at;
         this.unread = Math.max(0, this.unread - 1);
+        window.dispatchEvent(new CustomEvent('asic-notifications-changed'));
     },
     async markAll() {
         this.busy = true;
@@ -33,6 +34,7 @@
         this.busy = false;
         if (!response.ok) { window.asicApi.showToast(response.error || this.i18n.action_failed); return; }
         await this.load(true);
+        window.dispatchEvent(new CustomEvent('asic-notifications-changed'));
     },
     async loadAnnouncements() {
         const response = await window.asicApi.get('/api/announcements', { per_page: 5 });
