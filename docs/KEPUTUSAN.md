@@ -25,4 +25,13 @@ Status:
 | K-13 | Pengembalian dana | Hanya biaya publikasi; biaya seminar tidak dikembalikan. Diproses manual di luar sistem. | Meeting 2 | Disepakati mitra | 10 Nov 2026 | Bendahara > Pengembalian dana |
 
 ## Riwayat perubahan
-- 18 Nov 2026: dokumen dibuat (K-01 s.d. K-13); K-04 s.d. K-08 diterapkan di kode (commit setelah 09393a5).
+- 18 Nov 2026: dokumen dibuat (K-01 s.d. K-13); K-04 s.d. K-08 diterapkan di kode (ea1c8e4).
+- 18 Nov 2026: audit QA (505a1dc): kontak publik memakai alamat resmi panitia dari template (`asic@agr.unand.ac.id`); alamat `@asic.unand.ac.id` hanya dipakai sebagai nama login akun uji (domainnya tidak menerima email).
+
+## Yang perlu ditanyakan ke panitia
+1. K-05: perpanjangan maksimal 1 atau 2 kali?
+2. K-06: setuju invoice early bird yang telat otomatis pindah ke harga reguler dengan nomor invoice yang sama?
+3. K-04/K-07: biaya transfer & kurs ditanggung peserta? Berapa persen biaya PayPal yang dibebankan? Kurs USD→IDR yang dipakai?
+4. K-08: apakah abstrak boleh dikembalikan untuk diperbaiki, atau cukup diterima/ditolak dengan saran?
+5. K-12: kategori peserta "Lecturer" atau "Regular"?
+6. K-03: tetap Calibri sesuai permintaan awal?
