@@ -5,14 +5,14 @@
     $isDark = $theme === 'dark';
 @endphp
 
-<div class="flex items-center rounded-full p-0.5 text-xs font-semibold select-none {{ $isDark ? 'bg-white/10 border border-white/20' : 'bg-surface-container-low border border-surface-container-highest' }}">
+<div class="flex items-center rounded-full p-0.5 text-[13px] font-semibold select-none {{ $isDark ? 'bg-white/10 border border-white/20' : 'bg-surface-container-low border border-surface-container-highest' }}">
     <a href="{{ route('portal.language', 'id') }}"
-       class="rounded-full px-2.5 py-0.5 transition {{ $currentLocale === 'id' ? ($isDark ? 'bg-gold text-deep font-bold shadow-xs' : 'bg-primary-container text-white font-bold shadow-xs') : ($isDark ? 'text-white/70 hover:text-white' : 'text-on-surface-variant hover:text-on-surface') }}"
+       class="rounded-full px-3 py-1 transition {{ $currentLocale === 'id' ? ($isDark ? 'bg-gold text-deep font-bold shadow-xs' : 'bg-primary-container text-white font-bold shadow-xs') : ($isDark ? 'text-white/70 hover:text-white' : 'text-on-surface-variant hover:text-on-surface') }}"
        title="Bahasa Indonesia">
         ID
     </a>
     <a href="{{ route('portal.language', 'en') }}"
-       class="rounded-full px-2.5 py-0.5 transition {{ $currentLocale === 'en' ? ($isDark ? 'bg-gold text-deep font-bold shadow-xs' : 'bg-primary-container text-white font-bold shadow-xs') : ($isDark ? 'text-white/70 hover:text-white' : 'text-on-surface-variant hover:text-on-surface') }}"
+       class="rounded-full px-3 py-1 transition {{ $currentLocale === 'en' ? ($isDark ? 'bg-gold text-deep font-bold shadow-xs' : 'bg-primary-container text-white font-bold shadow-xs') : ($isDark ? 'text-white/70 hover:text-white' : 'text-on-surface-variant hover:text-on-surface') }}"
        title="English">
         EN
     </a>

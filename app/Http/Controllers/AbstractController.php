@@ -5,12 +5,15 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreAbstractRequest;
 use App\Models\AbstractSubmission;
 use App\Models\Registration;
+use App\Models\Role;
 use App\Models\UserAccount;
+use App\Services\StaffNotifier;
 use App\Support\PermissionMatrix;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -65,7 +68,7 @@ class AbstractController extends Controller
         if (! $isOwner && ! $canReviewAny) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk melihat data abstrak ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_melihat_data_a'),
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -74,7 +77,7 @@ class AbstractController extends Controller
         if (! $abstract) {
             return response()->json([
                 'success' => false,
-                'message' => 'Naskah abstrak belum dikirimkan untuk pendaftaran ini.',
+                'message' => __('asic-api.messages.naskah_abstrak_belum_dikirimkan_untuk_pendaftaran'),
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -149,15 +152,24 @@ class AbstractController extends Controller
         if (! $isOwner && ! $canManageAny) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk mengunggah abstrak pada pendaftaran ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_mengunggah_abs'),
             ], Response::HTTP_FORBIDDEN);
         }
 
         if ($registration->participation_type === 'Listener') {
             return response()->json([
                 'success' => false,
-                'message' => 'Peserta kategori Listener tidak perlu mengirimkan naskah abstrak.',
+                'message' => __('asic-api.messages.peserta_kategori_listener_tidak_perlu_mengirimkan'),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        // Abstrak yang sudah diputuskan Tim Abstrak tidak boleh diganti (status tidak boleh kembali ke Diajukan).
+        $decided = $registration->abstractSubmission?->status_abstrak;
+        if ($decided !== null && $decided !== 'Diajukan') {
+            return response()->json([
+                'success' => false,
+                'message' => __('asic-api.messages.abstract_already_decided', ['status' => $decided]),
+            ], Response::HTTP_CONFLICT);
         }
 
         $validated = $request->validated();
@@ -181,11 +193,17 @@ class AbstractController extends Controller
                 'status_abstrak' => 'Diajukan',
             ]
         );
+        // Tim Abstrak diberi tahu tanpa nama peserta (cukup judul & bidang).
+        app(StaffNotifier::class)->notifyRole(
+            Role::ROLE_TIM_ABSTRAK, $existingAbstract ? 'abstract_resubmitted' : 'abstract_submitted',
+            StaffNotifier::url('portal.reviewer.abstracts.show', ['id' => $abstract->id_abstract]),
+            ['title' => Str::limit((string) $abstract->judul_abstrak, 90), 'scope' => $abstract->scope ?: '-'],
+        );
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Naskah abstrak berhasil diunggah dengan status Diajukan.',
+                'message' => __('asic-api.messages.naskah_abstrak_berhasil_diunggah_dengan_status_dia'),
                 'data' => $abstract,
                 'file_url' => route('api.registrations.abstract.download', $id_registration),
             ], Response::HTTP_CREATED);
@@ -236,7 +254,7 @@ class AbstractController extends Controller
         if (! $isOwner && ! $canReviewAny) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk mengunduh naskah abstrak ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_mengunduh_nask'),
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -245,7 +263,7 @@ class AbstractController extends Controller
         if (! $abstract || ! $abstract->file_abstrak || ! $privateDisk->exists($abstract->file_abstrak)) {
             return response()->json([
                 'success' => false,
-                'message' => 'Berkas naskah abstrak tidak ditemukan di server.',
+                'message' => __('asic-api.messages.berkas_naskah_abstrak_tidak_ditemukan_di_server'),
             ], Response::HTTP_NOT_FOUND);
         }
 

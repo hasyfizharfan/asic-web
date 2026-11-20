@@ -21,6 +21,7 @@ class DocumentService
         'Penolakan' => '{SEQ}/{EDITION} ASIC/{YYYY}',
         'Invoice' => '{SEQ}/INV/{EDITION} ASIC/{YYYY}',
         'Receipt' => '{SEQ}/{SCOPE}/{EDITION} ASIC/{YYYY}',
+        'Sertifikat' => '{SEQ}/CERT/{EDITION} ASIC/{YYYY}',
     ];
 
     public function __construct(private DocumentRenderer $renderer) {}
@@ -144,6 +145,31 @@ class DocumentService
      *
      * @param  array<string, mixed>  $extra
      */
+    /**
+     * Terbitkan ulang dokumen yang sudah ada (mis. invoice yang berpindah dari tarif early bird ke reguler):
+     * nomor tetap, PDF dibuat ulang, baris IssuedDocument yang sama diperbarui agar tautan lama tetap mengarah ke versi terbaru.
+     */
+    public function reissue(Registration $reg, string $jenis, array $extra, string $nomor): IssuedDocument
+    {
+        return DB::transaction(function () use ($reg, $jenis, $extra, $nomor) {
+            $existing = IssuedDocument::where('id_registration', $reg->id_registration)
+                ->where('jenis_dokumen', $jenis)->lockForUpdate()->first();
+            if (! $existing) {
+                return $this->issue($reg, $jenis, $extra, $nomor);
+            }
+            $context = array_merge($this->baseContext($reg), $extra, ['nomor' => $nomor, 'tanggal' => now()]);
+            $path = sprintf('documents/%s/%d-%s-r%s.pdf', strtolower($jenis), $reg->id_registration, Str::slug(str_replace('/', '-', $nomor)), now()->format('YmdHis'));
+            Storage::disk($this->disk())->put($path, $this->renderer->render($jenis, $context));
+            $old = $existing->file_document;
+            $existing->update(['nomor_dokumen' => $nomor, 'file_document' => $path, 'tanggal_terbit' => now()]);
+            if ($old && $old !== $path) {
+                Storage::disk($this->disk())->delete($old);
+            }
+
+            return $existing;
+        });
+    }
+
     public function issue(Registration $reg, string $jenis, array $extra = [], ?string $nomor = null): IssuedDocument
     {
         return DB::transaction(function () use ($reg, $jenis, $extra, $nomor) {
@@ -163,7 +189,7 @@ class DocumentService
             Storage::disk($this->disk())->put($path, $this->renderer->render($jenis, $context));
 
             try {
-                return IssuedDocument::create([
+                $document = IssuedDocument::create([
                     'id_registration' => $reg->id_registration,
                     'id_template' => $template->id_template,
                     'jenis_dokumen' => $jenis,
@@ -175,6 +201,13 @@ class DocumentService
                 Storage::disk($this->disk())->delete($path);
                 throw $e;
             }
+
+            // KF-30: satu titik notifikasi untuk dokumen terbit (dikirim setelah commit, gagal tidak membatalkan).
+            if ($kind = StatusNotifier::documentKind($jenis)) {
+                app(StatusNotifier::class)->notify($reg, $kind, 'document:'.$document->id_document);
+            }
+
+            return $document;
         });
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\RestrictApiDocs;
 use L5Swagger\CustomBuilderInterface;
 use L5Swagger\CustomGeneratorInterface;
 use L5Swagger\Generator;
@@ -75,10 +76,10 @@ return [
              *   'api' => ['auth:sanctum'],
              */
             'middleware' => [
-                'api' => [],
-                'asset' => [],
-                'docs' => [],
-                'oauth2_callback' => [],
+                'api' => [RestrictApiDocs::class],
+                'asset' => [RestrictApiDocs::class],
+                'docs' => [RestrictApiDocs::class],
+                'oauth2_callback' => [RestrictApiDocs::class],
             ],
 
             /*

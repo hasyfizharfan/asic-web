@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Support\Currency;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreRegistrationRequest extends FormRequest
@@ -56,6 +58,25 @@ class StoreRegistrationRequest extends FormRequest
             'publication_option.in' => 'Opsi publikasi harus berupa Prosiding, Jurnal, atau Tidak.',
             'add_ons.*.id_add_on.exists' => 'Layanan tambahan (add-on) yang dipilih tidak valid.',
             'add_ons.*.jumlah.min' => 'Jumlah layanan tambahan minimal 1.',
+        ];
+    }
+
+    /**
+     * Add-on hanya memiliki harga IDR; peserta bertarif USD tidak dapat memilihnya.
+     *
+     * @return array<int, callable>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                if (empty($this->input('add_ons'))) {
+                    return;
+                }
+                if (Currency::forParticipant($this->user()?->participant) !== Currency::IDR) {
+                    $validator->errors()->add('add_ons', __('asic-api.payment.addons_idr_only'));
+                }
+            },
         ];
     }
 }

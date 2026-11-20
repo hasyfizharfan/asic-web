@@ -65,6 +65,8 @@ class RegistrationController extends Controller
             'registrationPeriod',
             'addOns',
             'abstractSubmission',
+            // Catatan Tim Abstrak untuk peserta (tanpa identitas reviewer — blind review).
+            'abstractSubmission.latestReview' => fn ($q) => $q->select(['abstract_review.id_review', 'abstract_review.id_abstract', 'abstract_review.hasil_review', 'abstract_review.catatan_review', 'abstract_review.tanggal_review']),
             'attendance',
             'participantFiles',
         ]);
@@ -146,7 +148,7 @@ class RegistrationController extends Controller
         if (! $isOwner && ! $canManageAll) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk melihat data pendaftaran ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_melihat_data_p'),
             ], Response::HTTP_FORBIDDEN);
         }
 
@@ -231,7 +233,7 @@ class RegistrationController extends Controller
         ) {
             return response()->json([
                 'success' => false,
-                'message' => 'Periode pendaftaran yang dipilih sudah ditutup atau tidak aktif.',
+                'message' => __('asic-api.messages.periode_pendaftaran_yang_dipilih_sudah_ditutup_ata'),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -243,7 +245,7 @@ class RegistrationController extends Controller
         if ($existing) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda sudah terdaftar pada kegiatan seminar ini.',
+                'message' => __('asic-api.messages.anda_sudah_terdaftar_pada_kegiatan_seminar_ini'),
                 'data' => $existing,
             ], Response::HTTP_CONFLICT);
         }
@@ -286,7 +288,7 @@ class RegistrationController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Pendaftaran kegiatan seminar berhasil disimpan.',
+                'message' => __('asic-api.messages.pendaftaran_kegiatan_seminar_berhasil_disimpan'),
                 'data' => $registration,
             ], Response::HTTP_CREATED);
         }
@@ -300,6 +302,6 @@ class RegistrationController extends Controller
         RegistrationPeriod::query()
             ->where('status_periode', 'Aktif')
             ->whereDate('tanggal_selesai', '<', Carbon::today())
-            ->update(['status_periode' => 'Ditutup']);
+            ->update(['status_periode' => 'Tidak Aktif']);
     }
 }

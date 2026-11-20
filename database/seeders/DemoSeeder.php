@@ -16,6 +16,7 @@ use App\Models\RegistrationPeriod;
 use App\Models\Role;
 use App\Models\Speaker;
 use App\Models\UserAccount;
+use App\Support\Currency;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
@@ -51,19 +52,26 @@ class DemoSeeder extends Seeder
             ['tanggal_mulai' => '2026-11-01', 'tanggal_selesai' => '2027-01-31', 'status_periode' => 'Aktif']
         );
 
-        $feeAmounts = ['Student' => 250000, 'Regular' => 400000, 'Committee' => 0];
-        foreach ($feeAmounts as $type => $amount) {
-            foreach (['Daring', 'Luring'] as $attendanceMode) {
-                RegistrationFee::updateOrCreate(
-                    [
-                        'id_event' => $event->id_event,
-                        'id_period' => $period->id_period,
-                        'registration_type' => $type,
-                        'attendance_mode' => $attendanceMode,
-                        'tujuan_publikasi' => 'Tidak',
-                    ],
-                    ['amount' => $amount, 'discount' => 0]
-                );
+        // Nominal contoh (bukan tarif resmi panitia). IDR untuk peserta Indonesia, USD untuk peserta negara lain.
+        $feeAmounts = [
+            'IDR' => ['Student' => 250000, 'Regular' => 400000, 'Committee' => 0],
+            'USD' => ['Student' => 20, 'Regular' => 30, 'Committee' => 0],
+        ];
+        foreach ($feeAmounts as $currency => $amounts) {
+            foreach ($amounts as $type => $amount) {
+                foreach (['Daring', 'Luring'] as $attendanceMode) {
+                    RegistrationFee::updateOrCreate(
+                        [
+                            'id_event' => $event->id_event,
+                            'id_period' => $period->id_period,
+                            'registration_type' => $type,
+                            'attendance_mode' => $attendanceMode,
+                            'tujuan_publikasi' => 'Tidak',
+                            'mata_uang' => $currency,
+                        ],
+                        ['amount' => $amount, 'discount' => 0]
+                    );
+                }
             }
         }
 
@@ -129,11 +137,18 @@ class DemoSeeder extends Seeder
                 );
             }
 
+            // KF-20: invoice presenter baru terbit setelah abstrak Diterima; demo hanya menagih Listener.
+            if ($attributes['participation_type'] !== 'Listener') {
+                continue;
+            }
+
+            $currency = Currency::forCountry($attributes['country']);
             $fee = RegistrationFee::where('id_event', $event->id_event)
                 ->where('id_period', $period->id_period)
                 ->where('registration_type', $attributes['registration_type'])
                 ->where('attendance_mode', 'Luring')
                 ->where('tujuan_publikasi', 'Tidak')
+                ->where('mata_uang', $currency)
                 ->firstOrFail();
 
             $invoice = Invoice::updateOrCreate(
@@ -144,6 +159,7 @@ class DemoSeeder extends Seeder
                     'tanggal_invoice' => now()->subDay(),
                     'tanggal_jatuh_tempo' => now()->addDays(6)->toDateString(),
                     'total_tagihan' => $fee->finalAmount(),
+                    'mata_uang' => $currency,
                     'status_pembayaran' => 'Menunggu Pembayaran',
                 ]
             );

@@ -60,19 +60,8 @@ class ParticipantPaymentReviewCheckinWorkflowTest extends TestCase
         ])->assertCreated();
 
         $registrationId = $created->json('data.id_registration');
-        $invoice = Invoice::where('id_registration', $registrationId)->firstOrFail();
-        $this->as(Role::ROLE_PESERTA, 'workflow')->get('/participant/payment/checkout?id_registration='.$registrationId)->assertOk();
-
-        $proofResponse = $this->as(Role::ROLE_PESERTA, 'workflow')->postJson("/api/invoices/{$invoice->id_invoice}/payment-proofs", [
-            'file_bukti' => UploadedFile::fake()->image('transfer.jpg'),
-            'nominal_transfer' => 500000,
-        ])->assertCreated();
-        $proof = PaymentProof::findOrFail($proofResponse->json('data.id_payment_proof'));
-
-        $this->as(Role::ROLE_BENDAHARA)->postJson("/api/payment-proofs/{$proof->id_payment_proof}/verify", [
-            'hasil_verifikasi' => 'Valid',
-        ])->assertOk()->assertJsonPath('data.status_pembayaran', 'Terverifikasi');
-
+        // KF-20: presenter mengirim abstrak dulu; invoice terbit setelah abstrak Diterima.
+        $this->assertFalse(Invoice::where('id_registration', $registrationId)->exists());
         $this->as(Role::ROLE_PESERTA, 'workflow')->get('/participant/abstract?id_registration='.$registrationId)->assertOk();
 
         $abstractResponse = $this->as(Role::ROLE_PESERTA, 'workflow')->postJson("/api/registrations/{$registrationId}/abstract", [
@@ -90,6 +79,19 @@ class ParticipantPaymentReviewCheckinWorkflowTest extends TestCase
             'hasil_review' => 'Diterima',
             'catatan_review' => 'Accepted for oral presentation.',
         ])->assertOk()->assertJsonPath('data.status_abstrak', 'Diterima');
+
+        $invoice = Invoice::where('id_registration', $registrationId)->firstOrFail();
+        $this->as(Role::ROLE_PESERTA, 'workflow')->get('/participant/payment/checkout?id_registration='.$registrationId)->assertOk();
+
+        $proofResponse = $this->as(Role::ROLE_PESERTA, 'workflow')->postJson("/api/invoices/{$invoice->id_invoice}/payment-proofs", [
+            'file_bukti' => UploadedFile::fake()->image('transfer.jpg'),
+            'nominal_transfer' => 500000,
+        ])->assertCreated();
+        $proof = PaymentProof::findOrFail($proofResponse->json('data.id_payment_proof'));
+
+        $this->as(Role::ROLE_BENDAHARA)->postJson("/api/payment-proofs/{$proof->id_payment_proof}/verify", [
+            'hasil_verifikasi' => 'Valid',
+        ])->assertOk()->assertJsonPath('data.status_pembayaran', 'Terverifikasi');
 
         $this->as(Role::ROLE_SEKRETARIAT)->postJson("/api/tim-abstrak/submissions/{$abstractId}/issue-documents")->assertOk();
         $loa = IssuedDocument::where('id_registration', $registrationId)->where('jenis_dokumen', 'LOA')->firstOrFail();

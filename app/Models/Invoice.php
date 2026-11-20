@@ -34,6 +34,7 @@ class Invoice extends Model
         'status_pembayaran',
         'jumlah_perpanjangan',
         'tanggal_jatuh_tempo_baru',
+        'mata_uang',
     ];
 
     protected function casts(): array

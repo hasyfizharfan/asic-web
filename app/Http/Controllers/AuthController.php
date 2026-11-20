@@ -8,12 +8,16 @@ use App\Models\Participant;
 use App\Models\Registration;
 use App\Models\Role;
 use App\Models\UserAccount;
+use App\Notifications\WelcomeParticipant;
+use App\Services\ConsentRecorder;
+use App\Support\MailGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\Response;
@@ -71,7 +75,7 @@ class AuthController extends Controller
     {
         $validated = $request->validated();
 
-        $user = DB::transaction(function () use ($validated) {
+        $user = DB::transaction(function () use ($validated, $request) {
             // 1. Ambil role default 'Peserta'
             $pesertaRole = Role::firstOrCreate(
                 ['nama_role' => Role::ROLE_PESERTA],
@@ -125,30 +129,58 @@ class AuthController extends Controller
                 'postcode' => null,
             ]);
 
+            // KF-35: persetujuan syarat/privasi/etika dicatat dalam transaksi yang sama.
+            app(ConsentRecorder::class)->record($userAccount, $request->ip());
+
             return $userAccount;
         });
 
         // Muat relasi role dan participant beserta accessor full_name
         $user->load(['role', 'participant']);
 
+        // Verifikasi email: hanya bila email benar-benar bisa dikirim; bila tidak, akun langsung aktif.
+        $canMail = MailGuard::allows($user->email);
+        $needsVerification = $canMail && config('asic.require_email_verification', true);
+        if ($needsVerification) {
+            $user->forceFill(['email_verified_at' => null])->save();
+        }
+        $emailSent = false;
+        try {
+            if ($canMail) {
+                $user->notifyNow((new WelcomeParticipant)->locale(MailGuard::localeForCountry($user->participant?->country)));
+                $emailSent = true;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('register.welcome_mail_failed', ['id_user' => $user->id_user, 'error' => $e->getMessage()]);
+        }
+        if ($request->hasSession()) {
+            $request->session()->flash('registered_email', $user->email);
+            $request->session()->flash('registered_email_sent', $emailSent);
+            $request->session()->flash('registered_needs_verification', $needsVerification);
+        }
+
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Akun delegasi berhasil dibuat. Tautan aktivasi instan telah dikirimkan ke alamat email institusi Anda.',
-                'activation_link_required' => true,
+                'message' => $needsVerification
+                    ? __('asic-api.messages.register_success_verify', ['email' => $user->email])
+                    : ($emailSent ? __('asic-api.messages.register_success_email', ['email' => $user->email]) : __('asic-api.messages.register_success')),
+                'activation_link_required' => $needsVerification,
+                'confirmation_email_sent' => $emailSent,
                 'data' => [
                     'id_user' => $user->id_user,
                     'email' => $user->email,
                     'role' => $user->role?->nama_role,
                     'status_akun' => $user->status_akun,
                     'participant' => $user->participant,
+                    'redirect_url' => route('auth.participant.login', ['registered' => 1]),
                 ],
             ], Response::HTTP_CREATED);
         }
 
         return redirect()->route('login')->with(
             'success',
-            'Akun delegasi berhasil dibuat. Silakan periksa email institusi Anda untuk aktivasi akun.'
+            __('asic-api.messages.register_success')
         );
     }
 
@@ -206,7 +238,7 @@ class AuthController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Email / Username atau kata sandi yang Anda masukkan salah.',
+                    'message' => __('asic-api.messages.email_username_atau_kata_sandi_yang_anda_masukkan'),
                 ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
 
@@ -220,7 +252,7 @@ class AuthController extends Controller
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Akun Anda berstatus Nonaktif. Silakan hubungi Administrator.',
+                    'message' => __('asic-api.messages.akun_anda_berstatus_nonaktif_silakan_hubungi_admin'),
                 ], Response::HTTP_FORBIDDEN);
             }
 
@@ -229,18 +261,32 @@ class AuthController extends Controller
             ]);
         }
 
+        // 4b. Peserta yang mendaftar sendiri wajib memverifikasi email terlebih dahulu
+        $user->loadMissing('role');
+        if ($user->needsEmailVerification()) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => __('asic-auth.verify.required', ['email' => $user->email]),
+                    'needs_verification' => true,
+                ], Response::HTTP_FORBIDDEN);
+            }
+
+            throw ValidationException::withMessages(['email' => [__('asic-auth.verify.required', ['email' => $user->email])]]);
+        }
+
         // 5. Eksekusi login sesi
         $remember = $request->boolean('remember');
         Auth::login($user, $remember);
         $request->session()->regenerate();
 
         $user->load(['role', 'participant']);
-        $redirectUrl = $this->resolveRedirectUrl($user);
+        $redirectUrl = $this->intendedUrl((string) $request->session()->pull('url.intended', ''), $user) ?? $this->resolveRedirectUrl($user);
 
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Login berhasil. Selamat datang di Portal ASIC 2026.',
+                'message' => __('asic-api.messages.login_berhasil_selamat_datang_di_portal_asic_2026'),
                 'data' => [
                     'id_user' => $user->id_user,
                     'email' => $user->email,
@@ -301,22 +347,12 @@ class AuthController extends Controller
             'query' => ['required', 'string', 'min:3'],
         ]);
 
-        $search = trim($request->string('query'));
-        $users = UserAccount::with(['role', 'participant'])
-            ->where('email', 'like', "%{$search}%")
-            ->orWhereHas('participant', function ($p) use ($search) {
-                $p->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('phone', 'like', "%{$search}%");
-            })
-            ->take(5)
-            ->get();
-
+        // Audit QA 18 Nov 2026: dulu mengembalikan jumlah akun yang cocok (nama/email/telepon), sehingga
+        // orang luar bisa mengecek apakah seseorang terdaftar. Kini selalu jawaban umum yang sama.
         return response()->json([
             'success' => true,
-            'message' => 'Instruksi bantuan pencarian username / email berhasil diproses.',
-            'count' => $users->count(),
-            'hint' => 'Silakan hubungi sekretariat via asic@agr.unand.ac.id jika akun Anda belum ditemukan.',
+            'message' => __('asic-api.messages.instruksi_bantuan_pencarian_username_email_berhasi'),
+            'hint' => __('asic-api.forgot_username_hint', ['email' => config('asic.contact_email') ?: 'asic@agr.unand.ac.id']),
         ], Response::HTTP_OK);
     }
 
@@ -353,7 +389,7 @@ class AuthController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Logout berhasil.',
+                'message' => __('asic-api.messages.logout_berhasil'),
             ], Response::HTTP_OK);
         }
 
@@ -447,6 +483,19 @@ class AuthController extends Controller
     /**
      * Tentukan URL redirect sesuai peran pengguna.
      */
+    /** Tautan tujuan sebelum login hanya dipakai bila berada di portal milik peran akun tersebut. */
+    protected function intendedUrl(string $intended, UserAccount $user): ?string
+    {
+        if ($intended === '' || ! str_starts_with($intended, url('/').'/')) {
+            return null;
+        }
+        $home = (string) parse_url($this->resolveRedirectUrl($user), PHP_URL_PATH);
+        $prefix = '/'.explode('/', trim($home, '/'))[0].'/';
+        $path = (string) parse_url($intended, PHP_URL_PATH);
+
+        return $prefix !== '//' && str_starts_with($path.'/', $prefix) ? $intended : null;
+    }
+
     protected function resolveRedirectUrl(UserAccount $user): string
     {
         $roleName = $user->role?->nama_role;

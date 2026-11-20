@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Models\Invoice;
 use App\Models\PaymentProof;
+use App\Models\Role;
 use App\Models\UserAccount;
+use App\Services\StaffNotifier;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,7 +32,7 @@ class PaymentProofController extends Controller
 
         $input = $request->validate([
             'file_bukti' => ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-            'nominal_transfer' => ['nullable', 'numeric', 'min:0', 'decimal:0,2'],
+            'metode_pembayaran' => ['nullable', 'string', 'in:'.implode(',', PaymentProof::METHODS)],
             'catatan_peserta' => ['nullable', 'string', 'max:1000'],
         ], [
             'file_bukti.required' => 'Berkas bukti pembayaran wajib diunggah.',
@@ -39,19 +41,23 @@ class PaymentProofController extends Controller
         ]);
 
         $outcome = DB::transaction(function () use ($id_invoice, $user, $request, $input) {
-            $invoice = Invoice::with('registration.participant')->lockForUpdate()->find($id_invoice);
+            $invoice = Invoice::with(['registration.participant', 'registration.abstractSubmission'])->lockForUpdate()->find($id_invoice);
             if (! $invoice) {
-                return ['error' => Response::HTTP_NOT_FOUND, 'message' => 'Invoice tidak ditemukan.'];
+                return ['error' => Response::HTTP_NOT_FOUND, 'message' => __('asic-api.messages.invoice_tidak_ditemukan')];
             }
             if ($invoice->registration?->participant?->id_user !== $user->id_user) {
-                return ['error' => Response::HTTP_FORBIDDEN, 'message' => 'Anda bukan pemilik invoice ini.'];
+                return ['error' => Response::HTTP_FORBIDDEN, 'message' => __('asic-api.messages.anda_bukan_pemilik_invoice_ini')];
+            }
+            // KF-20: presenter membayar setelah abstrak diterima (invoice lama yang terbit dini tidak dihapus).
+            if ($invoice->registration?->isPresenter() && $invoice->registration->abstractSubmission?->status_abstrak !== 'Diterima') {
+                return ['error' => Response::HTTP_UNPROCESSABLE_ENTITY, 'message' => __('asic-api.payment.presenter_abstract_not_accepted')];
             }
             if (! in_array($invoice->status_pembayaran, ['Menunggu Pembayaran', 'Ditolak'], true)) {
                 return ['error' => Response::HTTP_CONFLICT, 'message' => "Bukti tidak dapat diunggah pada invoice berstatus '{$invoice->status_pembayaran}'."];
             }
             $due = $invoice->tanggal_jatuh_tempo_baru ?? $invoice->tanggal_jatuh_tempo;
             if ($due && Carbon::parse($due)->endOfDay()->isPast()) {
-                return ['error' => Response::HTTP_UNPROCESSABLE_ENTITY, 'message' => 'Batas waktu pembayaran invoice sudah terlewat.'];
+                return ['error' => Response::HTTP_UNPROCESSABLE_ENTITY, 'message' => __('asic-api.messages.batas_waktu_pembayaran_invoice_sudah_terlewat')];
             }
 
             $path = $request->file('file_bukti')->store('payment-proofs/'.$invoice->id_invoice, 'local');
@@ -59,7 +65,10 @@ class PaymentProofController extends Controller
                 'id_invoice' => $invoice->id_invoice,
                 'file_bukti' => $path,
                 'tanggal_upload' => now(),
-                'nominal_transfer' => $input['nominal_transfer'] ?? null,
+                // Peserta mentransfer sesuai total tagihan (nominal tidak diisi/diubah peserta);
+                // kecocokan dana dengan mutasi rekening diperiksa Bendahara.
+                'nominal_transfer' => $invoice->total_tagihan,
+                'metode_pembayaran' => $input['metode_pembayaran'] ?? null,
                 'catatan_peserta' => $input['catatan_peserta'] ?? null,
             ]);
             $invoice->update(['status_pembayaran' => 'Menunggu Verifikasi']);
@@ -72,8 +81,14 @@ class PaymentProofController extends Controller
         }
 
         Log::info('payment.proof_uploaded', ['id_invoice' => $outcome['invoice']->id_invoice, 'id_payment_proof' => $outcome['proof']->id_payment_proof]);
+        app(StaffNotifier::class)->notifyRole(
+            Role::ROLE_BENDAHARA, 'payment_proof_submitted',
+            StaffNotifier::url('portal.treasurer.payments.show', ['id' => $outcome['invoice']->id_invoice]),
+            ['number' => $outcome['invoice']->nomor_invoice, 'name' => $outcome['invoice']->registration?->participant?->full_name],
+            'proof:'.$outcome['proof']->id_payment_proof,
+        );
 
-        return $this->ok('Bukti pembayaran berhasil diunggah dan menunggu verifikasi.', [
+        return $this->ok(__('asic-api.messages.bukti_pembayaran_berhasil_diunggah_dan_menunggu_ve'), [
             'id_payment_proof' => $outcome['proof']->id_payment_proof,
             'status_pembayaran' => $outcome['invoice']->status_pembayaran,
         ], Response::HTTP_CREATED);

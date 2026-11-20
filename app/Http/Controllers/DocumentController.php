@@ -56,19 +56,19 @@ class DocumentController extends Controller
         $user = Auth::user();
         $registration = Registration::with('participant')->find($id_registration);
         if (! $registration) {
-            return $this->fail('Registrasi tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.registrasi_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
 
         $query = IssuedDocument::where('id_registration', $id_registration)->orderBy('id_document');
         if ($registration->participant?->id_user !== $user->id_user) {
             $types = $this->staffTypes($user);
             if ($types === []) {
-                return $this->fail('Anda tidak memiliki hak akses untuk melihat dokumen ini.', Response::HTTP_FORBIDDEN);
+                return $this->fail(__('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_melihat_dokume'), Response::HTTP_FORBIDDEN);
             }
             $query->whereIn('jenis_dokumen', $types);
         }
 
-        return $this->ok('Daftar dokumen berhasil dimuat.', $query->get(['id_document', 'id_registration', 'jenis_dokumen', 'nomor_dokumen', 'tanggal_terbit']));
+        return $this->ok(__('asic-api.messages.daftar_dokumen_berhasil_dimuat'), $query->get(['id_document', 'id_registration', 'jenis_dokumen', 'nomor_dokumen', 'tanggal_terbit']));
     }
 
     #[OA\Get(
@@ -85,17 +85,20 @@ class DocumentController extends Controller
         $user = Auth::user();
         $doc = IssuedDocument::find($id_document);
         if (! $doc) {
-            return $this->fail('Dokumen tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.dokumen_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
         if (! $this->canAccess($user, $doc)) {
-            return $this->fail('Anda tidak memiliki hak akses untuk mengunduh dokumen ini.', Response::HTTP_FORBIDDEN);
+            return $this->fail(__('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_mengunduh_doku'), Response::HTTP_FORBIDDEN);
         }
 
         $disk = Storage::disk(config('asic.documents_disk', 'local'));
         if (! $disk->exists($doc->file_document)) {
-            return $this->fail('Berkas dokumen tidak tersedia di penyimpanan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.berkas_dokumen_tidak_tersedia_di_penyimpanan'), Response::HTTP_NOT_FOUND);
         }
 
-        return $disk->download($doc->file_document, $doc->jenis_dokumen.'-'.str_replace('/', '-', (string) $doc->nomor_dokumen).'.pdf', ['Content-Type' => 'application/pdf']);
+        $name = $doc->jenis_dokumen.'-'.str_replace('/', '-', (string) $doc->nomor_dokumen).'.pdf';
+
+        // ?inline=1: ditampilkan di jendela pratinjau browser, bukan diunduh.
+        return $disk->response($doc->file_document, $name, ['Content-Type' => 'application/pdf'], request()->boolean('inline') ? 'inline' : 'attachment');
     }
 }

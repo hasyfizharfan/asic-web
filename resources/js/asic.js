@@ -1,5 +1,6 @@
 import './bootstrap';
 import Alpine from 'alpinejs';
+import QRCode from 'qrcode';
 
 if (!window.Alpine) {
     window.Alpine = Alpine;
@@ -26,6 +27,124 @@ if (window.Alpine && !window.Alpine.store('toast')) {
 }
 
 // Cookie-based SPA API client shared by all real portal pages.
+/**
+ * Format nominal sesuai mata uang (IDR tanpa desimal, USD dua desimal) dan bahasa halaman.
+ * Nominal lintas mata uang tidak pernah dijumlahkan di klien.
+ */
+window.asicMoney = function (value, currency = 'IDR') {
+    const code = currency === 'USD' ? 'USD' : 'IDR';
+    const locale = document.documentElement.lang === 'en' ? 'en-US' : 'id-ID';
+    return new Intl.NumberFormat(locale, {
+        style: 'currency',
+        currency: code,
+        minimumFractionDigits: code === 'USD' ? 2 : 0,
+        maximumFractionDigits: code === 'USD' ? 2 : 0,
+    }).format(Number(value || 0));
+};
+
+/**
+ * Format tanggal API (ISO UTC, "Y-m-d" atau "Y-m-d H:i:s") ke tampilan WIB sesuai bahasa halaman.
+ * asicDate(v) = tanggal saja; asicDateTime(v) = tanggal + jam. Nilai kosong menjadi "—".
+ */
+function asicParseDate(value) {
+    if (!value) return null;
+    const raw = String(value);
+    // "Y-m-d" murni = tanggal kalender (tanpa zona); jangan digeser ke UTC.
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return new Date(raw + 'T12:00:00+07:00');
+    const normalized = /[zZ]|[+-]\d{2}:?\d{2}$/.test(raw) ? raw : raw.replace(' ', 'T') + '+07:00';
+    const date = new Date(normalized);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+function asicDateFormat(value, withTime) {
+    const date = asicParseDate(value);
+    if (!date) return value ? String(value) : '—';
+    const locale = document.documentElement.lang === 'en' ? 'en-GB' : 'id-ID';
+    const options = { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Jakarta' };
+    if (withTime) Object.assign(options, { hour: '2-digit', minute: '2-digit', hour12: false });
+    return new Intl.DateTimeFormat(locale, options).format(date) + (withTime ? ' WIB' : '');
+}
+window.asicDate = (value) => asicDateFormat(value, false);
+window.asicDateTime = (value) => asicDateFormat(value, true);
+
+/** Gambar QR di klien (paket npm qrcode); token tidak dikirim ke layanan luar. */
+window.asicQr = {
+    render(canvas, text, width = 240) {
+        return QRCode.toCanvas(canvas, String(text || ''), { width, margin: 2, errorCorrectionLevel: 'M' });
+    },
+    download(canvas, filename) {
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = filename;
+        link.click();
+    },
+};
+
+/**
+ * Pemindai QR lewat kamera perangkat (paket html5-qrcode, dimuat saat dibutuhkan).
+ * Gambar kamera diproses di browser, tidak dikirim ke server. Butuh HTTPS dan izin kamera.
+ * continuous=true: tetap menyala untuk banyak peserta (hasil sama diabaikan selama 4 detik).
+ */
+window.asicScanner = {
+    instance: null,
+    async start(elementId, onScan, continuous = false) {
+        await this.stop();
+        const { Html5Qrcode, Html5QrcodeSupportedFormats } = await import('html5-qrcode');
+        const scanner = new Html5Qrcode(elementId, {
+            verbose: false,
+            formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+            experimentalFeatures: { useBarCodeDetectorIfSupported: true },
+        });
+        this.instance = scanner;
+        let last = '';
+        let lastAt = 0;
+        let busy = false;
+        await scanner.start(
+            { facingMode: 'environment' },
+            { fps: 12, qrbox: (w, h) => { const size = Math.max(180, Math.floor(Math.min(w, h) * 0.86)); return { width: size, height: size }; } },
+            async (text) => {
+                const now = Date.now();
+                if (busy || (text === last && now - lastAt < 4000)) return;
+                last = text; lastAt = now; busy = true;
+                if (!continuous) await this.stop();
+                try { await onScan(text); } finally { busy = false; }
+            },
+            () => {},
+        );
+        return scanner;
+    },
+    async stop() {
+        const scanner = this.instance;
+        this.instance = null;
+        if (!scanner) return;
+        try { if (scanner.isScanning) await scanner.stop(); scanner.clear(); } catch (e) { /* kamera sudah tertutup */ }
+    },
+    /** Token sesi dari hasil pindai: QR sesi berisi tautan ...?sesi=TOKEN, token mentah tetap diterima. */
+    sessionToken(text) {
+        const raw = String(text || '').trim();
+        try { return new URL(raw).searchParams.get('sesi') || raw; } catch (e) { return raw; }
+    },
+    errorMessage(error) {
+        const name = error?.name || String(error || '');
+        if (!window.isSecureContext) return 'camera_https';
+        if (/NotAllowed|Permission/i.test(name)) return 'camera_denied';
+        if (/NotFound|Overconstrained|DevicesNotFound/i.test(name)) return 'camera_missing';
+        return 'camera_failed';
+    },
+};
+
+/** Pratinjau PDF: jendela di dalam halaman; HP tanpa penampil PDF bawaan membuka tab baru. */
+window.asicPreview = (url, title = '') => {
+    const small = window.matchMedia('(max-width: 640px)').matches;
+    if (navigator.pdfViewerEnabled === false || small) {
+        window.open(url + (url.includes('?') ? '&' : '?') + 'inline=1', '_blank', 'noopener');
+        return;
+    }
+    window.dispatchEvent(new CustomEvent('asic-preview', { detail: { url, title } }));
+};
+
+/** Teks UI untuk JavaScript disuntikkan dari layout (window.asicI18n, lang/{id,en}/asic-common.php 'js'). */
+const asicT = (key, fallback = '') => (window.asicI18n && window.asicI18n[key]) || fallback || key;
+
 window.asicApi = {
     xsrfCookie() {
         const cookie = document.cookie.split('; ').find((item) => item.startsWith('XSRF-TOKEN='));
@@ -90,18 +209,18 @@ window.asicApi = {
                 window.location.assign(`/login?redirect=${encodeURIComponent(window.location.pathname)}`);
             }
 
-            if (response.status === 403) this.showToast(data?.message || 'Anda tidak memiliki akses ke halaman ini.');
-            if (response.status === 419) this.showToast('Sesi keamanan kedaluwarsa. Silakan muat ulang halaman.');
+            if (response.status === 403) this.showToast(data?.message || asicT('forbidden'));
+            if (response.status === 419) this.showToast(asicT('session_expired'));
 
             return {
                 ok: response.ok,
                 status: response.status,
                 data,
                 errors: response.status === 422 ? (data?.errors || {}) : {},
-                error: response.ok ? null : (data?.message || `HTTP ${response.status}: Request failed`),
+                error: response.ok ? null : (data?.message || asicT('request_failed').replace(':status', response.status)),
             };
         } catch (error) {
-            return { ok: false, status: 0, data: null, errors: {}, error: error.message || 'Network error' };
+            return { ok: false, status: 0, data: null, errors: {}, error: error.message || asicT('network_error') };
         }
     },
 
@@ -198,12 +317,29 @@ document.querySelectorAll('form[data-asic-login], form[data-asic-api-form]').for
         if (submit) submit.disabled = false;
         if (!result.ok) {
             showFormErrors(form, result);
+            if (result.data?.needs_verification) document.querySelector('[data-resend-verification]')?.classList.remove('hidden');
             return;
         }
 
-        window.asicApi.showToast(result.data?.message || 'Berhasil.', 'success');
+        window.asicApi.showToast(result.data?.message || asicT('success'), 'success');
         const redirect = result.data?.data?.redirect_url || form.dataset.successRedirect || '/login';
         window.location.assign(redirect);
+    });
+});
+
+// Kirim ulang tautan verifikasi email (halaman masuk peserta).
+document.querySelectorAll('[data-resend-btn]').forEach((button) => {
+    button.addEventListener('click', async () => {
+        const email = document.querySelector('form[data-asic-login] input[name="email"]')?.value?.trim();
+        const msg = button.closest('[data-resend-verification]')?.querySelector('[data-resend-msg]');
+        if (!email) { document.querySelector('form[data-asic-login] input[name="email"]')?.focus(); return; }
+        const label = button.querySelector('span:last-child');
+        button.disabled = true;
+        if (label) label.textContent = button.dataset.busy;
+        const result = await window.asicApi.post('/api/email/verification-notification', { email });
+        button.disabled = false;
+        if (label) label.textContent = button.dataset.label;
+        if (msg) { msg.textContent = result.data?.message || result.error || ''; msg.classList.remove('hidden'); }
     });
 });
 

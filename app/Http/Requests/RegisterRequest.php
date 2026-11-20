@@ -16,6 +16,14 @@ class RegisterRequest extends FormRequest
         return true;
     }
 
+    /** Alias lama 'terms' disamakan ke 'agree_terms' agar klien lama tetap jalan. */
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('agree_terms') && $this->has('terms')) {
+            $this->merge(['agree_terms' => $this->input('terms')]);
+        }
+    }
+
     /**
      * Aturan validasi untuk registrasi akun awal delegate/author (KF-08).
      *
@@ -64,9 +72,8 @@ class RegisterRequest extends FormRequest
                     ->symbols(),
             ],
 
-            // Checkbox persetujuan syarat & ketentuan serta etika publikasi
-            'agree_terms' => ['sometimes', 'accepted'],
-            'terms' => ['sometimes', 'accepted'],
+            // KF-35: persetujuan syarat & ketentuan, privasi, dan etika publikasi WAJIB (web dan API).
+            'agree_terms' => ['required', 'accepted'],
 
             // Atribut opsional tambahan
             'phone' => ['nullable', 'string', 'max:20'],
@@ -96,8 +103,8 @@ class RegisterRequest extends FormRequest
             'prefix.max' => 'Gelar/sapaan (prefix) maksimal 10 karakter.',
             'affiliation.max' => 'Nama afiliasi/institusi maksimal 150 karakter.',
             'institution.max' => 'Nama institusi maksimal 150 karakter.',
-            'agree_terms.accepted' => 'Anda harus menyetujui Syarat & Ketentuan serta Pedoman Etika Publikasi ASIC 2026.',
-            'terms.accepted' => 'Anda harus menyetujui Syarat & Ketentuan serta Pedoman Etika Publikasi ASIC 2026.',
+            'agree_terms.required' => __('asic-content.validation.agree_terms', ['edition' => config('asic.edition').' ASIC']),
+            'agree_terms.accepted' => __('asic-content.validation.agree_terms', ['edition' => config('asic.edition').' ASIC']),
         ];
     }
 }

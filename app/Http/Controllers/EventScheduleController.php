@@ -34,7 +34,7 @@ class EventScheduleController extends Controller
         $start = substr((string) ($data['waktu_mulai'] ?? $current?->waktu_mulai), 0, 5);
         $end = array_key_exists('waktu_selesai', $data) ? $data['waktu_selesai'] : $current?->waktu_selesai;
         if ($start && $end && substr((string) $end, 0, 5) <= $start) {
-            return $this->fail('Validasi gagal.', Response::HTTP_UNPROCESSABLE_ENTITY, [
+            return $this->fail(__('asic-api.messages.validasi_gagal'), Response::HTTP_UNPROCESSABLE_ENTITY, [
                 'errors' => ['waktu_selesai' => ['Waktu selesai harus setelah waktu mulai.']],
             ]);
         }
@@ -56,7 +56,7 @@ class EventScheduleController extends Controller
     {
         $s = EventSchedule::find($id_schedule);
 
-        return $s ? $this->ok('Detail jadwal berhasil dimuat.', $s) : $this->fail('Jadwal tidak ditemukan.', Response::HTTP_NOT_FOUND);
+        return $s ? $this->ok(__('asic-api.messages.detail_jadwal_berhasil_dimuat'), $s) : $this->fail(__('asic-api.messages.jadwal_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
     }
 
     public function store(Request $request): JsonResponse
@@ -66,14 +66,14 @@ class EventScheduleController extends Controller
             return $err;
         }
 
-        return $this->ok('Jadwal berhasil ditambahkan.', EventSchedule::create($data)->fresh(), Response::HTTP_CREATED);
+        return $this->ok(__('asic-api.messages.jadwal_berhasil_ditambahkan'), EventSchedule::create($data)->fresh(), Response::HTTP_CREATED);
     }
 
     public function update(Request $request, int $id_schedule): JsonResponse
     {
         $s = EventSchedule::find($id_schedule);
         if (! $s) {
-            return $this->fail('Jadwal tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.jadwal_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
         $data = $request->validate($this->rules(true));
         if ($err = $this->timeOrder($data, $s)) {
@@ -81,26 +81,26 @@ class EventScheduleController extends Controller
         }
         $s->update($data);
 
-        return $this->ok('Jadwal berhasil diperbarui.', $s->fresh());
+        return $this->ok(__('asic-api.messages.jadwal_berhasil_diperbarui'), $s->fresh());
     }
 
     public function destroy(int $id_schedule): JsonResponse
     {
         $s = EventSchedule::find($id_schedule);
         if (! $s) {
-            return $this->fail('Jadwal tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.jadwal_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
         $s->delete();
 
-        return $this->ok('Jadwal berhasil dihapus.');
+        return $this->ok(__('asic-api.messages.jadwal_berhasil_dihapus'));
     }
 
     public function publicIndex(int $id_event): JsonResponse
     {
         if (! Event::whereIn('status_event', ['Aktif', 'Selesai'])->whereKey($id_event)->exists()) {
-            return $this->fail('Event tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.event_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
 
-        return $this->ok('Jadwal berhasil dimuat.', EventSchedule::where('id_event', $id_event)->orderBy('tanggal')->orderBy('waktu_mulai')->get());
+        return $this->ok(__('asic-api.messages.jadwal_berhasil_dimuat'), EventSchedule::where('id_event', $id_event)->orderBy('tanggal')->orderBy('waktu_mulai')->get());
     }
 }

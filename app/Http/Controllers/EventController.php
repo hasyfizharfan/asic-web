@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ApiResponses;
 use App\Models\Event;
+use App\Support\Audit;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,7 +41,7 @@ class EventController extends Controller
         $start = $data['tanggal_mulai'] ?? $event?->tanggal_mulai;
         $end = $data['tanggal_selesai'] ?? $event?->tanggal_selesai;
         if ($start && $end && (string) $end < (string) $start) {
-            return $this->fail('Validasi gagal.', Response::HTTP_UNPROCESSABLE_ENTITY, [
+            return $this->fail(__('asic-api.messages.validasi_gagal'), Response::HTTP_UNPROCESSABLE_ENTITY, [
                 'errors' => ['tanggal_selesai' => ['Tanggal selesai tidak boleh sebelum tanggal mulai.']],
             ]);
         }
@@ -62,7 +63,7 @@ class EventController extends Controller
     {
         $event = Event::find($id_event);
 
-        return $event ? $this->ok('Detail event berhasil dimuat.', $event) : $this->fail('Event tidak ditemukan.', Response::HTTP_NOT_FOUND);
+        return $event ? $this->ok(__('asic-api.messages.detail_event_berhasil_dimuat'), $event) : $this->fail(__('asic-api.messages.event_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
     }
 
     public function store(Request $request): JsonResponse
@@ -72,50 +73,58 @@ class EventController extends Controller
             return $err;
         }
 
-        return $this->ok('Event berhasil ditambahkan.', Event::create($data)->fresh(), Response::HTTP_CREATED);
+        return $this->ok(__('asic-api.messages.event_berhasil_ditambahkan'), Event::create($data)->fresh(), Response::HTTP_CREATED);
     }
 
     public function update(Request $request, int $id_event): JsonResponse
     {
         $event = Event::find($id_event);
         if (! $event) {
-            return $this->fail('Event tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.event_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
         $data = $request->validate($this->rules(true));
         if ($err = $this->datesOrder($data, $event)) {
             return $err;
         }
+        // KF-29: status Arsip hanya dari Selesai.
+        $archiving = ($data['status_event'] ?? null) === 'Arsip' && $event->status_event !== 'Arsip';
+        if ($archiving && $event->status_event !== 'Selesai') {
+            return response()->json(['success' => false, 'message' => __('asic-documents.archive.only_from_finished'), 'errors' => ['status_event' => [__('asic-documents.archive.only_from_finished')]]], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
         $event->update($data);
+        if ($archiving) {
+            Audit::log('event.archived', 'event', $event->id_event, null, ['from' => 'Selesai']);
+        }
 
-        return $this->ok('Event berhasil diperbarui.', $event->fresh());
+        return $this->ok(__('asic-api.messages.event_berhasil_diperbarui'), $event->fresh());
     }
 
     public function destroy(int $id_event): JsonResponse
     {
         $event = Event::find($id_event);
         if (! $event) {
-            return $this->fail('Event tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.event_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
         try {
             $event->delete();
         } catch (QueryException) {
-            return $this->fail('Event sudah memiliki data terkait (periode, tarif, registrasi, dsb.) sehingga tidak dapat dihapus. Ubah status menjadi Arsip.', Response::HTTP_CONFLICT);
+            return $this->fail(__('asic-api.messages.event_sudah_memiliki_data_terkait_periode_tarif_re'), Response::HTTP_CONFLICT);
         }
 
-        return $this->ok('Event berhasil dihapus.');
+        return $this->ok(__('asic-api.messages.event_berhasil_dihapus'));
     }
 
     // ---------- Publik (tanpa autentikasi) ----------
 
     public function publicIndex(): JsonResponse
     {
-        return $this->ok('Daftar event berhasil dimuat.', Event::where('status_event', 'Aktif')->orderBy('tanggal_mulai')->get());
+        return $this->ok(__('asic-api.messages.daftar_event_berhasil_dimuat'), Event::where('status_event', 'Aktif')->orderBy('tanggal_mulai')->get());
     }
 
     public function publicShow(int $id_event): JsonResponse
     {
         $event = Event::whereIn('status_event', ['Aktif', 'Selesai'])->find($id_event);
 
-        return $event ? $this->ok('Detail event berhasil dimuat.', $event) : $this->fail('Event tidak ditemukan.', Response::HTTP_NOT_FOUND);
+        return $event ? $this->ok(__('asic-api.messages.detail_event_berhasil_dimuat'), $event) : $this->fail(__('asic-api.messages.event_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
     }
 }

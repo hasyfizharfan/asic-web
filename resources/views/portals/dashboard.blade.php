@@ -53,7 +53,7 @@
                 <article class="border-b border-surface-container-high px-5 py-4 last:border-b-0">
                     <p class="font-semibold text-on-surface">{{ $registration->participant?->full_name ?? 'Peserta' }}</p>
                     <p class="mt-1 text-xs text-on-surface-variant">
-                        {{ $registration->event?->nama_event ?? 'Event' }} · {{ $registration->participation_type }} · {{ $registration->registration_status }}
+                        {{ $registration->event?->nama_event ?? 'Event' }} · {{ $registration->participation_type }} · {{ \App\Support\StatusLabel::of($registration->registration_status) }}
                     </p>
                 </article>
             @empty
@@ -72,8 +72,8 @@
                         <p class="mt-1 text-xs text-on-surface-variant">{{ $invoice->registration?->participant?->full_name ?? 'Peserta' }}</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-mono text-sm font-bold text-primary">Rp {{ number_format((float) $invoice->total_tagihan, 0, ',', '.') }}</p>
-                        <p class="mt-1 text-xs text-on-surface-variant">{{ $invoice->status_pembayaran }}</p>
+                        <p class="font-mono text-sm font-bold text-primary">{{ \App\Support\Currency::format($invoice->total_tagihan, $invoice->mata_uang) }}</p>
+                        <p class="mt-1 text-xs text-on-surface-variant">{{ \App\Support\StatusLabel::of($invoice->status_pembayaran) }}</p>
                     </div>
                 </article>
             @empty

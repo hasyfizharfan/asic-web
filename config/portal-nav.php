@@ -39,6 +39,7 @@ return [
         ['label' => 'asic-nav.permissions', 'route' => 'portal.admin.permissions', 'icon' => 'verified_user', 'permission' => 'manage_users'],
         ['label' => 'Tanda tangan digital', 'route' => 'portal.admin.signatures', 'icon' => 'draw', 'permission' => 'manage_digital_signatures'],
         ['label' => 'asic-nav.document_templates', 'route' => 'portal.admin.templates', 'icon' => 'description', 'permission' => 'manage_document_templates'],
+        ['label' => 'asic-nav.public_content', 'route' => 'portal.admin.content', 'icon' => 'public', 'permission' => 'manage_website_content'],
         ['label' => 'asic-nav.website_settings', 'route' => 'portal.admin.settings', 'icon' => 'settings', 'permission' => 'manage_website_content'],
         ['label' => 'asic-nav.archive', 'route' => 'portal.admin.archive', 'icon' => 'inventory_2', 'permission' => 'manage_users'],
     ],

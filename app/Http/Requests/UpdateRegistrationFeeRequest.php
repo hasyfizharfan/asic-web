@@ -18,6 +18,7 @@ class UpdateRegistrationFeeRequest extends StoreRegistrationFeeRequest
             'tujuan_publikasi' => ['sometimes', 'required', Rule::in(RegistrationFee::PUBLICATION_TARGETS)],
             'amount' => ['sometimes', 'required', 'numeric', 'min:0', 'max:9999999999.99', 'decimal:0,2'],
             'discount' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:9999999999.99', 'decimal:0,2'],
+            'mata_uang' => ['sometimes', 'required', Rule::in(RegistrationFee::CURRENCIES)],
         ];
     }
 
@@ -37,8 +38,9 @@ class UpdateRegistrationFeeRequest extends StoreRegistrationFeeRequest
                 // Gabungkan nilai yang dikirim dengan nilai tersimpan agar validasi
                 // lintas-field (periode-event, diskon<=amount, duplikasi) memakai kondisi akhir.
                 $merged = array_merge($fee->only([
-                    'id_event', 'id_period', 'registration_type', 'attendance_mode', 'tujuan_publikasi', 'amount', 'discount',
+                    'id_event', 'id_period', 'registration_type', 'attendance_mode', 'tujuan_publikasi', 'amount', 'discount', 'mata_uang',
                 ]), $this->validated());
+                $merged['mata_uang'] = $merged['mata_uang'] ?? 'IDR';
                 $merged['discount'] = $merged['discount'] ?? 0;
 
                 $this->validatePeriodBelongsToEvent($validator, (int) $merged['id_event'], (int) $merged['id_period']);
@@ -49,6 +51,7 @@ class UpdateRegistrationFeeRequest extends StoreRegistrationFeeRequest
                     'registration_type' => $merged['registration_type'],
                     'attendance_mode' => $merged['attendance_mode'],
                     'tujuan_publikasi' => $merged['tujuan_publikasi'],
+                    'mata_uang' => $merged['mata_uang'],
                 ], $fee->id_fee);
             },
         ];

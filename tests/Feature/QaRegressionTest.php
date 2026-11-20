@@ -6,9 +6,12 @@ use App\Models\Invoice;
 use App\Models\IssuedDocument;
 use App\Models\Participant;
 use App\Models\RegistrationFee;
+use App\Models\Role;
 use App\Models\UserAccount;
+use App\Notifications\WelcomeParticipant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Smalot\PdfParser\Parser;
 use Tests\Concerns\BuildsAsicFixtures;
@@ -39,6 +42,68 @@ class QaRegressionTest extends TestCase
 
         $user = UserAccount::where('email', 'peserta.baru@example.test')->firstOrFail();
         $this->assertTrue(Participant::where('id_user', $user->id_user)->exists());
+    }
+
+    /** Masukan uji: setelah daftar ada email verifikasi sungguhan; akun baru bisa masuk setelah tautan diklik. */
+    public function test_self_registration_requires_email_verification_before_login(): void
+    {
+        Notification::fake();
+        $headers = ['Origin' => 'http://127.0.0.1:8000', 'Referer' => 'http://127.0.0.1:8000/participant/register'];
+        $response = $this->withHeaders($headers)->postJson('/api/register', [
+            'full_name' => 'Peserta Email', 'email' => 'peserta.email@example.test',
+            'password' => 'QaTest#2026', 'password_confirmation' => 'QaTest#2026',
+            'institution' => 'Universitas Contoh', 'country' => 'Indonesia', 'agree_terms' => true,
+        ])->assertCreated()
+            ->assertJsonPath('confirmation_email_sent', true)
+            ->assertJsonPath('activation_link_required', true)
+            ->assertJsonPath('data.redirect_url', route('auth.participant.login', ['registered' => 1]));
+        $this->assertStringContainsString('peserta.email@example.test', $response->json('message'));
+
+        $user = UserAccount::where('email', 'peserta.email@example.test')->firstOrFail();
+        $this->assertNull($user->email_verified_at);
+        $verifyUrl = null;
+        Notification::assertSentTo($user, WelcomeParticipant::class, function ($n, $channels) use ($user, &$verifyUrl) {
+            $mail = $n->toMail($user);
+            $verifyUrl = $mail->actionUrl;
+
+            return $channels === ['mail'] && str_contains($mail->subject, 'ASIC') && str_contains($mail->actionUrl, '/email/verify/');
+        });
+
+        // Halaman login menjelaskan langkah verifikasi, email terisi.
+        $this->get('/participant/login?registered=1')->assertOk()
+            ->assertSee(__('asic-auth.verify.title'))
+            ->assertSee('value="peserta.email@example.test"', false);
+
+        // Belum verifikasi: tidak bisa masuk.
+        $this->withHeaders($headers)->postJson('/api/login', ['email' => $user->email, 'password' => 'QaTest#2026'])
+            ->assertForbidden()->assertJsonPath('needs_verification', true);
+
+        // Tautan rusak ditolak; tautan asli memverifikasi.
+        $this->get(str_replace(sha1('peserta.email@example.test'), sha1('lain@example.test'), $verifyUrl))->assertForbidden();
+        $this->get($verifyUrl)->assertRedirect(route('auth.participant.login'));
+        $this->assertNotNull($user->fresh()->email_verified_at);
+        $this->get('/participant/login')->assertSee(__('asic-auth.verify.verified_title'));
+
+        $this->withHeaders($headers)->postJson('/api/login', ['email' => $user->email, 'password' => 'QaTest#2026'])->assertOk();
+    }
+
+    public function test_verification_link_can_be_resent_without_revealing_accounts(): void
+    {
+        Notification::fake();
+        $user = UserAccount::create(['id_role' => Role::where('nama_role', Role::ROLE_PESERTA)->value('id_role'), 'email' => 'belum.verif@example.test', 'password' => 'QaTest#2026', 'status_akun' => 'Aktif', 'email_verified_at' => null]);
+        $user->forceFill(['email_verified_at' => null])->save();
+
+        $ok = $this->postJson('/api/email/verification-notification', ['email' => 'belum.verif@example.test'])->assertOk()->json('message');
+        $this->assertSame($ok, $this->postJson('/api/email/verification-notification', ['email' => 'tidak.ada@example.test'])->assertOk()->json('message'));
+        Notification::assertSentToTimes($user, WelcomeParticipant::class, 1);
+    }
+
+    /** Akun buatan Admin/seeder/data contoh tidak perlu verifikasi (tidak terkunci). */
+    public function test_accounts_created_outside_self_registration_are_verified(): void
+    {
+        $user = $this->user(Role::ROLE_PESERTA, '.lama');
+        $this->assertNotNull($user->email_verified_at);
+        $this->assertFalse($user->fresh()->needsEmailVerification());
     }
 
     /** BUG-017: Listener wajib mendapat LoA otomatis setelah registrasi (kesepakatan mitra). */

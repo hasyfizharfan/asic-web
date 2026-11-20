@@ -8,6 +8,7 @@ use App\Models\PaymentProof;
 use App\Models\PaymentVerification;
 use App\Models\Role;
 use App\Models\UserAccount;
+use App\Support\Currency;
 use App\Support\PermissionMatrix;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +57,7 @@ class AdminPortalControllerTest extends TestCase
         $this->abstractFor($registration, ['status_abstrak' => 'Diterima']);
 
         $this->as(Role::ROLE_ADMIN)->get('/admin/dashboard')->assertOk()
-            ->assertSee('Registrasi · 1')->assertSee('Abstrak · 1')->assertSee('Periode registrasi aktif');
+            ->assertSeeInOrder(['Total pendaftar', '1'])->assertSeeInOrder(['Abstrak masuk', '1'])->assertSee('Diterima: 1')->assertSee('Periode registrasi aktif');
     }
 
     public function test_dashboard_payment_totals_match_database_and_are_hidden_without_view_permission(): void
@@ -73,7 +74,7 @@ class AdminPortalControllerTest extends TestCase
         PaymentVerification::create(['id_payment_proof' => $proof->id_payment_proof, 'id_treasurer' => $this->user(Role::ROLE_BENDAHARA)->id_user, 'hasil_verifikasi' => 'Valid']);
 
         $this->as(Role::ROLE_ADMIN)->get('/admin/dashboard')->assertOk()
-            ->assertSee('IDR 600.000,00')->assertSee('Belum lunas')->assertSee('Menunggu verifikasi');
+            ->assertSee(Currency::format(600000, 'IDR'))->assertSee('Belum lunas')->assertSee('Menunggu verifikasi');
 
         $admin = $this->user(Role::ROLE_ADMIN, '.without-payment-view');
         $paymentView = Role::where('nama_role', Role::ROLE_ADMIN)->value('id_role');
@@ -175,24 +176,24 @@ class AdminPortalControllerTest extends TestCase
             ->assertSee('Akses hanya lihat')->assertDontSee('name="file_ttd"', false);
     }
 
-    public function test_archive_page_is_explicitly_unavailable_and_has_no_mutating_control(): void
+    /** Fase 2 (KF-29): arsip nyata; prosiding/DOI tetap "Belum tersedia". */
+    public function test_archive_page_lists_editions_and_keeps_proceedings_unavailable(): void
     {
-        $this->as(Role::ROLE_ADMIN)->get('/admin/archive')->assertOk()->assertSee('Belum tersedia')
-            ->assertSee('disabled', false)->assertDontSee('route(\'fe.', false);
+        $this->as(Role::ROLE_ADMIN)->get('/admin/archive')->assertOk()
+            ->assertSee(__('asic-documents.archive.proceedings_unavailable'))->assertDontSee("route('fe.", false);
     }
 
-    public function test_document_templates_show_both_groups_with_unavailable_actions(): void
+    /** Fase 2 (KF-26): dua kelompok template terhubung ke API (tidak lagi "Belum tersedia"). */
+    public function test_document_templates_show_both_groups(): void
     {
         $this->as(Role::ROLE_ADMIN)->get('/admin/templates')->assertOk()
-            ->assertSee('Dokumen terbit')->assertSee('LOA, Penolakan, Invoice, Receipt, Sertifikat')
-            ->assertSee('Template berkas unduhan')->assertSee('Abstrak, Presentasi, Artikel')
-            ->assertSee('disabled', false)->assertSee('Belum tersedia');
+            ->assertSee(__('asic-documents.admin.tab_issued'))->assertSee(__('asic-documents.admin.tab_downloads'))
+            ->assertSee('/api/document-templates', false);
     }
 
-    public function test_website_settings_are_unavailable_without_backend_data(): void
+    public function test_settings_page_shows_only_working_features_without_placeholders(): void
     {
         $this->as(Role::ROLE_ADMIN)->get('/admin/settings')->assertOk()
-            ->assertSee('Pengaturan website')->assertSee('Belum tersedia')->assertSee('disabled', false)
-            ->assertDontSee('TBA');
+            ->assertSee('/api/registration-periods', false)->assertDontSee('Belum tersedia')->assertDontSee('TBA');
     }
 }

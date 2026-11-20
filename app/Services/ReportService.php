@@ -6,6 +6,7 @@ use App\Models\AbstractSubmission;
 use App\Models\Attendance;
 use App\Models\Invoice;
 use App\Models\Registration;
+use App\Support\Currency;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -116,24 +117,54 @@ class ReportService
         ];
     }
 
+    /**
+     * Jumlah per mata uang; nominal lintas mata uang tidak pernah dijumlahkan.
+     *
+     * @return array<string, string>
+     */
+    private function sumByCurrency(Builder $q, string $column = 'total_tagihan'): array
+    {
+        $sums = $q->clone()->select('mata_uang', DB::raw('coalesce(sum('.$column.'),0) as amount'))->groupBy('mata_uang')->pluck('amount', 'mata_uang');
+
+        return collect(Currency::ALL)->mapWithKeys(fn ($c) => [$c => $this->money($sums[$c] ?? 0)])->all();
+    }
+
+    /**
+     * Kunci lama (total_tagihan) kini hanya berisi nominal IDR agar konsumen lama tidak menerima
+     * jumlah campuran; nominal per mata uang ada di total_tagihan_by_currency.
+     */
     public function invoices(array $f): array
     {
         $q = $this->regFilter(Invoice::query(), $f, viaRegistration: true);
         $q->when(! empty($f['status']), fn ($x) => $x->where('status_pembayaran', $f['status']));
 
-        $byStatus = $q->clone()->select('status_pembayaran as k', DB::raw('count(*) as total'), DB::raw('coalesce(sum(total_tagihan),0) as amount'))
+        $byStatus = $q->clone()->select('status_pembayaran as k', DB::raw('count(*) as total'))
             ->groupBy('status_pembayaran')->orderBy('status_pembayaran')->get()
-            ->map(fn ($r) => ['key' => $r->k, 'total' => (int) $r->total, 'total_tagihan' => $this->money($r->amount)])->all();
+            ->map(function ($r) use ($q) {
+                $amounts = $this->sumByCurrency($q->clone()->where('status_pembayaran', $r->k));
+
+                return ['key' => $r->k, 'total' => (int) $r->total, 'total_tagihan' => $amounts[Currency::IDR], 'total_tagihan_by_currency' => $amounts];
+            })->all();
 
         $byCategory = $q->clone()->join('registration as r', 'r.id_registration', '=', 'invoice.id_registration')
             ->join('registration_period as p', 'p.id_period', '=', 'r.id_period')
-            ->select('p.nama_periode as period', 'r.registration_type as type', DB::raw('count(*) as total'), DB::raw('coalesce(sum(invoice.total_tagihan),0) as amount'))
-            ->groupBy('p.nama_periode', 'r.registration_type')->orderBy('p.nama_periode')->orderBy('r.registration_type')->get()
-            ->map(fn ($r) => ['period' => $r->period, 'registration_type' => $r->type, 'total' => (int) $r->total, 'total_tagihan' => $this->money($r->amount)])->all();
+            ->select('p.nama_periode as period', 'r.registration_type as type', 'invoice.mata_uang as currency', DB::raw('count(*) as total'), DB::raw('coalesce(sum(invoice.total_tagihan),0) as amount'))
+            ->groupBy('p.nama_periode', 'r.registration_type', 'invoice.mata_uang')->orderBy('p.nama_periode')->orderBy('r.registration_type')->get()
+            ->groupBy(fn ($r) => $r->period.'|'.$r->type)
+            ->map(function ($rows) {
+                $amounts = collect(Currency::ALL)->mapWithKeys(fn ($c) => [$c => $this->money($rows->firstWhere('currency', $c)?->amount ?? 0)])->all();
+                $first = $rows->first();
+
+                return ['period' => $first->period, 'registration_type' => $first->type, 'total' => (int) $rows->sum('total'),
+                    'total_tagihan' => $amounts[Currency::IDR], 'total_tagihan_by_currency' => $amounts];
+            })->values()->all();
+
+        $totals = $this->sumByCurrency($q);
 
         return [
             'total' => $q->clone()->count(),
-            'total_tagihan' => $this->money($q->clone()->sum('total_tagihan')),
+            'total_tagihan' => $totals[Currency::IDR],
+            'total_tagihan_by_currency' => $totals,
             'by_status' => $byStatus,
             'by_category_and_period' => $byCategory,
         ];
@@ -145,8 +176,8 @@ class ReportService
         $proofs = DB::table('payment_proof')->whereIn('id_invoice', $invoices->clone()->select('id_invoice'));
         $verifs = DB::table('payment_verification')->whereIn('id_payment_proof', $proofs->clone()->select('id_payment_proof'));
 
-        $paid = $invoices->clone()->where('status_pembayaran', 'Terverifikasi')->sum('total_tagihan');
-        $outstanding = $invoices->clone()->whereIn('status_pembayaran', ['Menunggu Pembayaran', 'Menunggu Verifikasi', 'Ditolak'])->sum('total_tagihan');
+        $paid = $this->sumByCurrency($invoices->clone()->where('status_pembayaran', 'Terverifikasi'));
+        $outstanding = $this->sumByCurrency($invoices->clone()->whereIn('status_pembayaran', ['Menunggu Pembayaran', 'Menunggu Verifikasi', 'Ditolak']));
 
         return [
             'proofs_total' => $proofs->clone()->count(),
@@ -154,8 +185,10 @@ class ReportService
             'verified_invalid' => $verifs->clone()->where('hasil_verifikasi', 'Tidak Valid')->count(),
             'awaiting_verification' => $invoices->clone()->where('status_pembayaran', 'Menunggu Verifikasi')->count(),
             'by_invoice_status' => $this->countBy($invoices, 'status_pembayaran'),
-            'amount_verified' => $this->money($paid),
-            'amount_outstanding' => $this->money($outstanding),
+            'amount_verified' => $paid[Currency::IDR],
+            'amount_outstanding' => $outstanding[Currency::IDR],
+            'amount_verified_by_currency' => $paid,
+            'amount_outstanding_by_currency' => $outstanding,
         ];
     }
 
@@ -242,10 +275,10 @@ class ReportService
         $rows = $q->orderBy('id_invoice')->get()->map(fn (Invoice $i) => [
             $i->nomor_invoice, (string) $i->tanggal_invoice, optional($i->tanggal_jatuh_tempo)->toDateString(), optional($i->tanggal_jatuh_tempo_baru)->toDateString(),
             $i->registration?->participant?->full_name, $i->registration?->registration_type, $i->registration?->attendance_mode,
-            $i->registration?->registrationPeriod?->nama_periode, (float) $i->total_tagihan, $i->status_pembayaran,
+            $i->registration?->registrationPeriod?->nama_periode, (float) $i->total_tagihan, $i->status_pembayaran, $i->mata_uang ?? Currency::IDR,
         ])->all();
 
-        return [['Nomor Invoice', 'Tanggal Invoice', 'Jatuh Tempo', 'Jatuh Tempo Baru', 'Peserta', 'Kategori', 'Mode Kehadiran', 'Periode', 'Total Tagihan', 'Status'], $rows];
+        return [['Nomor Invoice', 'Tanggal Invoice', 'Jatuh Tempo', 'Jatuh Tempo Baru', 'Peserta', 'Kategori', 'Mode Kehadiran', 'Periode', 'Total Tagihan', 'Status', 'Mata Uang'], $rows];
     }
 
     public function paymentRows(array $f): array
@@ -261,11 +294,12 @@ class ReportService
                 $i->nomor_invoice, $i->registration?->participant?->full_name, $i->registration?->participant?->userAccount?->email,
                 $i->status_pembayaran, (float) $i->total_tagihan, $proof?->nominal_transfer !== null ? (float) $proof->nominal_transfer : null,
                 (string) $proof?->tanggal_upload, $ver?->hasil_verifikasi, $ver?->alasan_penolakan, $ver?->treasurer?->email, (string) $ver?->tanggal_verifikasi,
+                $i->mata_uang ?? Currency::IDR,
             ];
         })->all();
 
         return [['Nomor Invoice', 'Peserta', 'Email', 'Status Pembayaran', 'Total Tagihan', 'Nominal Transfer', 'Tanggal Upload Bukti',
-            'Hasil Verifikasi', 'Alasan Penolakan', 'Bendahara', 'Tanggal Verifikasi'], $rows];
+            'Hasil Verifikasi', 'Alasan Penolakan', 'Bendahara', 'Tanggal Verifikasi', 'Mata Uang'], $rows];
     }
 
     /** Ringkasan rekap multi-sheet untuk ekspor. @return array<string, array{0: array<int,string>, 1: array<int, array<int,mixed>>}> */
@@ -292,10 +326,12 @@ class ReportService
                 array_map(fn ($r) => ['Metode', $r['key'], $r['total']], $abs['by_presentation_method']),
                 array_map(fn ($r) => ['Scope', $r['key'], $r['total']], $abs['by_scope'])
             )],
-            'Invoice' => [['Status', 'Jumlah', 'Total Tagihan'], array_map(fn ($r) => [$r['key'], $r['total'], (float) $r['total_tagihan']], $inv['by_status'])],
+            'Invoice' => [['Status', 'Jumlah', 'Total Tagihan IDR', 'Total Tagihan USD'], array_map(fn ($r) => [$r['key'], $r['total'], (float) $r['total_tagihan_by_currency']['IDR'], (float) $r['total_tagihan_by_currency']['USD']], $inv['by_status'])],
             'Pembayaran' => [['Indikator', 'Nilai'], [
                 ['Bukti diunggah', $pay['proofs_total']], ['Valid', $pay['verified_valid']], ['Tidak valid', $pay['verified_invalid']],
-                ['Menunggu verifikasi', $pay['awaiting_verification']], ['Nominal terverifikasi', (float) $pay['amount_verified']], ['Nominal belum lunas', (float) $pay['amount_outstanding']],
+                ['Menunggu verifikasi', $pay['awaiting_verification']],
+                ['Nominal terverifikasi (IDR)', (float) $pay['amount_verified_by_currency']['IDR']], ['Nominal terverifikasi (USD)', (float) $pay['amount_verified_by_currency']['USD']],
+                ['Nominal belum lunas (IDR)', (float) $pay['amount_outstanding_by_currency']['IDR']], ['Nominal belum lunas (USD)', (float) $pay['amount_outstanding_by_currency']['USD']],
             ]],
         ];
     }

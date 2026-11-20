@@ -85,7 +85,29 @@ class UserAccount extends Authenticatable
     {
         return [
             'password' => 'hashed',
+            'email_verified_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Akun yang dibuat Admin, seeder, atau data contoh dianggap sudah terverifikasi.
+     * Hanya registrasi mandiri peserta yang mengosongkan kolom ini lalu mengirim tautan verifikasi.
+     */
+    protected static function booted(): void
+    {
+        static::creating(function (self $user): void {
+            if (! array_key_exists('email_verified_at', $user->getAttributes())) {
+                $user->email_verified_at = now();
+            }
+        });
+    }
+
+    /** Peserta yang mendaftar sendiri dan belum mengklik tautan verifikasi email. */
+    public function needsEmailVerification(): bool
+    {
+        return $this->email_verified_at === null
+            && config('asic.require_email_verification', true)
+            && $this->role?->nama_role === Role::ROLE_PESERTA;
     }
 
     /**

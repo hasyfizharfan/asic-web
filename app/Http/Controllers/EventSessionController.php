@@ -110,7 +110,7 @@ class EventSessionController extends Controller
             $svgContent = QrCode::format('svg')
                 ->size(350)
                 ->errorCorrection('H')
-                ->generate($token);
+                ->generate(EventSession::checkinUrlFor($token));
             Storage::disk('public')->put($qrRelativePath, (string) $svgContent);
         } else {
             $svgContent = '<svg xmlns="http://www.w3.org/2000/svg" width="350" height="350" viewBox="0 0 350 350">'
@@ -141,7 +141,7 @@ class EventSessionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Sesi acara berhasil dibuat dengan QR Code sesi terlampir.',
+            'message' => __('asic-api.messages.sesi_acara_berhasil_dibuat_dengan_qr_code_sesi_ter'),
             'data' => $session,
             'qr_image_url' => Storage::disk('public')->url($qrRelativePath),
         ], Response::HTTP_CREATED);

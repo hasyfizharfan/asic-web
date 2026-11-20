@@ -105,8 +105,8 @@
                     <span>{{ __('asic-reviewer.research_area') ?? 'Area' }}: <strong class="text-on-surface" x-text="abstractData?.scope"></strong></span>
                     <span>•</span>
                     <span>Format: <strong class="text-on-surface" x-text="abstractData?.metode_presentasi"></strong></span>
-                    <span>•</span><span>Tanggal submit: <strong class="text-on-surface" x-text="abstractData?.tanggal_submit || '—'"></strong></span>
-                    <span>•</span><span>Status: <strong class="text-on-surface" x-text="abstractData?.status_abstrak"></strong></span>
+                    <span>•</span><span>Tanggal submit: <strong class="text-on-surface" x-text="asicDateTime(abstractData?.tanggal_submit)"></strong></span>
+                    <span>•</span><span>Status: <strong class="text-on-surface" x-text="asicStatus(abstractData?.status_abstrak)"></strong></span>
                 </div>
             </div>
 
@@ -127,7 +127,12 @@
             </div>
 
             <!-- Download Manuscript Button -->
-            <div class="pt-4 border-t border-surface-container-highest">
+            <div class="pt-4 border-t border-surface-container-highest flex flex-wrap gap-2">
+                @if (! empty($abstractIsPdf))
+                <button type="button" :disabled="!abstractData" @click="window.asicPreview('/api/tim-abstrak/submissions/{{ $abstractId }}/file', @js(__('asic-common.preview')))" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold transition active:scale-95 disabled:opacity-50">
+                    <span class="material-symbols-outlined text-[18px]">visibility</span><span>{{ __('asic-common.preview') }}</span>
+                </button>
+                @endif
                 <a :href="abstractData ? '/api/tim-abstrak/submissions/{{ $abstractId }}/file' : '#'"
                    :aria-disabled="!abstractData"
                    class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-primary text-primary hover:bg-primary hover:text-white text-xs font-bold transition shadow-xs active:scale-95">
@@ -140,7 +145,7 @@
         <div class="lg:col-span-7 bg-surface-container-lowest p-6 rounded-2xl border border-surface-container-highest shadow-xs space-y-3">
             <h2 class="text-sm font-bold text-on-surface uppercase tracking-wider">Riwayat Review</h2>
             <template x-for="review in (abstractData?.reviews || [])" :key="review.id_review">
-                <div class="rounded-xl bg-surface-container-low p-4 space-y-1"><div class="flex justify-between gap-3 text-xs"><strong x-text="review.hasil_review"></strong><time class="text-on-surface-variant" x-text="review.tanggal_review || '—'"></time></div><p class="text-sm text-on-surface-variant whitespace-pre-line" x-text="review.catatan_review || 'Tanpa catatan'"></p></div>
+                <div class="rounded-xl bg-surface-container-low p-4 space-y-1"><div class="flex justify-between gap-3 text-xs"><strong x-text="asicStatus(review.hasil_review)"></strong><time class="text-on-surface-variant" x-text="asicDateTime(review.tanggal_review)"></time></div><p class="text-sm text-on-surface-variant whitespace-pre-line" x-text="review.catatan_review || 'Tanpa catatan'"></p></div>
             </template>
             <p x-show="abstractData && !abstractData.reviews?.length" class="text-sm text-on-surface-variant">Belum ada riwayat review.</p>
             <div x-show="warnings.length" class="rounded-xl bg-[#fff3c4] text-[#745b00] p-4"><p class="font-bold text-xs">Peringatan tindak lanjut</p><template x-for="(warning, index) in warnings" :key="index"><p class="text-xs mt-1" x-text="warning"></p></template></div>
@@ -207,10 +212,6 @@
 
                 <!-- Form Action Buttons -->
                 <div class="pt-2 flex flex-col sm:flex-row items-center gap-3" x-show="!isSubmitted">
-                    <button type="button" disabled
-                            class="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-surface-container-highest bg-surface-container-high text-on-surface-variant text-xs font-bold opacity-60 cursor-not-allowed">
-                        Belum tersedia
-                    </button>
 
                     <button type="submit" 
                             class="w-full sm:flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#F5C518] hover:bg-[#fed649] text-[#17261D] text-xs font-bold shadow-md transition active:scale-95">

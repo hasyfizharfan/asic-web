@@ -136,7 +136,7 @@ class AbstractReviewController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Daftar naskah abstrak masuk berhasil dimuat.',
+            'message' => __('asic-api.messages.daftar_naskah_abstrak_masuk_berhasil_dimuat'),
             'data' => $page,
             'stats' => $stats,
             ...($isReviewer ? ['scopes' => config('abstract-scopes', [])] : []),
@@ -218,7 +218,12 @@ class AbstractReviewController extends Controller
         $extension = Str::lower(pathinfo($abstract->file_abstrak, PATHINFO_EXTENSION));
         abort_unless(in_array($extension, ['pdf', 'doc', 'docx'], true), Response::HTTP_NOT_FOUND);
 
-        return $privateDisk->download($abstract->file_abstrak, 'abstract-'.$abstract->id_abstract.'.'.$extension);
+        $name = 'abstract-'.$abstract->id_abstract.'.'.$extension;
+        if ($extension === 'pdf' && $request->boolean('inline')) {
+            return $privateDisk->response($abstract->file_abstrak, $name, ['Content-Type' => 'application/pdf'], 'inline');
+        }
+
+        return $privateDisk->download($abstract->file_abstrak, $name);
     }
 
     /**
@@ -276,10 +281,10 @@ class AbstractReviewController extends Controller
                 ->whereKey($id_abstract)->lockForUpdate()->first();
 
             if (! $abstract) {
-                return ['error' => 404, 'message' => 'Abstrak tidak ditemukan.'];
+                return ['error' => 404, 'message' => __('asic-api.messages.abstrak_tidak_ditemukan')];
             }
             if ($abstract->registration?->registration_status !== 'Terdaftar') {
-                return ['error' => 422, 'message' => 'Registrasi pemilik abstrak tidak berstatus Terdaftar sehingga tidak dapat direview.'];
+                return ['error' => 422, 'message' => __('asic-api.messages.registrasi_pemilik_abstrak_tidak_berstatus_terdaft')];
             }
             if ($abstract->status_abstrak !== 'Diajukan') {
                 return ['error' => 409, 'message' => "Abstrak sudah diputuskan ({$abstract->status_abstrak}) dan tidak dapat direview ulang."];
@@ -351,17 +356,17 @@ class AbstractReviewController extends Controller
     {
         $abstract = AbstractSubmission::find($id_abstract);
         if (! $abstract) {
-            return response()->json(['success' => false, 'message' => 'Abstrak tidak ditemukan.'], Response::HTTP_NOT_FOUND);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.abstrak_tidak_ditemukan')], Response::HTTP_NOT_FOUND);
         }
         if ($abstract->status_abstrak === 'Diajukan') {
-            return response()->json(['success' => false, 'message' => 'Abstrak belum diputuskan.'], Response::HTTP_CONFLICT);
+            return response()->json(['success' => false, 'message' => __('asic-api.messages.abstrak_belum_diputuskan')], Response::HTTP_CONFLICT);
         }
 
         $followUp = app(AbstractDecisionProcessor::class)->process($abstract);
 
         return response()->json([
             'success' => true,
-            'message' => 'Penerbitan dokumen diproses.',
+            'message' => __('asic-api.messages.penerbitan_dokumen_diproses'),
             'data' => [
                 'documents' => collect($followUp['documents'])->map(fn ($d) => $d ? ['id_document' => $d->id_document, 'jenis_dokumen' => $d->jenis_dokumen, 'nomor_dokumen' => $d->nomor_dokumen] : null),
                 'invoice' => $followUp['invoice'],

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Requests\ExtendInvoiceRequest;
 use App\Models\Invoice;
 use App\Models\UserAccount;
+use App\Services\OverdueInvoiceProcessor;
+use App\Services\StatusNotifier;
 use App\Support\PermissionMatrix;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -53,7 +55,7 @@ class InvoiceController extends Controller
             'registration.participant.userAccount',
             'registrationFee',
             'invoiceDetails',
-            'paymentProofs',
+            'paymentProofs.verification:id_verification,id_payment_proof,tanggal_verifikasi,hasil_verifikasi,alasan_penolakan',
         ])->findOrFail($id_invoice);
 
         /** @var UserAccount $user */
@@ -64,12 +66,13 @@ class InvoiceController extends Controller
         if (! $isOwner && ! $canViewAll) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda tidak memiliki hak akses untuk melihat invoice ini.',
+                'message' => __('asic-api.messages.anda_tidak_memiliki_hak_akses_untuk_melihat_invoic'),
             ], Response::HTTP_FORBIDDEN);
         }
 
-        if ($invoice->isKedaluwarsa() && $invoice->status_pembayaran === 'Menunggu Pembayaran') {
-            $invoice->update(['status_pembayaran' => 'Kedaluwarsa']);
+        // Jatuh tempo diproses saat dibuka juga (selain jadwal invoices:process-overdue tiap jam).
+        if (app(OverdueInvoiceProcessor::class)->process($invoice)) {
+            $invoice->refresh();
         }
 
         return response()->json([
@@ -125,13 +128,28 @@ class InvoiceController extends Controller
     public function extendDueDate(ExtendInvoiceRequest $request, int $id_invoice): JsonResponse
     {
         $invoice = Invoice::with(['registration.participant'])->findOrFail($id_invoice);
+        $processor = app(OverdueInvoiceProcessor::class);
+        $max = OverdueInvoiceProcessor::maxExtensions();
+        $refuse = match (true) {
+            $invoice->registration?->registration_status === 'Dibatalkan' => __('asic-api.invoice.extend_cancelled'),
+            ! in_array($invoice->status_pembayaran, ['Menunggu Pembayaran', 'Ditolak', 'Kedaluwarsa', 'Kadaluwarsa'], true) => __('asic-api.invoice.extend_status', ['status' => $invoice->status_pembayaran]),
+            (int) $invoice->jumlah_perpanjangan >= $max => __('asic-api.invoice.extend_limit', ['max' => $max]),
+            $processor->isEarlyBird($invoice) => __('asic-api.invoice.extend_early_bird'),
+            default => null,
+        };
+        if ($refuse) {
+            return response()->json(['success' => false, 'message' => $refuse], Response::HTTP_CONFLICT);
+        }
 
         $validated = $request->validated();
         $invoice->perpanjangJatuhTempo($validated['tanggal_jatuh_tempo_baru']);
+        app(StatusNotifier::class)->notify($invoice->registration, 'invoice_extended', 'invoice_extended:'.$invoice->id_invoice.':'.$invoice->jumlah_perpanjangan, [
+            'due' => (string) $invoice->tanggal_jatuh_tempo_baru?->toDateString(),
+        ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Batas waktu jatuh tempo invoice berhasil diperpanjang.',
+            'message' => __('asic-api.messages.batas_waktu_jatuh_tempo_invoice_berhasil_diperpanj'),
             'data' => [
                 'id_invoice' => $invoice->id_invoice,
                 'nomor_invoice' => $invoice->nomor_invoice,
@@ -183,15 +201,17 @@ class InvoiceController extends Controller
         if ($invoice->status_pembayaran === 'Terverifikasi') {
             return response()->json([
                 'success' => false,
-                'message' => 'Invoice yang telah terverifikasi tidak dapat diubah menjadi kedaluwarsa.',
+                'message' => __('asic-api.messages.invoice_yang_telah_terverifikasi_tidak_dapat_diuba'),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $invoice->update(['status_pembayaran' => 'Kedaluwarsa']);
+        $invoice->loadMissing('registration');
+        app(StatusNotifier::class)->notify($invoice->registration, 'invoice_expired', 'invoice_expired:'.$invoice->id_invoice);
 
         return response()->json([
             'success' => true,
-            'message' => 'Status invoice berhasil diperbarui menjadi Kedaluwarsa.',
+            'message' => __('asic-api.messages.status_invoice_berhasil_diperbarui_menjadi_kedaluw'),
             'data' => $invoice,
         ], Response::HTTP_OK);
     }

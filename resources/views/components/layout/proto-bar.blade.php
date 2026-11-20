@@ -9,7 +9,7 @@
     $locale = app()->getLocale();
 @endphp
 
-<aside id="proto-review-bar" class="sticky top-0 z-50 h-11 bg-[#0F3D24] text-white flex items-center justify-between px-3 sm:px-6 text-xs border-b border-white/10 shadow-md select-none font-sans">
+<aside id="proto-review-bar" class="sticky top-0 z-50 h-11 bg-[#0B5D2E] text-white flex items-center justify-between px-3 sm:px-6 text-xs border-b border-white/10 shadow-md select-none font-sans">
     <!-- Left: Branding -->
     <div class="flex items-center gap-2">
         <a href="{{ route('portal.landing') }}" class="font-bold tracking-tight text-white flex items-center gap-1.5 hover:opacity-90 transition">

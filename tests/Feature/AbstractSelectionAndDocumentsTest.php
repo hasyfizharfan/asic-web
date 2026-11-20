@@ -2,13 +2,15 @@
 
 namespace Tests\Feature;
 
-use App\Mail\DocumentIssuedMail;
 use App\Models\AbstractReview;
 use App\Models\Invoice;
 use App\Models\IssuedDocument;
 use App\Models\Role;
+use App\Models\UserAccount;
+use App\Notifications\StatusChanged;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Smalot\PdfParser\Parser;
 use Tests\Concerns\BuildsAsicFixtures;
@@ -99,6 +101,7 @@ class AbstractSelectionAndDocumentsTest extends TestCase
 
     public function test_acceptance_issues_loa_and_invoice_and_emails_participant(): void
     {
+        Notification::fake();
         $reg = $this->registration('1');
         $a = $this->abstractFor($reg);
         $this->fee();
@@ -113,11 +116,24 @@ class AbstractSelectionAndDocumentsTest extends TestCase
         $this->assertSame(1, Invoice::where('id_registration', $reg->id_registration)->count());
         $this->assertNotNull(IssuedDocument::where('jenis_dokumen', 'Invoice')->first());
 
-        Mail::assertSent(DocumentIssuedMail::class, fn ($m) => $m->hasTo('peserta1@example.test'));
+        // Email ke peserta: LoA dan invoice, masing-masing dengan lampiran PDF (tidak ada email ganda).
+        $user = UserAccount::where('email', 'peserta1@example.test')->firstOrFail();
+        foreach (['loa_issued', 'invoice_issued'] as $kind) {
+            Notification::assertSentTo($user, StatusChanged::class, function ($n, $channels) use ($kind, $user) {
+                if ($n->kind !== $kind || ! in_array('mail', $channels, true)) {
+                    return false;
+                }
+                $mail = $n->toMail($user);
+
+                return count($mail->rawAttachments) === 1 && str_ends_with($mail->rawAttachments[0]['name'], '.pdf');
+            });
+        }
+        Notification::assertSentTo($user, StatusChanged::class, fn ($n, $channels) => $n->kind === 'abstract_accepted' && ! in_array('mail', $channels, true));
     }
 
     public function test_rejection_issues_rejection_letter_without_invoice(): void
     {
+        Notification::fake();
         $reg = $this->registration('1');
         $a = $this->abstractFor($reg);
         $this->fee();
@@ -127,7 +143,9 @@ class AbstractSelectionAndDocumentsTest extends TestCase
         $this->assertSame(1, IssuedDocument::where('jenis_dokumen', 'Penolakan')->count());
         $this->assertSame(0, IssuedDocument::where('jenis_dokumen', 'LOA')->count());
         $this->assertSame(0, Invoice::count());
-        Mail::assertSent(DocumentIssuedMail::class, 1);
+        $user = UserAccount::where('email', 'peserta1@example.test')->firstOrFail();
+        Notification::assertSentToTimes($user, StatusChanged::class, 2); // keputusan (situs) + surat penolakan (situs+email)
+        Notification::assertSentTo($user, StatusChanged::class, fn ($n, $channels) => $n->kind === 'rejection_issued' && in_array('mail', $channels, true));
     }
 
     public function test_acceptance_without_configured_fee_still_saves_decision_and_loa_with_warning(): void
@@ -213,6 +231,16 @@ class AbstractSelectionAndDocumentsTest extends TestCase
             ->assertOk()->assertJsonCount(2, 'data'); // LOA + Invoice
         $res = $this->as(Role::ROLE_PESERTA, '1')->get("/api/documents/{$loa->id_document}/download");
         $res->assertOk()->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('attachment', (string) $res->headers->get('content-disposition'));
+
+        // Tombol "Lihat": ?inline=1 menampilkan PDF di browser, hak akses tetap sama.
+        $inline = $this->as(Role::ROLE_PESERTA, '1')->get("/api/documents/{$loa->id_document}/download?inline=1");
+        $inline->assertOk()->assertHeader('content-type', 'application/pdf');
+        $this->assertStringStartsWith('inline', (string) $inline->headers->get('content-disposition'));
+        $this->registration('2');
+        $this->as(Role::ROLE_PESERTA, '2')->get("/api/documents/{$loa->id_document}/download?inline=1")->assertForbidden();
+
+        $this->as(Role::ROLE_PESERTA, '1')->get('/participant/documents')->assertOk()->assertSee('window.asicPreview', false)->assertSee(__('asic-common.preview'));
     }
 
     public function test_other_participant_cannot_access_documents(): void

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Event extends Model
 {
@@ -30,6 +31,21 @@ class Event extends Model
         'mode_kegiatan',
         'status_event',
     ];
+
+    protected static function booted(): void
+    {
+        // Baris event_photo terhapus lewat FK cascade; berkas fisiknya dihapus di sini agar tidak yatim.
+        static::deleting(function (Event $event): void {
+            foreach ($event->photos()->pluck('file_path') as $path) {
+                Storage::disk('public')->delete($path);
+            }
+        });
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(EventPhoto::class, 'id_event', 'id_event');
+    }
 
     public function registrationPeriods(): HasMany
     {

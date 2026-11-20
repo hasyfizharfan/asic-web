@@ -69,4 +69,11 @@ return [
     'confirm_password' => 'Konfirmasi Kata Sandi Baru',
     'btn_update_password' => 'Perbarui Kata Sandi',
     'profile_updated' => 'Profil berhasil diperbarui',
+    'dash' => [
+        'title' => 'Dasbor Tim Abstrak', 'eyebrow' => 'Review ilmiah', 'heading' => 'Dasbor Tim Abstrak', 'subtitle' => 'Review ilmiah abstrak. Urusan pembayaran dan registrasi ulang tetap di Sekretariat.',
+        'total' => 'Abstrak masuk', 'pending' => 'Menunggu review', 'accepted' => 'Diterima', 'rejected' => 'Ditolak', 'reviewed_by_me' => 'Sudah saya review',
+        'by_scope' => 'Per scope', 'by_scope_hint' => 'Jumlah abstrak per bidang.', 'empty_scope' => 'Belum ada abstrak.',
+        'queue' => 'Antrean abstrak', 'full_list' => 'Daftar lengkap', 'col_title' => 'Judul', 'col_type' => 'Jenis', 'col_action' => 'Tindakan',
+        'review' => 'Review', 'view' => 'Lihat', 'empty_queue' => 'Belum ada abstrak dalam antrean.',
+    ],
 ];

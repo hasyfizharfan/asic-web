@@ -6,58 +6,60 @@
 @source '../**/*.js';
 
 @theme {
-    /* Fonts: Calibri as requested by client, with Carlito & sans fallbacks */
-    --font-sans: 'Calibri', 'Carlito', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    --font-calibri: 'Calibri', 'Carlito', sans-serif;
-    --font-display: 'Calibri', 'Carlito', 'Outfit', sans-serif;
-    --font-outfit: 'Outfit', 'Calibri', sans-serif;
+    /* Font: Calibri sesuai permintaan mitra (K-03). Calibri milik Microsoft dan tidak di-host di server;
+       perangkat tanpa Calibri (Android, iPhone, Linux) memakai Carlito dari Google Fonts (lebar huruf sama, lisensi OFL). */
+    --font-sans: Calibri, 'Carlito', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    --font-calibri: Calibri, 'Carlito', sans-serif;
+    --font-display: Calibri, 'Carlito', ui-sans-serif, system-ui, sans-serif;
+    --font-serif: Calibri, 'Carlito', ui-sans-serif, system-ui, sans-serif;
+    --font-outfit: Calibri, 'Carlito', sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    --font-poppins: 'Poppins', 'Calibri', sans-serif;
+    --font-poppins: Calibri, 'Carlito', sans-serif;
 
     /* ASIC Material 3 Color System (Portal) */
-    --color-primary: #005226;
-    --color-primary-container: #1f6b3a;
+    --color-primary: #0B5D2E; /* Figma: Primary Green */
+    --color-primary-container: #168348; /* Figma: Bright Green */
     --color-on-primary: #ffffff;
-    --color-on-primary-container: #9ce9ab;
-    --color-primary-fixed: #a7f4b6;
-    --color-primary-fixed-dim: #8cd79b;
-    --color-on-primary-fixed: #00210c;
-    --color-on-primary-fixed-variant: #005226;
-    --color-inverse-primary: #8cd79b;
+    --color-on-primary-container: #E6F4EA;
+    --color-primary-fixed: #E6F4EA;
+    --color-primary-fixed-dim: #cfe6d6;
+    --color-on-primary-fixed: #084A26;
+    --color-on-primary-fixed-variant: #0B5D2E;
+    --color-inverse-primary: #cfe6d6;
 
-    --color-secondary: #745b00;
-    --color-secondary-container: #fdcc22;
+    --color-secondary: #7a5d00; /* teks di atas kuning muda */
+    --color-secondary-container: #F5C518; /* Figma: Accent Yellow */
     --color-on-secondary: #ffffff;
-    --color-on-secondary-container: #6e5700;
-    --color-secondary-fixed: #ffe08b;
-    --color-secondary-fixed-dim: #f0c110;
-    --color-on-secondary-fixed: #241a00;
-    --color-on-secondary-fixed-variant: #584400;
+    --color-on-secondary-container: #182820;
+    --color-secondary-fixed: #FEF6D8;
+    --color-secondary-fixed-dim: #F5C518;
+    --color-on-secondary-fixed: #182820;
+    --color-on-secondary-fixed-variant: #7a5d00;
 
-    --color-tertiary: #2d4f00;
-    --color-tertiary-container: #3e6900;
+    --color-tertiary: #168348; /* Figma: Bright Green */
+    --color-tertiary-container: #0B5D2E;
     --color-on-tertiary: #ffffff;
-    --color-on-tertiary-container: #aee96b;
-    --color-tertiary-fixed: #b9f474;
-    --color-tertiary-fixed-dim: #9ed75b;
-    --color-on-tertiary-fixed: #0f2000;
-    --color-on-tertiary-fixed-variant: #2e4f00;
+    --color-on-tertiary-container: #E6F4EA;
+    --color-tertiary-fixed: #E6F4EA; /* Figma: Light Green */
+    --color-tertiary-fixed-dim: #cfe6d6;
+    --color-on-tertiary-fixed: #084A26;
+    --color-on-tertiary-fixed-variant: #0B5D2E;
 
-    --color-surface: #fcf9f8;
-    --color-background: #fcf9f8;
-    --color-surface-bright: #fcf9f8;
+    --color-surface: #F7FAF8; /* Figma: Background */
+    --color-background: #F7FAF8;
+    --color-surface-bright: #F7FAF8;
     --color-surface-dim: #dcd9d9;
     --color-surface-container-lowest: #ffffff;
-    --color-surface-container-low: #f6f3f2;
-    --color-surface-container: #f0eded;
-    --color-surface-container-high: #eae7e7;
-    --color-surface-container-highest: #e5e2e1;
-    --color-surface-variant: #e5e2e1;
-    --color-surface-tint: #206c3b;
+    --color-surface-container-low: #F1F6F2;
+    --color-surface-container: #EBF1EC;
+    --color-surface-container-high: #E4ECE6;
+    --color-surface-container-highest: #DDE6DF;
+    --color-surface-variant: #DDE6DF;
+    --color-surface-tint: #168348;
 
-    --color-on-surface: #1b1c1c;
-    --color-on-surface-variant: #404940;
-    --color-on-background: #1b1c1c;
+    --color-on-surface: #182820; /* Figma: Text Dark */
+    --color-on-surface-variant: #66746C; /* Figma: Text Muted */
+    --color-on-background: #182820;
 
     --color-outline: #707a6f;
     --color-outline-variant: #bfc9bd;
@@ -71,11 +73,13 @@
     --color-on-error-container: #93000a;
 
     /* Landing Page Specific Tokens */
-    --color-forest: #0F3D24;
-    --color-deep: #0A2B19;
+    --color-forest: #0B5D2E;
+    --color-deep: #084A26; /* Figma: Dark Green */
     --color-gold: #F5C518;
-    --color-mist: #F1F5EC;
-    --color-ink: #17261D;
+    --color-mist: #E6F4EA; /* Figma: Light Green */
+    --color-ink: #182820;
+    --color-light-green: #E6F4EA;
+    --color-bright-green: #168348;
 
     /* Spacing Tokens */
     --spacing-space-xs: 0.25rem;
@@ -93,6 +97,8 @@
 /* Base Body Styles */
 body {
     font-family: var(--font-sans);
+    /* Huruf kecil Calibri lebih pendek dari font sebelumnya; disamakan tingginya agar tetap mudah dibaca. */
+    font-size-adjust: 0.5;
     color: var(--color-on-surface);
     background-color: var(--color-surface);
     -webkit-font-smoothing: antialiased;
@@ -341,33 +347,116 @@ body {
 }
 
 /* Universal Scrollbar Elimination (Hidden completely while preserving full scrollability) */
-html,
-body,
-aside,
-nav,
-div,
-main,
-* {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+/* Scrollbar tipis (bukan disembunyikan) agar tabel/menu yang bisa digeser tetap terlihat. */
+* { scrollbar-width: thin; scrollbar-color: #9AAA9E transparent; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #9AAA9E; border-radius: 9999px; }
+::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-none { scrollbar-width: none; }
+.scrollbar-none::-webkit-scrollbar { display: none; }
+
+/*
+ * Kontrol form global. Proyek tidak memakai plugin @tailwindcss/forms, padahal markup memakai kelas
+ * seperti "rounded-xl border-surface-container-highest" (warna tanpa ketebalan garis) sehingga input tak terlihat.
+ * Gaya dasar ini memberi garis, latar, ukuran sentuh 44px, dan fokus yang jelas untuk SEMUA form.
+ */
+/* Tailwind v4: warna garis bawaan = currentColor (hitam). Samakan dengan garis lembut palet. */
+@layer base {
+    *, ::before, ::after, ::backdrop, ::file-selector-button { border-color: var(--color-surface-container-highest, #dde6df); }
 }
 
-::-webkit-scrollbar,
-*::-webkit-scrollbar {
-    display: none !important;
-    width: 0px !important;
-    height: 0px !important;
-    background: transparent !important;
+@layer base {
+    input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='hidden']):not([type='range']):not([type='color']),
+    select,
+    textarea {
+        display: block;
+        min-height: 44px;
+        border: 1px solid #9aaa9e;
+        border-radius: 9px;
+        background-color: #ffffff;
+        color: var(--color-on-surface);
+        padding: 0.625rem 0.875rem;
+        font-size: 15px;
+        line-height: 1.4;
+        font-weight: 400;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    textarea { min-height: 96px; }
+    select { padding-right: 2.25rem; }
+    input::placeholder, textarea::placeholder { color: #7b897f; opacity: 1; }
+    input:hover:not(:disabled), select:hover:not(:disabled), textarea:hover:not(:disabled) { border-color: #66746c; }
+    input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+        outline: 2px solid #168348;
+        outline-offset: 2px;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #168348; box-shadow: 0 0 0 3px rgba(22, 131, 72, 0.18); outline: none; }
+    input:disabled, select:disabled, textarea:disabled { background-color: #eef2ef; color: #66746c; cursor: not-allowed; }
+    input[aria-invalid='true'], select[aria-invalid='true'], textarea[aria-invalid='true'] { border-color: var(--color-error); }
+    input[type='checkbox'], input[type='radio'] {
+        width: 18px; height: 18px; flex-shrink: 0;
+        accent-color: #0b5d2e;
+        cursor: pointer;
+    }
+    /* Kotak unggah: beri ruang di dalam agar tombol tidak terpotong oleh tepi input. */
+    input[type='file'] {
+        display: block; width: 100%; max-width: 100%; min-height: 48px;
+        padding: 5px; border: 1px dashed #9aaa9e; border-radius: 12px; background: #fff;
+        font-size: 14px; color: #3b4a40; line-height: 36px; cursor: pointer;
+    }
+    input[type='file']:hover { border-color: #168348; background: #f7faf8; }
+    input[type='file']::file-selector-button {
+        margin-right: 0.75rem;
+        height: 36px;
+        border: 1px solid #0b5d2e;
+        border-radius: 9px;
+        background: #e6f4ea;
+        color: #0b5d2e;
+        padding: 0 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    label { color: var(--color-on-surface); }
+    button, [role='button'] { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: 0.6; }
 }
 
-.scrollbar-none {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
+/* Kelas warna garis yang terlalu pucat untuk kontrol form (kontras < 3:1) dinaikkan khusus pada input/select/textarea. */
+:is(input, select, textarea):is(.border-surface-container-highest, .border-surface-container-high, .border-outline-variant, .border-\[\#c9d6c2\], .border-\[\#d9e3d0\]) {
+    border-color: #9aaa9e;
+}
+:is(input, select, textarea):is(.border-surface-container-highest, .border-surface-container-high, .border-outline-variant):focus {
+    border-color: #168348;
 }
 
-.scrollbar-none::-webkit-scrollbar {
-    display: none !important;
-    width: 0px !important;
-    height: 0px !important;
+/* Tombol aksi ikon di tabel portal. Label wajib lewat aria-label (dipakai juga sebagai tooltip). */
+@layer components {
+    .icon-btn {
+        position: relative; display: inline-flex; height: 28px; width: 28px; flex-shrink: 0; align-items: center; justify-content: center;
+        border-radius: 8px; border: 1px solid #dce4da; background: #fff; color: #0b5d2e; transition: background-color .15s, border-color .15s, color .15s;
+    }
+    .icon-btn .material-symbols-outlined { font-size: 16px; }
+    .icon-btn:hover:not(:disabled) { background: #e6f4ea; border-color: #168348; }
+    .icon-btn:disabled { opacity: .35; cursor: not-allowed; }
+    .icon-btn-danger { color: #ba1a1a; }
+    .icon-btn-danger:hover:not(:disabled) { background: #ffdad6; border-color: #ba1a1a; }
+    .icon-btn-muted { color: #3b4a40; }
+    .icon-btn[aria-label]:hover::after, .icon-btn[aria-label]:focus-visible::after {
+        content: attr(aria-label); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+        white-space: nowrap; border-radius: 8px; background: #182820; color: #fff; padding: 4px 8px; font-size: 12px; font-weight: 600;
+        pointer-events: none; z-index: 30;
+    }
+    /* Tooltip di bawah tombol (mis. tombol di tepi atas jendela) dan rata kanan untuk tombol paling kanan. */
+    .icon-btn.tip-below[aria-label]:hover::after, .icon-btn.tip-below[aria-label]:focus-visible::after { bottom: auto; top: calc(100% + 6px); }
+    .icon-btn.tip-end[aria-label]:hover::after, .icon-btn.tip-end[aria-label]:focus-visible::after { left: auto; right: 0; transform: none; }
+    .icon-btn-group { display: inline-flex; align-items: center; gap: 4px; }
+    /* Sel tabel berisi tombol ikon: jangan dilipat, beri jarak antar tombol. */
+    :where(td, div, span):has(> .icon-btn) { white-space: nowrap; }
+    .icon-btn + .icon-btn, .icon-btn + template + .icon-btn { margin-left: 4px; }
+    .icon-btn-group > .icon-btn + .icon-btn { margin-left: 0; }
+    .act-btn {
+        display: inline-flex; min-height: 30px; align-items: center; gap: 5px; border-radius: 8px; border: 1px solid #dce4da; background: #fff;
+        padding: 0 10px; font-size: 12.5px; font-weight: 600; color: #0b5d2e; transition: background-color .15s, border-color .15s;
+    }
+    .act-btn:hover { background: #e6f4ea; border-color: #168348; }
+    .act-btn .material-symbols-outlined { font-size: 16px; }
 }
-

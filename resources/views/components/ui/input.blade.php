@@ -22,7 +22,7 @@
 
 <div class="w-full space-y-1.5">
     @if($label)
-        <label for="{{ $inputId }}" class="block text-xs font-semibold text-on-surface">
+        <label for="{{ $inputId }}" class="block text-sm font-semibold text-on-surface">
             {{ $label }}
             @if($required)
                 <span class="text-error font-bold">*</span>

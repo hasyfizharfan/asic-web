@@ -1,24 +1,29 @@
+@php($t = trans('asic-participant.portal.checkout'))
 @extends('layouts.portal', [
     'role' => 'participant',
-    'roleName' => 'Pembayaran',
+    'roleName' => __('asic-participant.portal.checkout.title'),
     'nav' => $participantNav,
 ])
 
 @section('content')
 <main class="mx-auto max-w-3xl space-y-6" x-data="{
-    loading: true, submitting: false, loadError: '', fieldErrors: {},
+    i18n: @js($t), loading: true, submitting: false, loadError: '', fieldErrors: {},
     registration: null, invoice: null,
     async init() {
         const requestedId = new URLSearchParams(window.location.search).get('id_registration');
         const response = await window.asicApi.get('/api/registrations');
-        if (!response.ok) { this.loadError = response.error || 'Data pendaftaran gagal dimuat.'; this.loading = false; return; }
+        if (!response.ok) { this.loadError = response.error || this.i18n.load_failed; this.loading = false; return; }
         const registrations = response.data?.data?.data || [];
         this.registration = registrations.find(row => String(row.id_registration) === String(requestedId)) || registrations[0] || null;
-        if (!this.registration) { this.loadError = 'Belum ada pendaftaran untuk ditagihkan.'; this.loading = false; return; }
-        if (!this.registration.invoice?.id_invoice) { this.loadError = 'Invoice belum tersedia untuk pendaftaran ini.'; this.loading = false; return; }
+        if (!this.registration) { this.loadError = this.i18n.no_registration; this.loading = false; return; }
+        if (!this.registration.invoice?.id_invoice) {
+            const presenter = ['Oral Presenter', 'Poster Presenter'].includes(this.registration.participation_type);
+            this.loadError = presenter ? @js(__('asic-participant.flow.invoice_after_acceptance')) : @js(__('asic-participant.flow.invoice_unavailable'));
+            this.loading = false; return;
+        }
         const invoiceResponse = await window.asicApi.get('/api/invoices/' + this.registration.invoice.id_invoice);
         this.loading = false;
-        if (!invoiceResponse.ok) { this.loadError = invoiceResponse.error || 'Invoice gagal dimuat.'; return; }
+        if (!invoiceResponse.ok) { this.loadError = invoiceResponse.error || this.i18n.invoice_failed; return; }
         this.invoice = invoiceResponse.data?.data;
     },
     async uploadProof(event) {
@@ -28,55 +33,101 @@
         this.submitting = false;
         if (!response.ok) {
             this.fieldErrors = response.errors || {};
-            window.asicApi.showToast(response.error || 'Bukti transfer gagal diunggah.');
+            window.asicApi.showToast(response.error || this.i18n.upload_failed);
             return;
         }
         this.invoice = { ...this.invoice, status_pembayaran: response.data?.data?.status_pembayaran || 'Menunggu Verifikasi' };
         event.target.reset();
-        window.asicApi.showToast(response.data?.message || 'Bukti transfer berhasil dikirim.', 'success');
+        window.asicApi.showToast(response.data?.message || this.i18n.uploaded, 'success');
     },
-    formatAmount(value) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(value || 0)); }
+    paymentInfo: @js(\App\Support\PaymentSettings::current()),
+    internationalNote: @js(\App\Support\PaymentSettings::current()['international_note']),
+    get hasBank() { return Boolean(this.paymentInfo.account_no); },
+    get isUsd() { return this.invoice?.mata_uang === 'USD'; },
+    get rate() { return Number(this.paymentInfo.usd_idr_rate) || 0; },
+    get paypalFee() { return Number(this.paymentInfo.paypal_fee_percent) || 0; },
+    get idrEquivalent() { return this.isUsd && this.rate ? Math.ceil(Number(this.invoice.total_tagihan) * this.rate) : 0; },
+    get paypalAmount() { const t = Number(this.invoice?.total_tagihan || 0); return this.paypalFee > 0 && this.paypalFee < 50 ? Math.ceil(t / (1 - this.paypalFee / 100) * 100) / 100 : t; },
+    get methodOptions() { return Object.fromEntries(Object.entries(this.methods).filter(([key]) => key !== 'paypal' || this.isUsd)); },
+    get cancelled() { return this.registration?.registration_status === 'Dibatalkan'; },
+    methods: @js(collect(\App\Models\PaymentProof::METHODS)->reject(fn ($m) => $m === 'paypal' && blank(\App\Support\PaymentSettings::current()['paypal_account']))->mapWithKeys(fn ($m) => [$m => __('asic-common.payment_methods.'.$m)])),
+    formatAmount(value) { return window.asicMoney(value, this.invoice?.mata_uang); }
 }">
     <header class="space-y-1">
-        <h1 class="text-2xl font-bold text-on-surface">Pembayaran registrasi</h1>
-        <p class="text-sm text-on-surface-variant">Pembayaran tahap ini dilakukan melalui transfer manual dan verifikasi bendahara.</p>
+        <h1 class="text-2xl font-bold text-on-surface">{{ $t['heading'] }}</h1>
+        <p class="text-sm text-on-surface-variant">{{ $t['subtitle'] }}</p>
     </header>
 
-    <div x-show="loading" role="status" class="rounded-xl bg-surface-container-low p-5 text-sm">Memuat invoice…</div>
+    <div x-show="loading" role="status" class="rounded-xl bg-surface-container-low p-5 text-sm">{{ $t['loading'] }}</div>
     <div x-show="loadError" x-text="loadError" role="alert" class="rounded-xl bg-error-container p-5 text-sm text-on-error-container"></div>
 
     <template x-if="invoice">
         <section class="space-y-5 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-6">
             <dl class="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2">
-                <div><dt class="text-on-surface-variant">Nomor invoice</dt><dd class="font-mono font-bold" x-text="invoice.nomor_invoice"></dd></div>
-                <div><dt class="text-on-surface-variant">Status</dt><dd class="font-semibold" x-text="invoice.status_pembayaran"></dd></div>
-                <div><dt class="text-on-surface-variant">Jatuh tempo</dt><dd x-text="invoice.tanggal_jatuh_tempo"></dd></div>
+                <div><dt class="text-on-surface-variant">{{ $t['invoice_no'] }}</dt><dd class="font-mono font-bold" x-text="invoice.nomor_invoice"></dd></div>
+                <div><dt class="text-on-surface-variant">{{ $t['status'] }}</dt><dd class="font-semibold" x-text="asicStatus(invoice.status_pembayaran)"></dd></div>
+                <div><dt class="text-on-surface-variant">{{ $t['due'] }}</dt><dd x-text="asicDate(invoice.tanggal_jatuh_tempo_baru || invoice.tanggal_jatuh_tempo)"></dd></div>
                 <div><dt class="text-on-surface-variant">Total</dt><dd class="text-lg font-bold text-primary" x-text="formatAmount(invoice.total_tagihan)"></dd></div>
             </dl>
-            <div class="rounded-xl bg-surface-container-low p-4 text-sm">
-                <h2 class="font-bold">Instruksi transfer</h2>
-                <p class="mt-1 whitespace-pre-line" x-text="invoice.payment_qr_info || 'Hubungi bendahara untuk mendapatkan informasi rekening pembayaran.'"></p>
+            <div class="space-y-3 rounded-xl bg-surface-container-low p-4 text-sm">
+                <h2 class="font-bold">{{ $t['methods_title'] }}</h2>
+                <p x-show="invoice.payment_qr_info" class="whitespace-pre-line" x-text="invoice.payment_qr_info"></p>
+                <p x-show="!hasBank && !paymentInfo.paypal_account && !invoice.payment_qr_info" x-text="i18n.contact_treasurer"></p>
+                <article x-show="hasBank" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3">
+                    <h3 class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">account_balance</span>{{ __('asic-common.payment_methods.bank') }}<span x-show="paymentInfo.bank_name" x-text="'· ' + paymentInfo.bank_name"></span></h3>
+                    <p class="mt-0.5 text-xs text-on-surface-variant">{{ $t['method_bank_desc'] }}</p>
+                    <p x-show="idrEquivalent" class="mt-2 rounded-lg bg-[#E6F4EA] px-3 py-2 text-xs font-semibold text-primary" x-text="i18n.idr_equivalent.replace(':idr', window.asicMoney(idrEquivalent, 'IDR')).replace(':rate', window.asicMoney(rate, 'IDR'))"></p>
+                    <dl class="mt-2 grid gap-1 text-xs sm:grid-cols-2">
+                        <template x-for="[key, label] in [['account_name', @js(__('asic-participant.pay_info.account_name'))], ['account_no', @js(__('asic-participant.pay_info.account_no'))], ['swift_code', 'SWIFT'], ['branch', @js(__('asic-participant.pay_info.branch'))]]" :key="key">
+                            <div x-show="paymentInfo[key]"><dt class="text-on-surface-variant" x-text="label"></dt><dd class="break-words font-mono font-semibold" x-text="paymentInfo[key]"></dd></div>
+                        </template>
+                    </dl>
+                </article>
+                <article x-show="paymentInfo.paypal_account && isUsd" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3">
+                    <h3 class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">payments</span>PayPal</h3>
+                    <p class="mt-0.5 text-xs text-on-surface-variant">{{ $t['method_paypal_desc'] }}</p>
+                    <p class="mt-2 break-all font-mono text-xs font-semibold" x-text="paymentInfo.paypal_account"></p>
+                    <p x-show="paypalFee" class="mt-2 rounded-lg bg-[#E6F4EA] px-3 py-2 text-xs font-semibold text-primary" x-text="i18n.paypal_amount.replace(':amount', formatAmount(paypalAmount)).replace(':fee', paypalFee)"></p>
+                </article>
+                <article x-show="hasBank" class="rounded-lg border border-surface-container-highest bg-surface-container-lowest p-3">
+                    <h3 class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined text-[20px] text-primary" aria-hidden="true">public</span>{{ $t['method_wiseflip'] }}</h3>
+                    <p class="mt-0.5 text-xs text-on-surface-variant">{{ $t['method_wiseflip_desc'] }}</p>
+                    <p x-show="idrEquivalent" class="mt-2 text-xs font-semibold" x-text="i18n.wise_exact.replace(':idr', window.asicMoney(idrEquivalent, 'IDR'))"></p>
+                </article>
+                <p class="text-xs text-on-surface-variant" x-text="isUsd ? i18n.fee_note_intl : i18n.fee_note_domestic"></p>
+                <p x-show="internationalNote" class="whitespace-pre-line font-semibold" x-text="internationalNote"></p>
             </div>
-            <template x-if="invoice.status_pembayaran === 'Menunggu Pembayaran' || invoice.status_pembayaran === 'Ditolak'">
+            <p x-show="cancelled" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-on-error-container">{{ $t['cancelled'] }}</p>
+            <p x-show="!cancelled && ['Kedaluwarsa', 'Kadaluwarsa'].includes(invoice.status_pembayaran)" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-on-error-container">{{ $t['expired'] }}</p>
+            <template x-if="!cancelled && (invoice.status_pembayaran === 'Menunggu Pembayaran' || invoice.status_pembayaran === 'Ditolak')">
                 <form class="space-y-4 border-t border-surface-container-highest pt-5" @submit.prevent="uploadProof($event)">
-                    <h2 class="font-bold">Unggah bukti pembayaran</h2>
-                    <label class="block text-sm font-semibold">Nominal transfer
-                        <input type="number" name="nominal_transfer" min="1" step="1" required class="mt-1 block w-full rounded-xl border-surface-container-highest">
+                    <h2 class="font-bold">{{ $t['upload_title'] }}</h2>
+                    <div class="rounded-xl border border-[#cfe3d5] bg-[#E6F4EA] px-4 py-3">
+                        <p class="text-sm font-semibold text-on-surface">{{ $t['amount'] }}</p>
+                        <p class="mt-0.5 text-2xl font-bold text-primary" x-text="formatAmount(invoice.total_tagihan)"></p>
+                        <p class="mt-1 text-xs text-on-surface-variant">{{ $t['amount_note'] }}</p>
+                    </div>
+                    <x-ui.spam-note />
+                    <label class="block text-sm font-semibold">{{ $t['method'] }}
+                        <select name="metode_pembayaran" required class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
+                            <option value="">{{ $t['method_choose'] }}</option>
+                            <template x-for="(label, key) in methodOptions" :key="key"><option :value="key" x-text="label"></option></template>
+                        </select>
                     </label>
-                    <p x-show="fieldErrors.nominal_transfer" x-text="fieldErrors.nominal_transfer?.[0]" class="text-sm text-error"></p>
-                    <label class="block text-sm font-semibold">Bukti transfer (JPG, PNG, atau PDF)
+                    <p x-show="fieldErrors.metode_pembayaran" x-text="fieldErrors.metode_pembayaran?.[0]" class="text-sm text-error"></p>
+                    <label class="block text-sm font-semibold">{{ $t['proof'] }}
                         <input type="file" name="file_bukti" accept=".jpg,.jpeg,.png,.pdf" required class="mt-1 block w-full rounded-xl border-surface-container-highest text-sm">
                     </label>
                     <p x-show="fieldErrors.file_bukti" x-text="fieldErrors.file_bukti?.[0]" class="text-sm text-error"></p>
-                    <label class="block text-sm font-semibold">Catatan
+                    <label class="block text-sm font-semibold">{{ $t['note'] }}
                         <textarea name="catatan_peserta" rows="2" class="mt-1 block w-full rounded-xl border-surface-container-highest"></textarea>
                     </label>
                     <p x-show="fieldErrors.catatan_peserta" x-text="fieldErrors.catatan_peserta?.[0]" class="text-sm text-error"></p>
-                    <button type="submit" :disabled="submitting" class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50" x-text="submitting ? 'Mengirim…' : 'Kirim untuk verifikasi'"></button>
+                    <button type="submit" :disabled="submitting" class="rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50" x-text="submitting ? i18n.sending : i18n.send"></button>
                 </form>
             </template>
-            <p x-show="invoice.status_pembayaran === 'Menunggu Verifikasi'" class="rounded-xl bg-secondary-container p-4 text-sm">Bukti sudah dikirim. Menunggu verifikasi bendahara.</p>
-            <p x-show="invoice.status_pembayaran === 'Terverifikasi'" class="rounded-xl bg-secondary-container p-4 text-sm">Pembayaran terverifikasi. QR kehadiran tersedia pada halaman kehadiran.</p>
+            <p x-show="invoice.status_pembayaran === 'Menunggu Verifikasi'" class="rounded-xl bg-secondary-container p-4 text-sm">{{ $t['waiting'] }}</p>
+            <p x-show="invoice.status_pembayaran === 'Terverifikasi'" class="rounded-xl bg-secondary-container p-4 text-sm">{{ $t['verified'] }}</p>
         </section>
     </template>
 </main>

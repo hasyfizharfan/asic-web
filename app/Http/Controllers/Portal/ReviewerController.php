@@ -21,9 +21,11 @@ class ReviewerController extends Controller
                 'accepted' => (clone $base)->where('status_abstrak', 'Diterima')->count(),
                 'rejected' => (clone $base)->where('status_abstrak', 'Ditolak')->count(),
             ],
-            'latestSubmissions' => (clone $base)->where('status_abstrak', 'Diajukan')
-                ->orderByDesc('tanggal_submit')->limit(5)
-                ->get(['id_abstract', 'judul_abstrak', 'scope', 'tanggal_submit']),
+            'total' => (clone $base)->count(),
+            'byScope' => (clone $base)->selectRaw('scope, COUNT(*) as total')->groupBy('scope')->pluck('total', 'scope'),
+            'latestSubmissions' => (clone $base)->orderByRaw("CASE WHEN status_abstrak = 'Diajukan' THEN 0 ELSE 1 END")
+                ->orderByDesc('tanggal_submit')->limit(6)
+                ->get(['id_abstract', 'judul_abstrak', 'scope', 'metode_presentasi', 'status_abstrak', 'tanggal_submit']),
         ]);
     }
 
@@ -34,7 +36,10 @@ class ReviewerController extends Controller
 
     public function show(int $id): View
     {
-        return view('reviewer.detail', ['id' => $id, 'blindReview' => config('asic.blind_review_active', false)]);
+        $file = AbstractSubmission::whereKey($id)->value('file_abstrak');
+
+        return view('reviewer.detail', ['id' => $id, 'blindReview' => config('asic.blind_review_active', false),
+            'abstractIsPdf' => $file && strtolower(pathinfo($file, PATHINFO_EXTENSION)) === 'pdf']);
     }
 
     public function profile(): View

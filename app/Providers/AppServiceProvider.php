@@ -5,7 +5,11 @@ namespace App\Providers;
 use App\Models\Registration;
 use App\Models\Role;
 use App\Observers\RegistrationObserver;
+use App\Services\PublicContent;
 use App\Support\PermissionMatrix;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,6 +30,26 @@ class AppServiceProvider extends ServiceProvider
     {
         Registration::observe(RegistrationObserver::class);
 
+        // Audit QA 18 Nov 2026: batasi tebakan kata sandi & spam pendaftaran. Per IP dibuat longgar
+        // karena peserta satu kampus bisa berbagi IP yang sama (NAT).
+        RateLimiter::for('login', fn (Request $r) => [
+            Limit::perMinute(5)->by('login|'.strtolower((string) $r->input('email')).'|'.$r->ip()),
+            Limit::perMinute(60)->by('login-ip|'.$r->ip()),
+        ]);
+        RateLimiter::for('register', fn (Request $r) => Limit::perMinute(10)->by('register|'.$r->ip()));
+        RateLimiter::for('password', fn (Request $r) => [
+            Limit::perMinute(3)->by('password|'.strtolower((string) ($r->input('email') ?? $r->input('query'))).'|'.$r->ip()),
+            Limit::perMinute(20)->by('password-ip|'.$r->ip()),
+        ]);
+
+        // Nav/footer publik: tautan halaman hanya untuk halaman yang punya isi terpublikasi.
+        View::composer(['layouts.public', 'public._topnav'], function ($view): void {
+            if (! array_key_exists('publicPages', $view->getData())) {
+                $content = app(PublicContent::class);
+                $view->with('publicPages', $content->availablePages($content->activeEvent()));
+            }
+        });
+
         View::composer('participant.*', function ($view): void {
             $user = auth()->user();
             $user?->loadMissing('role');
@@ -33,7 +57,10 @@ class AppServiceProvider extends ServiceProvider
                 Role::ROLE_PESERTA => 'participant', Role::ROLE_SEKRETARIAT => 'secretariat',
                 Role::ROLE_BENDAHARA => 'treasurer', Role::ROLE_TIM_ABSTRAK => 'reviewer', Role::ROLE_ADMIN => 'admin', default => null,
             };
+            $hasPresenter = $roleKey === 'participant' && $user?->participant
+                && Registration::where('id_participant', $user->participant->id_participant)->whereIn('participation_type', ['Oral Presenter', 'Poster Presenter'])->exists();
             $nav = collect(config('portal-nav.'.$roleKey, []))->filter(fn (array $item) => $roleKey !== 'participant' || app(PermissionMatrix::class)->allows($user, $item['permission'], 'view_only'))
+                ->reject(fn (array $item) => $roleKey === 'participant' && ! $hasPresenter && in_array($item['route'] ?? '', ['portal.participant.full-paper', 'portal.participant.abstract'], true))
                 ->map(fn (array $item) => [...$item, 'label' => __($item['label'])])->values()->all();
             $view->with(['participantNav' => $nav, 'nav' => $nav]);
         });

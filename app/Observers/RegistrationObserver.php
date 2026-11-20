@@ -10,15 +10,20 @@ use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
- * Semua peserta mendapat invoice segera setelah registrasi (setelah commit, sehingga add-on
- * yang disimpan dalam transaksi yang sama ikut terhitung). LoA Listener terbit saat daftar;
- * LoA Presenter tetap menunggu keputusan abstrak.
+ * KF-20: invoice Listener terbit segera setelah registrasi (setelah commit, sehingga add-on
+ * yang disimpan dalam transaksi yang sama ikut terhitung), bersama LoA Listener.
+ * Invoice dan LoA Presenter (Oral/Poster) baru terbit saat abstrak Diterima lewat
+ * AbstractDecisionProcessor; abstrak Ditolak hanya mendapat surat penolakan.
  * Kegagalan tidak menggagalkan registrasi; invoice dapat diterbitkan ulang secara idempoten.
  */
 class RegistrationObserver implements ShouldHandleEventsAfterCommit
 {
     public function created(Registration $registration): void
     {
+        if ($registration->isPresenter()) {
+            return;
+        }
+
         $invoice = null;
         try {
             $result = app(InvoiceIssuer::class)->issueFor($registration);
@@ -28,10 +33,6 @@ class RegistrationObserver implements ShouldHandleEventsAfterCommit
             }
         } catch (Throwable $e) {
             Log::error('invoice.listener_failed', ['id_registration' => $registration->id_registration, 'error' => $e->getMessage()]);
-        }
-
-        if ($registration->isPresenter()) {
-            return;
         }
 
         // Kesepakatan mitra: Listener tetap mendapat LoA otomatis setelah registrasi.

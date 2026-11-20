@@ -34,6 +34,7 @@ class RegistrationFeeController extends Controller
             new OA\Parameter(name: 'registration_type', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['Student', 'Regular', 'Committee'])),
             new OA\Parameter(name: 'attendance_mode', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['Daring', 'Luring'])),
             new OA\Parameter(name: 'tujuan_publikasi', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['Prosiding', 'Jurnal', 'Tidak'])),
+            new OA\Parameter(name: 'mata_uang', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['IDR', 'USD'])),
             new OA\Parameter(name: 'per_page', in: 'query', required: false, schema: new OA\Schema(type: 'integer', example: 15)),
         ],
         responses: [
@@ -63,6 +64,7 @@ class RegistrationFeeController extends Controller
             new OA\Parameter(name: 'registration_type', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
             new OA\Parameter(name: 'attendance_mode', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
             new OA\Parameter(name: 'tujuan_publikasi', in: 'query', required: false, schema: new OA\Schema(type: 'string')),
+            new OA\Parameter(name: 'mata_uang', in: 'query', required: false, schema: new OA\Schema(type: 'string', enum: ['IDR', 'USD'])),
         ],
         responses: [new OA\Response(response: 200, description: 'Daftar tarif publik berhasil dimuat')]
     )]
@@ -78,7 +80,7 @@ class RegistrationFeeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Daftar tarif pendaftaran berhasil dimuat.',
+            'message' => __('asic-api.messages.daftar_tarif_pendaftaran_berhasil_dimuat'),
             'data' => RegistrationFeeResource::collection($fees),
         ], Response::HTTP_OK);
     }
@@ -104,7 +106,7 @@ class RegistrationFeeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Detail tarif berhasil dimuat.',
+            'message' => __('asic-api.messages.detail_tarif_berhasil_dimuat'),
             'data' => new RegistrationFeeResource($fee),
         ], Response::HTTP_OK);
     }
@@ -126,6 +128,7 @@ class RegistrationFeeController extends Controller
                     new OA\Property(property: 'tujuan_publikasi', type: 'string', enum: ['Prosiding', 'Jurnal', 'Tidak']),
                     new OA\Property(property: 'amount', type: 'number', example: 1500000),
                     new OA\Property(property: 'discount', type: 'number', example: 0),
+                    new OA\Property(property: 'mata_uang', type: 'string', enum: ['IDR', 'USD'], example: 'IDR', description: 'Bawaan IDR. Peserta Indonesia memakai tarif IDR, peserta negara lain tarif USD.'),
                 ]
             )
         ),
@@ -142,7 +145,7 @@ class RegistrationFeeController extends Controller
         } catch (QueryException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Tarif gagal disimpan karena pelanggaran integritas data.',
+                'message' => __('asic-api.messages.tarif_gagal_disimpan_karena_pelanggaran_integritas'),
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -150,7 +153,7 @@ class RegistrationFeeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tarif pendaftaran berhasil ditambahkan.',
+            'message' => __('asic-api.messages.tarif_pendaftaran_berhasil_ditambahkan'),
             'data' => new RegistrationFeeResource($fee),
         ], Response::HTTP_CREATED);
     }
@@ -190,7 +193,7 @@ class RegistrationFeeController extends Controller
             if ($lockedChanges !== []) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Tarif sudah digunakan oleh invoice sehingga tidak dapat diubah. Buat tarif baru untuk perubahan nominal atau kombinasi.',
+                    'message' => __('asic-api.messages.tarif_sudah_digunakan_oleh_invoice_sehingga_tidak_2'),
                     'locked_fields' => $lockedChanges,
                 ], Response::HTTP_CONFLICT);
             }
@@ -201,7 +204,7 @@ class RegistrationFeeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tarif pendaftaran berhasil diperbarui.',
+            'message' => __('asic-api.messages.tarif_pendaftaran_berhasil_diperbarui'),
             'data' => new RegistrationFeeResource($fee),
         ], Response::HTTP_OK);
     }
@@ -229,7 +232,7 @@ class RegistrationFeeController extends Controller
 
         $conflict = response()->json([
             'success' => false,
-            'message' => 'Tarif sudah digunakan oleh invoice sehingga tidak dapat dihapus.',
+            'message' => __('asic-api.messages.tarif_sudah_digunakan_oleh_invoice_sehingga_tidak'),
         ], Response::HTTP_CONFLICT);
 
         if ($fee->isUsedByInvoice()) {
@@ -245,7 +248,7 @@ class RegistrationFeeController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Tarif pendaftaran berhasil dihapus.',
+            'message' => __('asic-api.messages.tarif_pendaftaran_berhasil_dihapus'),
         ], Response::HTTP_OK);
     }
 
@@ -256,7 +259,8 @@ class RegistrationFeeController extends Controller
             ->when($request->filled('id_period'), fn ($q) => $q->where('id_period', $request->integer('id_period')))
             ->when($request->filled('registration_type'), fn ($q) => $q->where('registration_type', $request->string('registration_type')->toString()))
             ->when($request->filled('attendance_mode'), fn ($q) => $q->where('attendance_mode', $request->string('attendance_mode')->toString()))
-            ->when($request->filled('tujuan_publikasi'), fn ($q) => $q->where('tujuan_publikasi', $request->string('tujuan_publikasi')->toString()));
+            ->when($request->filled('tujuan_publikasi'), fn ($q) => $q->where('tujuan_publikasi', $request->string('tujuan_publikasi')->toString()))
+            ->when($request->filled('mata_uang'), fn ($q) => $q->where('mata_uang', $request->string('mata_uang')->toString()));
     }
 
     private function perPage(Request $request): int
@@ -285,7 +289,7 @@ class RegistrationFeeController extends Controller
     {
         return response()->json([
             'success' => false,
-            'message' => 'Tarif pendaftaran tidak ditemukan.',
+            'message' => __('asic-api.messages.tarif_pendaftaran_tidak_ditemukan'),
         ], Response::HTTP_NOT_FOUND);
     }
 }

@@ -61,7 +61,7 @@ class RolePermissionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Data Roles & Permissions Matrix berhasil dimuat.',
+            'message' => __('asic-api.messages.data_roles_permissions_matrix_berhasil_dimuat'),
             'data' => [
                 'summary' => $summary,
                 'roles' => $this->getRolesDefinition(),
@@ -124,7 +124,7 @@ class RolePermissionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Perubahan konfigurasi Roles & Permissions Matrix berhasil disimpan dan langsung berlaku.',
+            'message' => __('asic-api.messages.perubahan_konfigurasi_roles_permissions_matrix_ber'),
             'data' => [
                 'matrix' => $matrix,
                 'saved_at' => now()->toIso8601String(),
@@ -167,7 +167,7 @@ class RolePermissionController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Matriks hak akses berhasil dikembalikan ke pengaturan default.',
+            'message' => __('asic-api.messages.matriks_hak_akses_berhasil_dikembalikan_ke_pengatu'),
             'data' => [
                 'matrix' => $defaultMatrix,
                 'reset_at' => now()->toIso8601String(),

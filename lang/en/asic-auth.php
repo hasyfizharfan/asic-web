@@ -1,6 +1,21 @@
 <?php
 
 return [
+    'verify' => [
+        'title' => 'Account created, please verify your email',
+        'sent' => 'We have sent a verification link to :email. Open that email (also check your Spam folder), click "Verify my email", then sign in here.',
+        'required' => 'The email :email has not been verified yet. Click the verification link we sent to your email (also check your Spam folder), or resend the link.',
+        'resend' => 'Resend verification link',
+        'resending' => 'Sending…',
+        'resent' => 'If that email is registered and not yet verified, a new verification link has been sent. Check your Inbox and Spam folder.',
+        'verified_title' => 'Email verified',
+        'verified_body' => 'Your account is now active. Please sign in.',
+        'invalid_title' => 'Verification link is not valid',
+        'invalid_body' => 'The link has expired or is incomplete. Enter your email and choose "Resend verification link".',
+    ],
+    'registered_title' => 'Account created',
+    'registered_sent' => 'A confirmation email has been sent to :email. If it is not in your Inbox, check your Spam folder. Please sign in with your email and password.',
+    'registered_plain' => 'Please sign in with the email and password you just created.',
     'back_to_home' => 'Back to ASIC 2027',
     'conference_edition' => '3rd Agrifood System International Conference',
     'organizer' => 'Faculty of Agriculture, Universitas Andalas',
@@ -47,4 +62,17 @@ return [
     'admin_email_label' => 'Administrator Email',
     'admin_email_placeholder' => 'admin@asic.unand.ac.id',
     'demo_admin_staff' => 'Super Administrator',
+    'country_label' => 'Country',
+    'country_help' => 'Participants from Indonesia are billed in IDR; participants from other countries are billed in USD.',
+    'split' => [
+        'eyebrow' => '4th Agrifood System International Conference', 'title' => 'One portal for abstracts, payments and certificates.',
+        'staff_title' => 'The ASIC 2027 committee workspace.', 'hybrid' => 'Hybrid: onsite and online',
+        'reviewer_desc' => 'Sign in to review submitted abstracts and record decisions.',
+        'register_title' => 'Create a participant account', 'register_aside' => 'Share your research with scientists from many countries.',
+        'register_desc' => 'One account to submit abstracts, pay and download documents.',
+        'full_name' => 'Full name (with titles)', 'full_name_ph' => 'e.g. Dr. Siti Rahmah, M.Si.', 'phone' => 'Phone / WhatsApp number',
+        'affiliation' => 'Institution / affiliation', 'affiliation_ph' => 'e.g. Universitas Andalas', 'password_ph' => 'At least 8 characters',
+        'password_confirm' => 'Repeat password', 'create_account' => 'Create account', 'have_account' => 'Already have an account?',
+        'reset_title' => 'Reset password', 'reset_desc' => 'Create a new password for your ASIC account.', 'new_password' => 'New password', 'save_password' => 'Save new password',
+    ],
 ];

@@ -29,15 +29,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Portal - ASIC 2027' }}</title>
-    
-    <!-- Fonts & Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    @include('partials.fonts')
     
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/asic/logo.svg') }}">
-    <style>::-webkit-scrollbar{display:none !important;width:0px !important;}*{scrollbar-width:none !important;-ms-overflow-style:none !important;}</style>
+    @include('partials.asic-i18n')
+    <script>window.ASIC_STATUS = @js(trans('asic-common.status_values')); window.asicStatus = (v) => (v && window.ASIC_STATUS[v]) || v || '';</script>
     @vite(['resources/css/asic.css', 'resources/js/asic.js'])
     @stack('styles')
 </head>
@@ -57,18 +53,16 @@
             </main>
 
             <!-- Portal Footer -->
-            <footer class="py-4 px-6 border-t border-surface-container-highest text-xs text-on-surface-variant flex flex-col sm:flex-row items-center justify-between gap-2 bg-surface-container-lowest">
-                <div>&copy; {{ date('Y') }} ASIC 2027 — Faculty of Agriculture, Universitas Andalas.</div>
-                <div class="flex items-center gap-2">
-                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
-                    <span>System Online (ASIC 2027 Portal)</span>
-                </div>
+            <footer class="flex flex-col items-center justify-between gap-2 border-t border-surface-container-highest bg-surface-container-lowest px-6 py-4 text-xs text-on-surface-variant sm:flex-row">
+                <div>&copy; {{ date('Y') }} ASIC 2027 · {{ __('asic-landing.fact_organizer_val') }}</div>
+                <a href="{{ route('portal.landing') }}" class="font-semibold text-primary hover:underline">{{ __('asic-auth.back_to_home') }}</a>
             </footer>
         </div>
     </div>
 
     <!-- Global Toast Component -->
     <x-ui.toast />
+    <x-ui.pdf-viewer />
     @stack('scripts')
 </body>
 </html>

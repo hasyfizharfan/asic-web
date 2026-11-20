@@ -1,6 +1,21 @@
 <?php
 
 return [
+    'verify' => [
+        'title' => 'Akun berhasil dibuat, tinggal verifikasi email',
+        'sent' => 'Kami telah mengirim tautan verifikasi ke :email. Buka email itu (periksa juga folder Spam), klik "Verifikasi email saya", lalu masuk di sini.',
+        'required' => 'Email :email belum diverifikasi. Klik tautan verifikasi yang kami kirim ke email Anda (periksa juga folder Spam), atau kirim ulang tautannya.',
+        'resend' => 'Kirim ulang tautan verifikasi',
+        'resending' => 'Mengirim…',
+        'resent' => 'Bila email tersebut terdaftar dan belum diverifikasi, tautan verifikasi baru sudah dikirim. Periksa Kotak Masuk dan folder Spam.',
+        'verified_title' => 'Email berhasil diverifikasi',
+        'verified_body' => 'Akun Anda sudah aktif. Silakan masuk.',
+        'invalid_title' => 'Tautan verifikasi tidak berlaku',
+        'invalid_body' => 'Tautan sudah kedaluwarsa atau tidak lengkap. Masukkan email Anda lalu pilih "Kirim ulang tautan verifikasi".',
+    ],
+    'registered_title' => 'Akun berhasil dibuat',
+    'registered_sent' => 'Email konfirmasi telah dikirim ke :email. Bila tidak ada di Kotak Masuk, periksa folder Spam. Silakan masuk dengan email dan kata sandi Anda.',
+    'registered_plain' => 'Silakan masuk dengan email dan kata sandi yang baru Anda buat.',
     'back_to_home' => 'Kembali ke Beranda ASIC 2027',
     'conference_edition' => 'Agrifood System International Conference ke-3',
     'organizer' => 'Fakultas Pertanian, Universitas Andalas',
@@ -47,4 +62,17 @@ return [
     'admin_email_label' => 'Email Administrator',
     'admin_email_placeholder' => 'admin@asic.unand.ac.id',
     'demo_admin_staff' => 'Super Administrator',
+    'country_label' => 'Negara asal',
+    'country_help' => 'Peserta dari Indonesia ditagih dalam IDR; peserta dari negara lain ditagih dalam USD.',
+    'split' => [
+        'eyebrow' => '4th Agrifood System International Conference', 'title' => 'Satu portal untuk abstrak, pembayaran, dan sertifikat.',
+        'staff_title' => 'Ruang kerja panitia ASIC 2027.', 'hybrid' => 'Hybrid: luring dan daring',
+        'reviewer_desc' => 'Masuk untuk menilai abstrak yang masuk dan memberi keputusan.',
+        'register_title' => 'Buat akun peserta', 'register_aside' => 'Bagikan riset Anda bersama peneliti dari berbagai negara.',
+        'register_desc' => 'Satu akun untuk mengirim abstrak, membayar, dan mengunduh dokumen.',
+        'full_name' => 'Nama lengkap (beserta gelar)', 'full_name_ph' => 'cth. Dr. Siti Rahmah, M.Si.', 'phone' => 'Nomor telepon / WhatsApp',
+        'affiliation' => 'Institusi / afiliasi', 'affiliation_ph' => 'cth. Universitas Andalas', 'password_ph' => 'Minimal 8 karakter',
+        'password_confirm' => 'Ulangi kata sandi', 'create_account' => 'Buat akun', 'have_account' => 'Sudah punya akun?',
+        'reset_title' => 'Atur ulang kata sandi', 'reset_desc' => 'Buat kata sandi baru untuk akun ASIC Anda.', 'new_password' => 'Kata sandi baru', 'save_password' => 'Simpan kata sandi baru',
+    ],
 ];

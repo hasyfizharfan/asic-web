@@ -7,6 +7,9 @@ return [
     // Lama jatuh tempo invoice (hari) sejak terbit — PRD §6: 1 minggu.
     'invoice_due_days' => 7,
 
+    // Batas perpanjangan jatuh tempo invoice bertarif reguler (kesepakatan mitra: 1–2 kali; K-05 docs/KEPUTUSAN.md).
+    'max_invoice_extensions' => (int) env('ASIC_MAX_INVOICE_EXTENSIONS', 2),
+
     // Aktif karena respons API reviewer menyamarkan seluruh identitas penulis.
     'blind_review_active' => true,
 
@@ -31,6 +34,20 @@ return [
 
     // Kop surat. Data kontak/rekening/nama penanda tangan sengaja lewat .env
     // agar data pribadi panitia tidak masuk repositori publik.
+    // Email panitia penerima permintaan sponsorship/exhibition (opsional; kosong = tanpa email).
+    'contact_email' => env('ASIC_CONTACT_EMAIL'),
+
+    // Dokumentasi API (/api/documentation, /docs) disembunyikan di production kecuali diaktifkan.
+    'public_api_docs' => (bool) env('ASIC_PUBLIC_API_DOCS', false),
+
+    // Notifikasi status juga dikirim ke email peserta (butuh MAIL_* di .env; MAIL_MAILER=log = hanya dicatat).
+    'notify_email' => (bool) env('ASIC_NOTIFY_EMAIL', true),
+    // Peserta yang mendaftar sendiri wajib mengklik tautan verifikasi di email sebelum bisa masuk.
+    'require_email_verification' => (bool) env('ASIC_REQUIRE_EMAIL_VERIFICATION', true),
+    // Jangan kirim email ke domain uji (.test/.example/.invalid), mis. peserta contoh @demo.asic.test.
+    'skip_reserved_email_domains' => (bool) env('ASIC_SKIP_RESERVED_EMAIL_DOMAINS', true),
+    'event_short_name' => env('ASIC_EVENT_SHORT_NAME', '4th ASIC 2027'),
+
     'letterhead' => [
         'title' => env('ASIC_LETTERHEAD_TITLE', '4th AGRIFOOD SYSTEM INTERNATIONAL CONFERENCE (ASIC 2027)'),
         'subtitle' => env('ASIC_LETTERHEAD_SUBTITLE', 'FACULTY OF AGRICULTURE, UNIVERSITAS ANDALAS'),
@@ -57,5 +74,11 @@ return [
         'swift_code' => env('ASIC_BANK_SWIFT'),
         'branch' => env('ASIC_BANK_BRANCH'),
         'international_note' => env('ASIC_PAYMENT_INTERNATIONAL_NOTE', 'International participants can transfer using PayPal/Wise/Flip.'),
+    ],
+
+    // KF-27: syarat sertifikat (lihat App\Services\CertificateEligibility).
+    'certificate' => [
+        'min_attendance_sessions' => (int) env('ASIC_CERT_MIN_SESSIONS', 1),
+        'require_event_ended' => (bool) env('ASIC_CERT_REQUIRE_EVENT_ENDED', false),
     ],
 ];

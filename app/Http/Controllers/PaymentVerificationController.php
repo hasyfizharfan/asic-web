@@ -9,6 +9,8 @@ use App\Models\PaymentProof;
 use App\Models\PaymentVerification;
 use App\Models\UserAccount;
 use App\Services\DocumentService;
+use App\Services\OverdueInvoiceProcessor;
+use App\Services\StatusNotifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -40,7 +42,7 @@ class PaymentVerificationController extends Controller
     {
         $status = $request->input('status', 'Menunggu Verifikasi');
         if (! in_array($status, self::STATUSES, true) && $status !== 'all') {
-            return $this->fail('Status pembayaran tidak valid.', Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->fail(__('asic-api.messages.status_pembayaran_tidak_valid'), Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $invoices = Invoice::with(['registration.participant.userAccount', 'latestPaymentProof.verification'])
@@ -69,16 +71,22 @@ class PaymentVerificationController extends Controller
         ])->find($id_invoice);
 
         if (! $invoice) {
-            return $this->fail('Invoice tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.invoice_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
 
         $data = $invoice->toArray();
+        $data['extension'] = [
+            'count' => (int) $invoice->jumlah_perpanjangan,
+            'max' => OverdueInvoiceProcessor::maxExtensions(),
+            'early_bird' => app(OverdueInvoiceProcessor::class)->isEarlyBird($invoice),
+            'registration_status' => $invoice->registration?->registration_status,
+        ];
         $data['proofs_files'] = $invoice->paymentProofs->map(fn ($p) => [
             'id_payment_proof' => $p->id_payment_proof,
             'file_url' => route('api.payment-proofs.file', $p->id_payment_proof),
         ]);
 
-        return $this->ok('Detail pembayaran berhasil dimuat.', $data);
+        return $this->ok(__('asic-api.messages.detail_pembayaran_berhasil_dimuat'), $data);
     }
 
     #[OA\Get(
@@ -93,7 +101,7 @@ class PaymentVerificationController extends Controller
     {
         $proof = PaymentProof::find($id_payment_proof);
         if (! $proof) {
-            return $this->fail('Bukti pembayaran tidak ditemukan.', Response::HTTP_NOT_FOUND);
+            return $this->fail(__('asic-api.messages.bukti_pembayaran_tidak_ditemukan'), Response::HTTP_NOT_FOUND);
         }
 
         // Disk penyimpanan bukti ditentukan modul unggah (anggota lain); cek disk privat lalu publik.
@@ -103,7 +111,7 @@ class PaymentVerificationController extends Controller
             }
         }
 
-        return $this->fail('Berkas bukti pembayaran tidak ditemukan di penyimpanan.', Response::HTTP_NOT_FOUND);
+        return $this->fail(__('asic-api.messages.berkas_bukti_pembayaran_tidak_ditemukan_di_penyimp'), Response::HTTP_NOT_FOUND);
     }
 
     #[OA\Post(
@@ -135,15 +143,15 @@ class PaymentVerificationController extends Controller
         $outcome = DB::transaction(function () use ($id_payment_proof, $input, $user) {
             $proof = PaymentProof::lockForUpdate()->find($id_payment_proof);
             if (! $proof) {
-                return ['error' => Response::HTTP_NOT_FOUND, 'message' => 'Bukti pembayaran tidak ditemukan.'];
+                return ['error' => Response::HTTP_NOT_FOUND, 'message' => __('asic-api.messages.bukti_pembayaran_tidak_ditemukan')];
             }
             $invoice = Invoice::with('registration')->lockForUpdate()->find($proof->id_invoice);
 
             if (PaymentVerification::where('id_payment_proof', $proof->id_payment_proof)->exists()) {
-                return ['error' => Response::HTTP_CONFLICT, 'message' => 'Bukti pembayaran ini sudah diverifikasi.'];
+                return ['error' => Response::HTTP_CONFLICT, 'message' => __('asic-api.messages.bukti_pembayaran_ini_sudah_diverifikasi')];
             }
             if ((int) PaymentProof::where('id_invoice', $invoice->id_invoice)->max('id_payment_proof') !== (int) $proof->id_payment_proof) {
-                return ['error' => Response::HTTP_CONFLICT, 'message' => 'Hanya bukti pembayaran terbaru yang dapat diverifikasi.'];
+                return ['error' => Response::HTTP_CONFLICT, 'message' => __('asic-api.messages.hanya_bukti_pembayaran_terbaru_yang_dapat_diverifi')];
             }
             if ($invoice->status_pembayaran !== 'Menunggu Verifikasi') {
                 return ['error' => Response::HTTP_CONFLICT, 'message' => "Invoice berstatus '{$invoice->status_pembayaran}', bukan 'Menunggu Verifikasi'."];
@@ -164,6 +172,7 @@ class PaymentVerificationController extends Controller
                 $receipt = app(DocumentService::class)->issue($invoice->registration, 'Receipt', [
                     'invoice_nomor' => $invoice->nomor_invoice,
                     'amount' => $invoice->total_tagihan,
+                    'currency' => $invoice->mata_uang ?? 'IDR',
                     'verified_at' => $verification->tanggal_verifikasi,
                     'items' => $invoice->invoiceDetails()->get(['jenis_biaya', 'deskripsi', 'jumlah', 'harga_satuan', 'subtotal'])->toArray(),
                 ]);
@@ -177,6 +186,13 @@ class PaymentVerificationController extends Controller
         if (isset($outcome['error'])) {
             return $this->fail($outcome['message'], $outcome['error']);
         }
+
+        app(StatusNotifier::class)->notify(
+            $outcome['invoice']->registration,
+            $input['hasil_verifikasi'] === 'Valid' ? 'payment_valid' : 'payment_invalid',
+            'verification:'.$outcome['verification']->id_verification,
+            ['reason' => $outcome['verification']->alasan_penolakan]
+        );
 
         Log::info('payment.verified', [
             'id_invoice' => $outcome['invoice']->id_invoice, 'id_payment_proof' => $outcome['proof']->id_payment_proof,

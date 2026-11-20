@@ -1,4 +1,4 @@
-<svg class="absolute left-0 right-0 bottom-0 w-full h-[78%] pointer-events-none select-none" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+<svg class="absolute left-0 right-0 bottom-0 w-full h-[78%] pointer-events-none select-none opacity-60" viewBox="0 0 1440 800" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
     <path d="M760 520 L1010 330 Q1075 270 1140 330 L1440 520Z" fill="#14502f"/>
     <path d="M1000 520 L1240 400 L1440 440V520Z" fill="#0f4027"/>
     <path class="hero-tr" style="--i:0" d="M-40 467 Q-40 467 -10 469 Q20 471 50 473 Q80 475 110 476 Q140 477 170 478 Q200 479 230 478 Q260 478 290 478 Q320 477 350 477 Q380 476 410 475 Q440 475 470 474 Q500 474 530 474 Q560 474 590 474 Q620 474 650 474 Q680 474 710 473 Q740 472 770 471 Q800 470 830 468 Q860 467 890 465 Q920 463 950 462 Q980 461 1010 460 Q1040 459 1070 460 Q1100 460 1130 461 Q1160 461 1190 463 Q1220 464 1250 466 Q1280 467 1310 468 Q1340 469 1370 470 Q1400 471 1430 471 V900 H-40Z" fill="rgb(18,58,34)" stroke="#F5C518" stroke-opacity="0.25" stroke-width="1.4"/>

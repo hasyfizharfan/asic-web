@@ -92,7 +92,7 @@ class DigitalSignatureController extends Controller
         if (! $signature) {
             return response()->json([
                 'success' => false,
-                'message' => 'Berkas tanda tangan digital dan stempel untuk peran ini belum diunggah.',
+                'message' => __('asic-api.messages.berkas_tanda_tangan_digital_dan_stempel_untuk_pera'),
             ], Response::HTTP_NOT_FOUND);
         }
 
@@ -184,6 +184,16 @@ class DigitalSignatureController extends Controller
         $targetRoleId = $request->integer('id_role');
 
         $targetRole = Role::findOrFail($targetRoleId);
+
+        // Selain Admin, pengguna hanya boleh mengunggah tanda tangan untuk perannya sendiri
+        // (mis. Bendahara untuk invoice & receipt). Mencegah peran lain mengganti tanda tangan Ketua.
+        $actor = $request->user();
+        if ($actor?->role?->nama_role !== Role::ROLE_ADMIN && $actor?->id_role !== $targetRole->id_role) {
+            return response()->json([
+                'success' => false,
+                'message' => __('asic-api.messages.anda_hanya_dapat_mengunggah_tanda_tangan_untuk_per'),
+            ], Response::HTTP_FORBIDDEN);
+        }
 
         $ttdFile = $request->file('file_ttd');
         $ttdPath = $ttdFile->store('signatures/ttd', 'local');

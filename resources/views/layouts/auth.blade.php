@@ -5,44 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $title ?? 'Login - ASIC 2027' }}</title>
-    
-    <!-- Fonts & Icons -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Carlito:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-    
+    @include('partials.fonts')
     <link rel="icon" type="image/svg+xml" href="{{ asset('images/asic/logo.svg') }}">
-    <style>::-webkit-scrollbar{display:none !important;width:0px !important;}*{scrollbar-width:none !important;-ms-overflow-style:none !important;}</style>
+    @include('partials.asic-i18n')
     @vite(['resources/css/asic.css', 'resources/js/asic.js'])
     @stack('styles')
 </head>
-<body class="bg-surface-container-low text-on-surface min-h-screen flex flex-col font-sans selection:bg-primary selection:text-white">
-    <!-- Top header with Back and Lang Switcher -->
-    <header class="w-full px-4 sm:px-8 py-4 flex items-center justify-between border-b border-surface-container-highest bg-surface-container-lowest">
-        <a href="{{ route('portal.landing') }}" class="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-container transition">
-            <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-            <span>{{ __('asic-auth.back_to_home') ?? 'Back to ASIC 2027' }}</span>
-        </a>
+@php
+    $authEvent = app(\App\Services\PublicContent::class)->activeEvent();
+    $authPhoto = $photo ?? 'images/asic/photos/farmer-field.jpg';
+    $A = trans('asic-auth.split');
+@endphp
+<body class="min-h-screen bg-[#F7FAF8] font-sans text-on-surface antialiased selection:bg-primary selection:text-white">
+<div class="grid min-h-screen lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)]">
+    {{-- Panel foto (desktop) --}}
+    <aside class="relative hidden overflow-hidden lg:block">
+        <img src="{{ asset($authPhoto) }}" alt="" class="absolute inset-0 h-full w-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-[#072b1b] via-[#072b1b]/70 to-[#072b1b]/20" aria-hidden="true"></div>
+        <div class="relative flex h-full flex-col justify-between p-10 text-white xl:p-14">
+            <a href="{{ route('portal.landing') }}" class="flex w-fit items-center gap-3">
+                <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/95 p-1.5"><img src="{{ asset('images/asic/logo.svg') }}" alt="" class="h-full w-full"></span>
+                <span class="leading-tight"><span class="block font-serif text-2xl font-semibold">ASIC 2027</span><span class="text-xs tracking-[0.2em] text-white/80">UNIVERSITAS ANDALAS</span></span>
+            </a>
+            <div class="max-w-md">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-[#F5C518]">{{ $A['eyebrow'] }}</p>
+                <h2 class="mt-3 font-serif text-4xl font-semibold leading-tight xl:text-5xl">{{ $asideTitle ?? $A['title'] }}</h2>
+                <ul class="mt-8 space-y-3 text-[15px] text-white/90">
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-[#F5C518]">calendar_month</span>{{ $authEvent ? \App\Support\DateRange::format($authEvent->tanggal_mulai, $authEvent->tanggal_selesai) : __('asic-landing.hero_info.dates_default') }}</li>
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-[#F5C518]">location_on</span>{{ $authEvent?->lokasi ?: __('asic-landing.hero_info.venue_default') }}</li>
+                    <li class="flex items-center gap-3"><span class="material-symbols-outlined text-[#F5C518]">groups</span>{{ $A['hybrid'] }}</li>
+                </ul>
+            </div>
+            <p class="text-xs text-white/60">© {{ date('Y') }} ASIC 2027 · {{ __('asic-landing.fact_organizer_val') }}</p>
+        </div>
+    </aside>
 
-        <div class="flex items-center gap-3">
+    {{-- Panel form --}}
+    <div class="flex min-h-screen flex-col">
+        <header class="flex items-center justify-between px-5 py-2.5 sm:px-10">
+            <a href="{{ route('portal.landing') }}" class="inline-flex items-center gap-2 rounded-lg py-2 text-sm font-semibold text-primary hover:text-[#168348]">
+                <span class="material-symbols-outlined text-[20px]">arrow_back</span>{{ __('asic-auth.back_to_home') }}
+            </a>
             <x-layout.lang-switcher theme="light" />
-        </div>
-    </header>
-
-    <!-- Main Auth Container -->
-    <main class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 w-full">
-        <div class="w-full max-w-5xl flex justify-center">
-            @yield('content')
-        </div>
-        
-        <p class="mt-8 text-center text-xs text-on-surface-variant">
-            &copy; {{ date('Y') }} ASIC 2027 — Universitas Andalas.
-        </p>
-    </main>
-
-    <x-ui.toast />
-    @stack('scripts')
+        </header>
+        <main class="flex flex-1 items-center justify-center px-5 pb-4 sm:px-10">
+            <div class="w-full {{ $formWidth ?? 'max-w-md' }}">
+                @yield('content')
+            </div>
+        </main>
+    </div>
+</div>
+<x-ui.toast />
+@stack('scripts')
 </body>
 </html>
-

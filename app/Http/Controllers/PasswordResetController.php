@@ -89,7 +89,7 @@ class PasswordResetController extends Controller
         if (! $user) {
             return response()->json([
                 'success' => true,
-                'message' => 'Jika alamat email terdaftar, instruksi reset kata sandi akan dikirimkan.',
+                'message' => __('asic-api.messages.jika_alamat_email_terdaftar_instruksi_reset_kata_s'),
             ], Response::HTTP_OK);
         }
 
@@ -97,7 +97,7 @@ class PasswordResetController extends Controller
         if ($user->status_akun !== 'Aktif') {
             return response()->json([
                 'success' => true,
-                'message' => 'Jika alamat email terdaftar, instruksi reset kata sandi akan dikirimkan.',
+                'message' => __('asic-api.messages.jika_alamat_email_terdaftar_instruksi_reset_kata_s'),
             ], Response::HTTP_OK);
         }
 
@@ -120,7 +120,7 @@ class PasswordResetController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Jika alamat email terdaftar, instruksi reset kata sandi akan dikirimkan.',
+                'message' => __('asic-api.messages.jika_alamat_email_terdaftar_instruksi_reset_kata_s'),
             ], Response::HTTP_OK);
         }
 
@@ -207,6 +207,10 @@ class PasswordResetController extends Controller
         $user->update([
             'password' => Hash::make($validated['password']),
         ]);
+        // Tautan reset dikirim ke email ini, jadi email terbukti milik pengguna.
+        if ($user->email_verified_at === null) {
+            $user->forceFill(['email_verified_at' => now()])->save();
+        }
 
         // Hapus token yang telah berhasil digunakan
         DB::table('password_reset_tokens')->where('email', $email)->delete();
@@ -214,7 +218,7 @@ class PasswordResetController extends Controller
         if ($request->expectsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Kata sandi berhasil diperbarui. Silakan masuk menggunakan kata sandi baru Anda.',
+                'message' => __('asic-api.messages.kata_sandi_berhasil_diperbarui_silakan_masuk_mengg'),
             ], Response::HTTP_OK);
         }
 

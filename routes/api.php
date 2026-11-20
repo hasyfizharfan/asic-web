@@ -7,35 +7,52 @@ use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\AttendanceController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\CommunicationChannelController;
+use App\Http\Controllers\ContentItemController;
+use App\Http\Controllers\ContentPhotoController;
+use App\Http\Controllers\ContentSponsorController;
 use App\Http\Controllers\DigitalSignatureController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\DocumentTemplateController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventScheduleController;
 use App\Http\Controllers\EventSessionController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\LegalDocumentController;
+use App\Http\Controllers\MyNotificationController;
 use App\Http\Controllers\MyProfileController;
 use App\Http\Controllers\ParticipantFileController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PaymentProofController;
+use App\Http\Controllers\PaymentSettingController;
 use App\Http\Controllers\PaymentVerificationController;
+use App\Http\Controllers\PublicArchiveController;
+use App\Http\Controllers\PublicContentController;
+use App\Http\Controllers\PublicDownloadController;
 use App\Http\Controllers\RecapController;
 use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\RegistrationFeeController;
+use App\Http\Controllers\RegistrationPeriodController;
 use App\Http\Controllers\RegistrationSearchController;
+use App\Http\Controllers\ReregistrationController;
 use App\Http\Controllers\SpeakerController;
+use App\Http\Controllers\SponsorshipInquiryController;
 use Illuminate\Support\Facades\Route;
 
 // =========================================================================
 // 1. PUBLIC ROUTES (KF-08: Registrasi, Login, dan Reset Kata Sandi)
 // =========================================================================
-Route::post('/register', [AuthController::class, 'register'])->name('api.register');
-Route::post('/login', [AuthController::class, 'login'])->name('api.login');
-Route::post('/password/forgot-username', [AuthController::class, 'forgotUsername'])->name('api.password.forgot-username');
-Route::post('/password/email', [PasswordResetController::class, 'sendResetLinkEmail'])->name('api.password.email');
-Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLinkEmail'])->name('api.password.forgot');
-Route::post('/password/reset', [PasswordResetController::class, 'resetPassword'])->name('api.password.update');
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:register')->name('api.register');
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:login')->name('api.login');
+Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+    ->middleware('throttle:3,1')->name('api.verification.resend');
+Route::post('/password/forgot-username', [AuthController::class, 'forgotUsername'])->middleware('throttle:password')->name('api.password.forgot-username');
+Route::post('/password/email', [PasswordResetController::class, 'sendResetLinkEmail'])->middleware('throttle:password')->name('api.password.email');
+Route::post('/password/forgot', [PasswordResetController::class, 'sendResetLinkEmail'])->middleware('throttle:password')->name('api.password.forgot');
+Route::post('/password/reset', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:password')->name('api.password.update');
 
 // Tarif pendaftaran (read-only publik: hanya event & periode Aktif)
 Route::get('/public/registration-fees', [RegistrationFeeController::class, 'publicIndex'])->name('api.public.registration-fees.index');
@@ -45,6 +62,17 @@ Route::get('/public/events', [EventController::class, 'publicIndex'])->name('api
 Route::get('/public/events/{id_event}', [EventController::class, 'publicShow'])->whereNumber('id_event')->name('api.public.events.show');
 Route::get('/public/events/{id_event}/speakers', [SpeakerController::class, 'publicIndex'])->whereNumber('id_event')->name('api.public.speakers.index');
 Route::get('/public/events/{id_event}/schedules', [EventScheduleController::class, 'publicIndex'])->whereNumber('id_event')->name('api.public.schedules.index');
+// Fase 1: konten publik terpublikasi (KF-01, 04, 05, 07, 28, 33, 34) dan dokumen hukum (KF-35)
+foreach (['content', 'important-dates', 'faqs', 'contacts', 'photos', 'sponsorship-packages'] as $publicType) {
+    Route::get('/public/events/{id_event}/'.$publicType, [PublicContentController::class, 'index'])->whereNumber('id_event')
+        ->defaults('content_type', $publicType)->name('api.public.'.$publicType.'.index');
+}
+Route::get('/public/legal-documents/{jenis}', [LegalDocumentController::class, 'publicShow'])->name('api.public.legal-documents.show');
+Route::get('/public/events/{id_event}/communication-channels', [CommunicationChannelController::class, 'publicIndex'])->whereNumber('id_event')->name('api.public.communication-channels.index');
+Route::get('/public/downloads', [PublicDownloadController::class, 'index'])->name('api.public.downloads.index');
+Route::get('/public/archive', [PublicArchiveController::class, 'index'])->name('api.public.archive.index');
+Route::get('/public/archive/{id_event}', [PublicArchiveController::class, 'show'])->whereNumber('id_event')->name('api.public.archive.show');
+Route::post('/public/sponsorship-inquiries', [SponsorshipInquiryController::class, 'publicStore'])->middleware('throttle:5,1')->name('api.public.sponsorship-inquiries.store');
 
 // =========================================================================
 // 2. AUTHENTICATED ROUTES
@@ -55,6 +83,38 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/me', [AuthController::class, 'me'])->name('api.me');
     Route::put('/me/profile', [MyProfileController::class, 'update'])->middleware('permission:access_participant_portal')->name('api.me.profile.update');
     Route::put('/me/password', [MyProfileController::class, 'updatePassword'])->name('api.me.password.update');
+    // KF-11 periode pendaftaran & KF-23 informasi pembayaran (Bendahara/Admin)
+    Route::middleware('permission:manage_tariffs,view_only')->group(function () {
+        Route::get('/registration-periods', [RegistrationPeriodController::class, 'index'])->name('api.registration-periods.index');
+        Route::get('/payment-settings', [PaymentSettingController::class, 'show'])->name('api.payment-settings.show');
+    });
+    Route::middleware('permission:manage_tariffs')->group(function () {
+        Route::post('/registration-periods', [RegistrationPeriodController::class, 'store'])->name('api.registration-periods.store');
+        Route::patch('/registration-periods/{id_period}', [RegistrationPeriodController::class, 'update'])->whereNumber('id_period')->name('api.registration-periods.update');
+        Route::delete('/registration-periods/{id_period}', [RegistrationPeriodController::class, 'destroy'])->whereNumber('id_period')->name('api.registration-periods.destroy');
+        Route::put('/payment-settings', [PaymentSettingController::class, 'update'])->name('api.payment-settings.update');
+    });
+
+    // Fase 2: template dokumen (KF-26) dan sertifikat (KF-27)
+    Route::middleware('permission:manage_document_templates,view_only')->group(function () {
+        Route::get('/document-templates', [DocumentTemplateController::class, 'index'])->name('api.document-templates.index');
+        Route::get('/document-templates/preview/{jenis}', [DocumentTemplateController::class, 'preview'])->name('api.document-templates.preview');
+        Route::get('/document-templates/{id_template}', [DocumentTemplateController::class, 'show'])->whereNumber('id_template')->name('api.document-templates.show');
+        Route::get('/document-templates/{id_template}/download', [DocumentTemplateController::class, 'download'])->whereNumber('id_template')->name('api.document-templates.download');
+    });
+    Route::middleware('permission:manage_document_templates')->group(function () {
+        Route::post('/document-templates', [DocumentTemplateController::class, 'store'])->name('api.document-templates.store');
+        Route::put('/document-templates/issued/{jenis}', [DocumentTemplateController::class, 'upsertIssued'])->name('api.document-templates.issued');
+        Route::patch('/document-templates/{id_template}', [DocumentTemplateController::class, 'update'])->whereNumber('id_template')->name('api.document-templates.update');
+    });
+    Route::get('/registrations/{id_registration}/certificate', [CertificateController::class, 'show'])->whereNumber('id_registration')->name('api.registrations.certificate.show');
+    Route::post('/registrations/{id_registration}/certificate', [CertificateController::class, 'store'])->whereNumber('id_registration')->name('api.registrations.certificate.store');
+
+    // KF-30: notifikasi dalam situs milik pengguna sendiri
+    Route::get('/me/notifications', [MyNotificationController::class, 'index'])->name('api.me.notifications.index');
+    Route::get('/me/notifications/unread-count', [MyNotificationController::class, 'unreadCount'])->name('api.me.notifications.unread-count');
+    Route::patch('/me/notifications/{id}/read', [MyNotificationController::class, 'markRead'])->whereUuid('id')->name('api.me.notifications.read');
+    Route::post('/me/notifications/read-all', [MyNotificationController::class, 'readAll'])->name('api.me.notifications.read-all');
 
     // -----------------------------------------------------------------
     // MODUL M-03: PENDAFTARAN PESERTA & ADD-ON (KF-10)
@@ -122,6 +182,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/sessions/{id_session}/attendees', [EventSessionController::class, 'attendees'])->name('api.sessions.attendees');
         Route::post('/sessions/{id_session}/attendance', [AttendanceController::class, 'recordAttendance'])->name('api.sessions.attendance.record');
         Route::post('/sessions/{id_session}/attendance/scan', [AttendanceController::class, 'scanParticipantQr'])->name('api.sessions.attendance.scan');
+        // KF-12: registrasi ulang luring hari pertama (terpisah dari kehadiran sesi KF-14)
+        Route::post('/events/{id_event}/reregistration/scan', [ReregistrationController::class, 'scan'])
+            ->whereNumber('id_event')->name('api.events.reregistration.scan');
+        Route::post('/events/{id_event}/reregistration', [ReregistrationController::class, 'store'])
+            ->whereNumber('id_event')->name('api.events.reregistration.store');
         Route::patch('/attendance/{id_attendance}/presentation', [AttendanceController::class, 'updatePresentationStatus'])->name('api.attendance.presentation');
     });
     Route::post('/attendance/scan', [AttendanceController::class, 'submitSessionQr'])
@@ -197,6 +262,16 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::get('announcements/{id_announcement}', [AnnouncementController::class, 'show'])->whereNumber('id_announcement')->name('announcements.show');
             Route::get('communication-channels', [CommunicationChannelController::class, 'manageIndex'])->name('channels.index');
             Route::get('communication-channels/{id_channel}', [CommunicationChannelController::class, 'show'])->whereNumber('id_channel')->name('channels.show');
+            foreach (['event-content', 'important-dates', 'faqs', 'contacts', 'sponsorship-packages'] as $contentType) {
+                Route::get($contentType, [ContentItemController::class, 'index'])->defaults('content_type', $contentType)->name($contentType.'.index');
+                Route::get($contentType.'/{content_id}', [ContentItemController::class, 'show'])->whereNumber('content_id')->defaults('content_type', $contentType)->name($contentType.'.show');
+            }
+            Route::get('photos', [ContentPhotoController::class, 'index'])->name('photos.index');
+            Route::get('sponsors', [ContentSponsorController::class, 'index'])->name('sponsors.index');
+            Route::get('sponsorship-inquiries', [SponsorshipInquiryController::class, 'index'])->name('sponsorship-inquiries.index');
+            Route::get('sponsorship-inquiries/{id_inquiry}', [SponsorshipInquiryController::class, 'show'])->whereNumber('id_inquiry')->name('sponsorship-inquiries.show');
+            Route::get('legal-documents', [LegalDocumentController::class, 'index'])->name('legal-documents.index');
+            Route::get('legal-documents/{id_legal}', [LegalDocumentController::class, 'show'])->whereNumber('id_legal')->name('legal-documents.show');
         });
         Route::middleware('permission:manage_website_content')->group(function () {
             Route::post('events', [EventController::class, 'store'])->name('events.store');
@@ -214,6 +289,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('communication-channels', [CommunicationChannelController::class, 'store'])->name('channels.store');
             Route::patch('communication-channels/{id_channel}', [CommunicationChannelController::class, 'update'])->whereNumber('id_channel')->name('channels.update');
             Route::delete('communication-channels/{id_channel}', [CommunicationChannelController::class, 'destroy'])->whereNumber('id_channel')->name('channels.destroy');
+            foreach (['event-content', 'important-dates', 'faqs', 'contacts', 'sponsorship-packages'] as $contentType) {
+                Route::patch($contentType.'/reorder', [ContentItemController::class, 'reorder'])->defaults('content_type', $contentType)->name($contentType.'.reorder');
+                Route::post($contentType, [ContentItemController::class, 'store'])->defaults('content_type', $contentType)->name($contentType.'.store');
+                Route::patch($contentType.'/{content_id}', [ContentItemController::class, 'update'])->whereNumber('content_id')->defaults('content_type', $contentType)->name($contentType.'.update');
+                Route::delete($contentType.'/{content_id}', [ContentItemController::class, 'destroy'])->whereNumber('content_id')->defaults('content_type', $contentType)->name($contentType.'.destroy');
+            }
+            Route::post('photos', [ContentPhotoController::class, 'store'])->name('photos.store');
+            Route::patch('sponsors/reorder', [ContentSponsorController::class, 'reorder'])->name('sponsors.reorder');
+            Route::post('sponsors', [ContentSponsorController::class, 'store'])->name('sponsors.store');
+            Route::match(['post', 'patch'], 'sponsors/{id_sponsor}', [ContentSponsorController::class, 'update'])->whereNumber('id_sponsor')->name('sponsors.update');
+            Route::delete('sponsors/{id_sponsor}', [ContentSponsorController::class, 'destroy'])->whereNumber('id_sponsor')->name('sponsors.destroy');
+            Route::patch('photos/{id_photo}', [ContentPhotoController::class, 'update'])->whereNumber('id_photo')->name('photos.update');
+            Route::delete('photos/{id_photo}', [ContentPhotoController::class, 'destroy'])->whereNumber('id_photo')->name('photos.destroy');
+            Route::patch('sponsorship-inquiries/{id_inquiry}', [SponsorshipInquiryController::class, 'update'])->whereNumber('id_inquiry')->name('sponsorship-inquiries.update');
+            Route::post('legal-documents', [LegalDocumentController::class, 'store'])->name('legal-documents.store');
+            Route::patch('legal-documents/{id_legal}', [LegalDocumentController::class, 'update'])->whereNumber('id_legal')->name('legal-documents.update');
+            Route::delete('legal-documents/{id_legal}', [LegalDocumentController::class, 'destroy'])->whereNumber('id_legal')->name('legal-documents.destroy');
+            Route::post('legal-documents/{id_legal}/publish', [LegalDocumentController::class, 'publish'])->whereNumber('id_legal')->name('legal-documents.publish');
         });
     });
 
@@ -267,7 +360,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
             ->whereNumber('id_abstract')->middleware('permission:review_abstracts,view_only')
             ->name('submissions.show');
         Route::get('/submissions/{id_abstract}/file', [AbstractReviewController::class, 'download'])
-            ->whereNumber('id_abstract')->middleware('permission:review_abstracts,view_only')->name('submissions.file');
+            ->whereNumber('id_abstract')->middleware('permission:review_abstracts')->name('submissions.file');
         Route::post('/submissions/{id_abstract}/review', [AbstractReviewController::class, 'review'])
             ->whereNumber('id_abstract')->middleware('permission:accept_reject')
             ->name('submissions.review');

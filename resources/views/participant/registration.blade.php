@@ -1,275 +1,155 @@
+@extends('layouts.portal', ['role' => 'participant', 'roleName' => __('asic-participant.portal.reg.title')])
+
 @php
-    $type = request()->query('type', 'presenter');
-    $isListener = ($type === 'listener');
+    $t = trans('asic-participant.portal.reg');
+    $currency = \App\Support\Currency::forParticipant($participant ?? null);
+    $startType = request()->query('type') === 'listener' ? 'Listener' : 'Oral Presenter';
 @endphp
 
-@extends('layouts.portal', ['role' => 'participant', 'roleName' => 'Registrasi'])
-
 @section('content')
-<div class="max-w-4xl mx-auto space-y-6" x-data="{
-    participationType: '{{ $isListener ? 'Listener' : 'Oral Presenter' }}',
-    nationality: 'domestic',
-    category: 'Regular',
-    attendanceMode: 'Luring',
-    publicationOption: 'Tidak',
+<div class="mx-auto max-w-4xl space-y-6" x-data="{
+    i18n: @js($t),
+    participationType: @js($startType),
+    currency: @js($currency),
+    category: '', attendanceMode: '', publicationOption: '',
     events: [], fees: [], loading: true, loadError: '', fieldErrors: {},
-    idEvent: '', idPeriod: '',
-    submitting: false,
+    idEvent: '', idPeriod: '', submitting: false,
+    order: { type: ['Student', 'Regular', 'Committee'], mode: ['Luring', 'Daring'], pub: ['Tidak', 'Prosiding', 'Jurnal'] },
     async init() {
         try {
-            const [events, fees] = await Promise.all([
-                window.asicApi.get('/api/public/events'),
-                window.asicApi.get('/api/public/registration-fees')
-            ]);
-            if (!events.ok || !fees.ok) throw new Error(events.error || fees.error || 'Data pendaftaran tidak dapat dimuat.');
-            const eventData = events.data?.data;
-            const feeData = fees.data?.data;
+            const [events, fees] = await Promise.all([window.asicApi.get('/api/public/events'), window.asicApi.get('/api/public/registration-fees')]);
+            if (!events.ok || !fees.ok) throw new Error(events.error || fees.error || this.i18n.load_failed);
+            const eventData = events.data?.data, feeData = fees.data?.data;
             this.events = Array.isArray(eventData) ? eventData : (eventData?.data || []);
-            this.fees = Array.isArray(feeData) ? feeData : (feeData?.data || []);
-            this.idEvent = String(this.fees[0]?.id_event || this.events[0]?.id_event || '');
+            const allFees = Array.isArray(feeData) ? feeData : (feeData?.data || []);
+            this.fees = allFees.filter(f => (f.mata_uang || 'IDR') === this.currency);
+            this.idEvent = String(this.fees[0]?.id_event || '');
             this.syncPeriod();
-            if (!this.events.length || !this.fees.length) this.loadError = 'Belum ada event atau tarif pendaftaran aktif.';
-        } catch (error) { this.loadError = error.message || 'Data pendaftaran gagal dimuat.'; }
+            if (!this.fees.length) this.loadError = @js(__('asic-participant.flow.no_fee_currency')).replace(':currency', this.currency);
+        } catch (error) { this.loadError = error.message || this.i18n.load_failed; }
         finally { this.loading = false; }
     },
-    get periods() { return [...new Map(this.fees.filter(f => String(f.id_event) === this.idEvent).map(f => [String(f.id_period), f.period])).values()]; },
-    syncPeriod() {
-        const firstFee = this.fees.find(f => String(f.id_event) === this.idEvent);
-        this.idPeriod = String(firstFee?.id_period || this.periods[0]?.id_period || '');
-        if (firstFee) {
-            this.category = firstFee.registration_type;
-            this.attendanceMode = firstFee.attendance_mode;
-            this.publicationOption = firstFee.tujuan_publikasi;
-        }
+    get eventOptions() { return this.events.filter(e => this.fees.some(f => String(f.id_event) === String(e.id_event))); },
+    get periodFees() { return this.fees.filter(f => String(f.id_event) === this.idEvent && String(f.id_period) === this.idPeriod); },
+    get periods() { return [...new Map(this.fees.filter(f => String(f.id_event) === this.idEvent).map(f => [String(f.id_period), f.period])).values()].filter(Boolean); },
+    options(field, key) { const values = new Set(this.periodFees.map(f => f[field])); return this.order[key].filter(v => values.has(v)); },
+    pick(field, key, current) { const list = this.options(field, key); return list.includes(current) ? current : (list[0] || ''); },
+    syncPeriod() { this.idPeriod = String(this.periods[0]?.id_period || ''); this.syncOptions(); },
+    syncOptions() {
+        this.category = this.pick('registration_type', 'type', this.category || 'Regular');
+        this.attendanceMode = this.pick('attendance_mode', 'mode', this.attendanceMode || 'Luring');
+        this.publicationOption = this.pick('tujuan_publikasi', 'pub', this.publicationOption || 'Tidak');
     },
-    syncFeeOptions() {
-        const fee = this.fees.find(f => String(f.id_event) === this.idEvent && String(f.id_period) === this.idPeriod);
-        if (fee) {
-            this.category = fee.registration_type;
-            this.attendanceMode = fee.attendance_mode;
-            this.publicationOption = fee.tujuan_publikasi;
-        }
-    },
-    get selectedFee() { return this.fees.find(f => String(f.id_event) === this.idEvent && String(f.id_period) === this.idPeriod && f.registration_type === this.category && f.attendance_mode === this.attendanceMode && f.tujuan_publikasi === this.publicationOption); },
-    get calculatedFee() {
-        return this.selectedFee ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(Number(this.selectedFee.final_amount)) : 'Tarif tidak tersedia';
-    },
-    async handleSubmit(e) {
-        this.fieldErrors = {};
-        this.submitting = true;
-        const payload = {
-            id_event: Number(this.idEvent),
-            id_period: Number(this.idPeriod),
-            registration_type: this.category,
-            attendance_mode: this.attendanceMode,
-            participation_type: this.participationType,
-            publication_option: this.publicationOption
-        };
-        const res = await window.asicApi.post('/api/registrations', payload);
+    get selectedFee() { return this.periodFees.find(f => f.registration_type === this.category && f.attendance_mode === this.attendanceMode && f.tujuan_publikasi === this.publicationOption); },
+    money(v) { return window.asicMoney(v, this.currency); },
+    async handleSubmit() {
+        this.fieldErrors = {}; this.submitting = true;
+        const res = await window.asicApi.post('/api/registrations', {
+            id_event: Number(this.idEvent), id_period: Number(this.idPeriod), registration_type: this.category,
+            attendance_mode: this.attendanceMode, participation_type: this.participationType, publication_option: this.publicationOption
+        });
         this.submitting = false;
-        if (!res.ok || res.status !== 201) {
-            this.fieldErrors = res.errors || {};
-            window.asicApi.showToast(res.error || 'Pendaftaran gagal. Periksa data lalu coba lagi.');
-            return;
-        }
-        const registrationId = res.data?.data?.id_registration;
-        if (registrationId) window.location.assign('{{ route('portal.participant.payment.checkout') }}?id_registration=' + encodeURIComponent(registrationId));
-        else window.asicApi.showToast('Pendaftaran tersimpan, tetapi data invoice belum tersedia. Buka halaman pembayaran dari dashboard.');
+        if (!res.ok || res.status !== 201) { this.fieldErrors = res.errors || {}; window.asicApi.showToast(res.error || this.i18n.submit_failed); return; }
+        const id = res.data?.data?.id_registration;
+        const target = this.participationType === 'Listener' ? @js(route('portal.participant.payment.checkout')) : @js(route('portal.participant.abstract'));
+        if (id) window.location.assign(target + '?id_registration=' + encodeURIComponent(id));
+        else window.asicApi.showToast(this.i18n.saved_no_invoice);
     }
 }">
-    
-    <x-layout.page-header title="{{ __('asic-participant.reg_form_title') }}" subtitle="{{ __('asic-participant.reg_form_desc') }}">
-        <div class="flex items-center gap-2 p-1 bg-surface-container-low rounded-xl border border-surface-container-highest text-xs">
-            <span class="text-[11px] font-bold text-on-surface-variant px-2 uppercase">Mode:</span>
-                <button type="button" @click="participationType = 'Oral Presenter'" :class="participationType !== 'Listener' ? 'bg-primary text-white font-bold shadow-xs' : 'text-on-surface'" class="px-2.5 py-1 rounded-lg transition">
-                Presenter
-            </button>
-                <button type="button" @click="participationType = 'Listener'" :class="participationType === 'Listener' ? 'bg-primary text-white font-bold shadow-xs' : 'text-on-surface'" class="px-2.5 py-1 rounded-lg transition">
-                Listener
-            </button>
+    <header>
+        <p class="text-xs font-bold uppercase tracking-[0.18em] text-primary">{{ $t['eyebrow'] }}</p>
+        <h1 class="mt-1 text-[27px] font-bold leading-tight sm:text-[34px]">{{ $t['title'] }}</h1>
+        <p class="mt-1 text-[15px] text-on-surface-variant">{{ $t['subtitle'] }}</p>
+    </header>
+
+    {{-- Data pribadi diambil dari profil --}}
+    <section class="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5">
+        <div class="flex items-center gap-4">
+            <span class="flex h-12 w-12 items-center justify-center rounded-full bg-[#E6F4EA] text-primary"><span class="material-symbols-outlined">badge</span></span>
+            <div>
+                <p class="font-bold">{{ $participant?->full_name ?: auth()->user()->email }}</p>
+                <p class="text-sm text-on-surface-variant">{{ collect([$participant?->institution, $participant?->country, auth()->user()->email])->filter()->implode(' · ') }}</p>
+                <p class="mt-1 text-sm"><span class="rounded-full bg-[#FEF6D8] px-2 py-0.5 font-semibold text-[#7a5d00]">{{ str_replace(':currency', $currency, $t['currency_note']) }}</span></p>
+            </div>
         </div>
-    </x-layout.page-header>
+        <a href="{{ route('portal.participant.profile') }}" class="inline-flex min-h-10 items-center gap-2 rounded-[9px] border border-surface-container-highest px-4 py-2 text-sm font-semibold text-primary hover:border-primary"><span class="material-symbols-outlined text-[18px]">edit</span>{{ $t['edit_profile'] }}</a>
+    </section>
 
-    <form action="#" method="POST" class="space-y-6" @submit.prevent="handleSubmit($event)">
-        @csrf
+    <p x-show="loading" role="status" class="rounded-xl bg-surface-container-low p-4 text-sm">{{ $t['loading'] }}</p>
+    <p x-show="loadError" x-text="loadError" role="alert" class="rounded-xl bg-error-container p-4 text-sm text-on-error-container" style="display: none;"></p>
 
-        <x-ui.card title="Kegiatan dan periode" icon="event">
-            <div x-show="loading" role="status" class="text-sm text-on-surface-variant">Memuat event dan tarif…</div>
-            <div x-show="loadError" x-text="loadError" role="alert" class="text-sm text-error"></div>
-            <div x-show="!loading && !loadError" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <label class="text-xs font-semibold">Event
-                    <select x-model="idEvent" @change="syncPeriod()" class="mt-1 w-full rounded-xl border-surface-container-highest text-sm">
-                        <template x-for="event in events.filter(event => fees.some(fee => String(fee.id_event) === String(event.id_event)))" :key="event.id_event">
-                            <option :value="String(event.id_event)" x-text="event.nama_event"></option>
-                        </template>
+    <form x-show="!loading && !loadError" @submit.prevent="handleSubmit()" class="space-y-6" style="display: none;">
+        {{-- 1. Event & periode --}}
+        <section class="rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5 sm:p-6">
+            <h2 class="flex items-center gap-2 text-lg font-bold"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm text-white">1</span>{{ $t['step_event'] }}</h2>
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <label class="block text-sm font-semibold">{{ $t['event'] }}
+                    <select x-model="idEvent" @change="syncPeriod()" class="mt-1.5 w-full">
+                        <template x-for="event in eventOptions" :key="event.id_event"><option :value="String(event.id_event)" x-text="event.nama_event"></option></template>
                     </select>
-                    <p x-show="fieldErrors.id_event" x-text="fieldErrors.id_event?.[0]" class="mt-1 text-error"></p>
+                    <span x-show="fieldErrors.id_event" x-text="fieldErrors.id_event?.[0]" class="mt-1 block text-sm font-normal text-error"></span>
                 </label>
-                <label class="text-xs font-semibold">Periode
-                    <select x-model="idPeriod" @change="syncFeeOptions()" class="mt-1 w-full rounded-xl border-surface-container-highest text-sm">
-                        <template x-for="period in periods" :key="period.id_period">
-                            <option :value="String(period.id_period)" x-text="period.nama_periode"></option>
-                        </template>
+                <label class="block text-sm font-semibold">{{ $t['period'] }}
+                    <select x-model="idPeriod" @change="syncOptions()" class="mt-1.5 w-full">
+                        <template x-for="period in periods" :key="period.id_period"><option :value="String(period.id_period)" x-text="period.nama_periode"></option></template>
                     </select>
-                    <p x-show="fieldErrors.id_period" x-text="fieldErrors.id_period?.[0]" class="mt-1 text-error"></p>
+                    <span x-show="fieldErrors.id_period" x-text="fieldErrors.id_period?.[0]" class="mt-1 block text-sm font-normal text-error"></span>
                 </label>
             </div>
-            <p x-show="!loading && !loadError && !selectedFee" class="mt-3 text-sm text-error">Tarif untuk kategori dan mode yang dipilih belum tersedia.</p>
-            <div class="mt-4 flex gap-4">
-                <label class="text-xs font-semibold">Mode kehadiran
-                    <select x-model="attendanceMode" class="mt-1 block rounded-xl border-surface-container-highest text-sm">
-                        <option value="Luring">Luring</option><option value="Daring">Daring</option>
-                    </select>
-                    <span x-show="fieldErrors.attendance_mode" x-text="fieldErrors.attendance_mode?.[0]" class="mt-1 block text-error"></span>
-                </label>
-                <label class="text-xs font-semibold">Tujuan publikasi
-                    <select x-model="publicationOption" class="mt-1 block rounded-xl border-surface-container-highest text-sm">
-                        <option value="Tidak">Tidak</option><option value="Prosiding">Prosiding</option><option value="Jurnal">Jurnal</option>
-                    </select>
-                    <span x-show="fieldErrors.publication_option" x-text="fieldErrors.publication_option?.[0]" class="mt-1 block text-error"></span>
-                </label>
-            </div>
-        </x-ui.card>
+        </section>
 
-        <!-- Section 1: Participation Type -->
-        <x-ui.card title="{{ __('asic-participant.ticket_type_legend') }}" icon="how_to_reg">
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <x-ui.radio-card name="participation_type" value="Oral Presenter" title="Oral Presenter" description="Present in parallel technical session" price="See active fee" icon="record_voice_over" model="participationType" />
-                <x-ui.radio-card name="participation_type" value="Poster Presenter" title="Poster Presenter" description="Display scientific poster board" price="See active fee" icon="aspect_ratio" model="participationType" />
-                <x-ui.radio-card name="participation_type" value="Listener" title="Attendee / Listener" description="Access all sessions, kit & lunch" price="See active fee" icon="hearing" model="participationType" />
-            </div>
-            <p x-show="fieldErrors.participation_type" x-text="fieldErrors.participation_type?.[0]" class="mt-2 text-sm text-error"></p>
-        </x-ui.card>
-
-        <!-- Section 2: Category & Nationality -->
-        <x-ui.card title="{{ __('asic-participant.category_legend') }}" icon="category">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-xs font-semibold text-on-surface mb-2">Origin / Nationality</label>
-                    <div class="grid grid-cols-2 gap-3">
-                        <label :class="nationality === 'domestic' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
-                            <input type="radio" name="nationality" value="domestic" x-model="nationality" class="sr-only">
-                            <span class="block text-xs font-bold text-on-surface">Indonesian (Domestic)</span>
-                            <span class="block text-[11px] text-on-surface-variant mt-0.5">Asal peserta untuk informasi</span>
-                        </label>
-                        <label :class="nationality === 'international' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
-                            <input type="radio" name="nationality" value="international" x-model="nationality" class="sr-only">
-                            <span class="block text-xs font-bold text-on-surface">International</span>
-                            <span class="block text-[11px] text-on-surface-variant mt-0.5">Asal peserta untuk informasi</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-on-surface mb-2">Participant Category</label>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <label :class="category === 'Student' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
-                            <input type="radio" name="category" value="Student" x-model="category" class="sr-only">
-                            <span class="block text-xs font-bold text-on-surface">Student (Undergrad/Postgrad)</span>
-                            <span class="block text-[11px] text-on-surface-variant mt-0.5">Requires Student ID verification</span>
-                        </label>
-                        <label :class="category === 'Regular' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
-                            <input type="radio" name="category" value="Regular" x-model="category" class="sr-only">
-                            <span class="block text-xs font-bold text-on-surface">Regular / Academician</span>
-                            <span class="block text-[11px] text-on-surface-variant mt-0.5">Lecturers, Researchers & General</span>
-                        </label>
-                        <label :class="category === 'Committee' ? 'border-primary ring-2 ring-primary/20 bg-primary-fixed/10' : 'border-surface-container-highest'" class="p-3.5 rounded-xl border text-center cursor-pointer transition">
-                            <input type="radio" name="category" value="Committee" x-model="category" class="sr-only">
-                            <span class="block text-xs font-bold text-on-surface">Committee</span>
-                            <span class="block text-[11px] text-on-surface-variant mt-0.5">Organizing committee</span>
-                        </label>
-                    </div>
-                    <p x-show="fieldErrors.registration_type" x-text="fieldErrors.registration_type?.[0]" class="mt-2 text-sm text-error"></p>
-                </div>
-            </div>
-        </x-ui.card>
-
-        <!-- Section 3: Personal & Affiliation Information -->
-        <x-ui.card title="{{ __('asic-participant.personal_info') }}" icon="person">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="sm:col-span-2">
-                    <x-ui.input label="{{ __('asic-participant.full_name') }}" name="name" placeholder="e.g. Dr. Budi Santoso, M.Sc." iconLeft="person" />
-                </div>
-                <x-ui.input label="{{ __('asic-participant.email') }}" name="email" type="email" placeholder="budi@institution.ac.id" iconLeft="mail" />
-                <x-ui.input label="{{ __('asic-participant.phone') }}" name="phone" placeholder="+62 812-3456-7890" iconLeft="call" />
-                <x-ui.input label="{{ __('asic-participant.institution') }}" name="institution" placeholder="Universitas Andalas" iconLeft="school" />
-                <x-ui.input label="{{ __('asic-participant.department') }}" name="department" placeholder="Department of Agronomy" iconLeft="business" />
-                <x-ui.input label="{{ __('asic-participant.city') }}" name="city" placeholder="Padang" iconLeft="location_city" />
-                <x-ui.input label="{{ __('asic-participant.country') }}" name="country" placeholder="Indonesia" iconLeft="public" />
-            </div>
-        </x-ui.card>
-
-        <!-- Section 4: Abstract Submission (Visible only for Presenter) -->
-        <div x-show="false" class="rounded-xl border border-surface-container-highest bg-surface-container-low p-4 text-sm text-on-surface-variant">
-            Pengajuan abstrak dilakukan setelah invoice dan pembayaran diverifikasi pada halaman abstrak peserta.
-        </div>
-        <div x-show="false" class="space-y-6">
-            <x-ui.card title="{{ __('asic-participant.abstract_info') }}" icon="description">
-                <div class="space-y-4">
-                    <x-ui.input label="{{ __('asic-participant.abstract_title') }}" name="abstract_title" placeholder="e.g. Assessment of Organic Fertilizer on Crop Yield..." />
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <x-ui.select label="{{ __('asic-participant.topic') }}" name="topic" iconLeft="category">
-                            <option value="sustainable_food">Sustainable Food Production</option>
-                            <option value="agro_biodiversity">Agro-biodiversity & Climate Resilience</option>
-                            <option value="food_security">Food Security & Nutrition</option>
-                            <option value="agritech">Agri-tech & Digital Innovation</option>
-                            <option value="policy_market">Markets, Policy & Rural Livelihoods</option>
-                        </x-ui.select>
-
-                        <x-ui.select label="{{ __('asic-participant.presentation_mode') }}" name="presentation_mode" iconLeft="co_present">
-                            <option value="onsite">{{ __('asic-participant.onsite') }}</option>
-                            <option value="online">{{ __('asic-participant.online') }}</option>
-                        </x-ui.select>
-                    </div>
-
-                    <x-ui.input label="{{ __('asic-participant.authors') }}" name="authors" placeholder="e.g. Budi Santoso (1), Ahmad Fauzi (2)" hint="List all co-authors with institution numbers" />
-
-                    <x-ui.textarea label="{{ __('asic-participant.abstract_body') }}" name="abstract_body" placeholder="Provide background, methods, results, and conclusion (150–250 words)..." rows="5" maxlength="500" />
-
-                    <x-ui.input label="{{ __('asic-participant.keywords') }}" name="keywords" placeholder="biochar, cassava, food security, soil biology" />
-
-                    <x-ui.file-upload label="{{ __('asic-participant.upload_abstract_doc') }}" name="abstract_file" accept=".docx,.pdf" maxSize="5 MB" hint="Optional manuscript document with figures/tables" />
-                </div>
-            </x-ui.card>
-        </div>
-
-        <!-- Section 5: Listener Field Trip Option (Visible only for Listener) -->
-        <div x-show="participationType === 'Listener'" x-transition>
-            <x-ui.card title="{{ __('asic-participant.field_trip_title') }}" icon="nature_people">
-                <div class="flex items-start gap-4 p-4 rounded-xl bg-surface-container-low border border-surface-container-highest">
-                    <input type="checkbox" id="field_trip" name="include_field_trip" disabled class="h-5 w-5 rounded border-outline/40 text-primary mt-0.5 cursor-not-allowed">
-                    <label for="field_trip" class="cursor-pointer">
-                        <span class="block text-sm font-bold text-on-surface">{{ __('asic-participant.field_trip_title') }} — belum tersedia</span>
-                        <span class="block text-xs text-on-surface-variant mt-1 leading-relaxed">Pilihan add-on belum disediakan oleh API saat ini.</span>
-                        <span class="inline-block mt-2 px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary-fixed text-primary font-mono">
-                            {{ __('asic-participant.field_trip_fee') }}
+        {{-- 2. Jenis partisipasi --}}
+        <fieldset class="rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5 sm:p-6">
+            <legend class="sr-only">{{ $t['step_type'] }}</legend>
+            <h2 class="flex items-center gap-2 text-lg font-bold" aria-hidden="true"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm text-white">2</span>{{ $t['step_type'] }}</h2>
+            <div class="mt-4 grid gap-3 sm:grid-cols-3">
+                @foreach(['Oral Presenter' => 'record_voice_over', 'Poster Presenter' => 'image', 'Listener' => 'hearing'] as $value => $icon)
+                    <label class="relative flex cursor-pointer gap-3 rounded-xl border-2 p-4 transition" :class="participationType === @js($value) ? 'border-primary bg-[#E6F4EA]' : 'border-surface-container-highest hover:border-[#9aaa9e]'">
+                        <input type="radio" name="participation_type" value="{{ $value }}" x-model="participationType" class="mt-1">
+                        <span>
+                            <span class="flex items-center gap-1.5 font-bold"><span class="material-symbols-outlined text-[20px] text-primary">{{ $icon }}</span>{{ $t['types'][$value]['title'] }}</span>
+                            <span class="mt-1 block text-sm text-on-surface-variant">{{ $t['types'][$value]['desc'] }}</span>
                         </span>
                     </label>
-                </div>
-            </x-ui.card>
-        </div>
-
-        <!-- Section 6: Order Summary & Submission -->
-        <x-ui.card>
-            <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div>
-                    <span class="text-xs uppercase tracking-wider font-semibold text-on-surface-variant">Estimated Total Fee</span>
-                    <p class="text-2xl font-bold text-primary font-mono" x-text="calculatedFee"></p>
-                    <p class="text-[11px] text-on-surface-variant">Formal invoice will be issued upon form submission.</p>
-                </div>
-
-                <div class="flex items-center gap-3 w-full sm:w-auto">
-                    <x-ui.button variant="outline" href="{{ route('login') }}">
-                        Cancel
-                    </x-ui.button>
-                    <x-ui.button type="submit" variant="primary" class="w-full sm:w-auto px-8" iconRight="arrow_forward" ::disabled="submitting || !selectedFee || loading || !!loadError">
-                        <span x-text="submitting ? 'Processing...' : 'Proceed to Checkout'">Proceed to Checkout</span>
-                    </x-ui.button>
-                </div>
+                @endforeach
             </div>
-        </x-ui.card>
+            <span x-show="fieldErrors.participation_type" x-text="fieldErrors.participation_type?.[0]" class="mt-2 block text-sm text-error"></span>
+        </fieldset>
+
+        {{-- 3. Kategori, kehadiran, publikasi --}}
+        <section class="rounded-2xl border border-surface-container-highest bg-surface-container-lowest p-5 sm:p-6">
+            <h2 class="flex items-center gap-2 text-lg font-bold"><span class="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-sm text-white">3</span>{{ $t['step_options'] }}</h2>
+            @foreach([['category', 'registration_type', 'type', $t['category'], $t['categories']], ['attendanceMode', 'attendance_mode', 'mode', $t['mode'], $t['modes']], ['publicationOption', 'tujuan_publikasi', 'pub', $t['publication'], $t['publications']]] as [$model, $field, $key, $label, $labels])
+                <fieldset class="mt-5">
+                    <legend class="text-sm font-semibold">{{ $label }}</legend>
+                    <div class="mt-2 flex flex-wrap gap-2">
+                        <template x-for="value in options(@js($field), @js($key))" :key="value">
+                            <label class="cursor-pointer rounded-xl border-2 px-4 py-2.5 text-sm font-semibold transition" :class="{{ $model }} === value ? 'border-primary bg-[#E6F4EA] text-primary' : 'border-surface-container-highest hover:border-[#9aaa9e]'">
+                                <input type="radio" class="sr-only" :value="value" x-model="{{ $model }}">
+                                <span x-text="(@js($labels))[value] || value"></span>
+                            </label>
+                        </template>
+                    </div>
+                    <span x-show="fieldErrors.{{ $field === 'tujuan_publikasi' ? 'publication_option' : $field }}" x-text="fieldErrors.{{ $field === 'tujuan_publikasi' ? 'publication_option' : $field }}?.[0]" class="mt-1 block text-sm text-error"></span>
+                </fieldset>
+            @endforeach
+            <p class="mt-4 text-sm text-on-surface-variant">{{ $t['publication_hint'] }}</p>
+        </section>
+
+        {{-- Ringkasan --}}
+        <section class="sticky bottom-4 z-10 flex flex-col gap-4 rounded-2xl border border-primary/30 bg-surface-container-lowest p-5 shadow-lg sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-on-surface-variant">{{ $t['total'] }}</p>
+                <p class="font-mono text-2xl font-bold text-primary" x-text="selectedFee ? money(selectedFee.final_amount) : i18n.fee_unavailable"></p>
+                <p class="text-sm text-on-surface-variant" x-text="participationType === 'Listener' ? i18n.next_listener : i18n.next_presenter"></p>
+            </div>
+            <div class="flex gap-3">
+                <a href="{{ route('portal.participant.dashboard') }}" class="inline-flex min-h-11 items-center rounded-[9px] border border-surface-container-highest px-5 text-sm font-semibold hover:border-primary">{{ $t['cancel'] }}</a>
+                <button type="submit" :disabled="submitting || !selectedFee" class="inline-flex min-h-11 items-center gap-2 rounded-[9px] bg-primary px-6 text-sm font-bold text-white hover:bg-primary-container">
+                    <span x-text="submitting ? i18n.submitting : i18n.submit"></span><span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </button>
+            </div>
+        </section>
     </form>
 </div>
 @endsection
-

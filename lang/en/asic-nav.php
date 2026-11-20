@@ -38,4 +38,5 @@ return [
     'document_templates' => 'Document Templates',
     'website_settings' => 'Website Settings',
     'archive' => 'Archive',
+    'public_content' => 'Public content',
 ];

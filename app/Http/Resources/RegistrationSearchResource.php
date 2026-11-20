@@ -18,6 +18,7 @@ class RegistrationSearchResource extends JsonResource
             'registration_type' => $this->registration_type,
             'attendance_mode' => $this->attendance_mode,
             'participation_type' => $this->participation_type,
+            'reregistered_at' => $this->reregistered_at?->toIso8601String(),
             'event' => $this->event?->nama_event,
             'participant' => [
                 'full_name' => $this->participant?->full_name,
